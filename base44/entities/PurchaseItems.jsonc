@@ -1,0 +1,88 @@
+{
+  "name": "PurchaseItems",
+  "type": "object",
+  "properties": {
+    "purchase_order_id": {
+      "type": "string"
+    },
+    "brand": {
+      "type": "string"
+    },
+    "model": {
+      "type": "string"
+    },
+    "line_family": {
+      "type": "string"
+    },
+    "cpu": {
+      "type": "string"
+    },
+    "ram_gb": {
+      "type": "number"
+    },
+    "storage_type": {
+      "type": "string",
+      "enum": [
+        "SSD",
+        "HDD",
+        "eMMC",
+        "NVMe"
+      ]
+    },
+    "storage_gb": {
+      "type": "number"
+    },
+    "screen_size": {
+      "type": "string"
+    },
+    "screen_type": {
+      "type": "string"
+    },
+    "form_factor": {
+      "type": "string",
+      "enum": [
+        "clamshell",
+        "2-in-1",
+        "tablet",
+        "rugged"
+      ]
+    },
+    "condition_grade": {
+      "type": "string",
+      "enum": [
+        "A+",
+        "A",
+        "B+",
+        "B",
+        "C",
+        "D",
+        "parts"
+      ]
+    },
+    "quantity": {
+      "type": "number",
+      "default": 1
+    },
+    "item_subtotal": {
+      "type": "number",
+      "default": 0
+    },
+    "allocated_order_total": {
+      "type": "number",
+      "default": 0
+    },
+    "estimated_unit_cost_from_order_total": {
+      "type": "number",
+      "default": 0
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "purchase_order_id",
+    "brand",
+    "model",
+    "quantity"
+  ]
+}

@@ -1,0 +1,90 @@
+{
+  "name": "PurchaseOrders",
+  "type": "object",
+  "properties": {
+    "purchase_code": {
+      "type": "string"
+    },
+    "supplier_id": {
+      "type": "string"
+    },
+    "source_platform": {
+      "type": "string",
+      "enum": [
+        "ebay",
+        "amazon",
+        "local",
+        "distributor",
+        "other"
+      ]
+    },
+    "order_number": {
+      "type": "string"
+    },
+    "purchase_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "currency": {
+      "type": "string",
+      "enum": [
+        "USD",
+        "MXN"
+      ],
+      "default": "USD"
+    },
+    "items_subtotal": {
+      "type": "number",
+      "default": 0
+    },
+    "usa_shipping_total": {
+      "type": "number",
+      "default": 0
+    },
+    "usa_tax_total": {
+      "type": "number",
+      "default": 0
+    },
+    "discounts_total": {
+      "type": "number",
+      "default": 0
+    },
+    "order_total_paid": {
+      "type": "number",
+      "default": 0
+    },
+    "total_units": {
+      "type": "number",
+      "default": 0
+    },
+    "import_batch_id": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "purchased",
+        "in_transit",
+        "received",
+        "closed"
+      ],
+      "default": "draft"
+    },
+    "notes": {
+      "type": "string"
+    },
+    "attachments": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "required": [
+    "order_number",
+    "order_total_paid",
+    "total_units",
+    "purchase_date"
+  ]
+}

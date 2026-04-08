@@ -1,0 +1,138 @@
+{
+  "name": "InventoryUnits",
+  "type": "object",
+  "properties": {
+    "serial_code_internal": {
+      "type": "string"
+    },
+    "purchase_item_id": {
+      "type": "string"
+    },
+    "import_batch_id": {
+      "type": "string"
+    },
+    "brand": {
+      "type": "string"
+    },
+    "model": {
+      "type": "string"
+    },
+    "cpu": {
+      "type": "string"
+    },
+    "ram_gb": {
+      "type": "number"
+    },
+    "storage_type": {
+      "type": "string",
+      "enum": [
+        "SSD",
+        "HDD",
+        "eMMC",
+        "NVMe"
+      ]
+    },
+    "storage_gb": {
+      "type": "number"
+    },
+    "screen_size": {
+      "type": "string"
+    },
+    "form_factor": {
+      "type": "string",
+      "enum": [
+        "clamshell",
+        "2-in-1",
+        "tablet",
+        "rugged"
+      ]
+    },
+    "condition_grade": {
+      "type": "string",
+      "enum": [
+        "A+",
+        "A",
+        "B+",
+        "B",
+        "C",
+        "D",
+        "parts"
+      ]
+    },
+    "cosmetic_notes": {
+      "type": "string"
+    },
+    "technical_notes": {
+      "type": "string"
+    },
+    "battery_notes": {
+      "type": "string"
+    },
+    "charger_included": {
+      "type": "boolean",
+      "default": false
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "available",
+        "reserved",
+        "quoted",
+        "sold",
+        "warranty",
+        "damaged"
+      ],
+      "default": "available"
+    },
+    "warehouse_location": {
+      "type": "string"
+    },
+    "cost_purchase_unit": {
+      "type": "number",
+      "default": 0
+    },
+    "cost_import_unit": {
+      "type": "number",
+      "default": 0
+    },
+    "cost_repair_unit": {
+      "type": "number",
+      "default": 0
+    },
+    "cost_local_unit": {
+      "type": "number",
+      "default": 0
+    },
+    "total_real_unit_cost": {
+      "type": "number",
+      "default": 0
+    },
+    "pricing_profile_id": {
+      "type": "string"
+    },
+    "suggested_sale_price": {
+      "type": "number",
+      "default": 0
+    },
+    "minimum_sale_price": {
+      "type": "number",
+      "default": 0
+    },
+    "wholesale_price": {
+      "type": "number",
+      "default": 0
+    },
+    "retail_price": {
+      "type": "number",
+      "default": 0
+    },
+    "received_date": {
+      "type": "string",
+      "format": "date"
+    }
+  },
+  "required": [
+    "brand",
+    "model"
+  ]
+}

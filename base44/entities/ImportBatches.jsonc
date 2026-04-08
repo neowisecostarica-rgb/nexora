@@ -1,0 +1,69 @@
+{
+  "name": "ImportBatches",
+  "type": "object",
+  "properties": {
+    "batch_code": {
+      "type": "string"
+    },
+    "courier": {
+      "type": "string"
+    },
+    "origin_country": {
+      "type": "string",
+      "default": "USA"
+    },
+    "destination_country": {
+      "type": "string",
+      "default": "Mexico"
+    },
+    "ship_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "arrival_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "customs_total": {
+      "type": "number",
+      "default": 0
+    },
+    "freight_total": {
+      "type": "number",
+      "default": 0
+    },
+    "local_transport_total": {
+      "type": "number",
+      "default": 0
+    },
+    "per_unit_import_default": {
+      "type": "number",
+      "default": 0
+    },
+    "extra_cost_total": {
+      "type": "number",
+      "default": 0
+    },
+    "total_units": {
+      "type": "number",
+      "default": 0
+    },
+    "notes": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "planning",
+        "shipped",
+        "in_customs",
+        "delivered",
+        "closed"
+      ],
+      "default": "planning"
+    }
+  },
+  "required": [
+    "batch_code"
+  ]
+}

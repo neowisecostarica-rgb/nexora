@@ -1,0 +1,45 @@
+{
+  "name": "PricingProfiles",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "sales_channel": {
+      "type": "string",
+      "enum": [
+        "retail",
+        "wholesale",
+        "promo",
+        "marketplace"
+      ]
+    },
+    "target_margin_percent": {
+      "type": "number",
+      "default": 30
+    },
+    "min_margin_percent": {
+      "type": "number",
+      "default": 15
+    },
+    "rounding_rule": {
+      "type": "string",
+      "enum": [
+        "none",
+        "round_1",
+        "round_5",
+        "round_10"
+      ],
+      "default": "round_10"
+    },
+    "active": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "required": [
+    "name",
+    "sales_channel",
+    "target_margin_percent"
+  ]
+}

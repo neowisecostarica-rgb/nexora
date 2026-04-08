@@ -1,0 +1,37 @@
+{
+  "name": "QuoteItems",
+  "type": "object",
+  "properties": {
+    "quote_id": {
+      "type": "string"
+    },
+    "inventory_unit_id": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "quantity": {
+      "type": "number",
+      "default": 1
+    },
+    "unit_price": {
+      "type": "number",
+      "default": 0
+    },
+    "discount": {
+      "type": "number",
+      "default": 0
+    },
+    "line_total": {
+      "type": "number",
+      "default": 0
+    }
+  },
+  "required": [
+    "quote_id",
+    "description",
+    "quantity",
+    "unit_price"
+  ]
+}

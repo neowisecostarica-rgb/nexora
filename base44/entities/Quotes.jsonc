@@ -1,0 +1,67 @@
+{
+  "name": "Quotes",
+  "type": "object",
+  "properties": {
+    "quote_number": {
+      "type": "string"
+    },
+    "customer_id": {
+      "type": "string"
+    },
+    "customer_name": {
+      "type": "string"
+    },
+    "quote_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "valid_until": {
+      "type": "string",
+      "format": "date"
+    },
+    "sales_channel": {
+      "type": "string",
+      "enum": [
+        "retail",
+        "wholesale",
+        "promo",
+        "marketplace"
+      ]
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "sent",
+        "approved",
+        "rejected",
+        "expired"
+      ],
+      "default": "draft"
+    },
+    "subtotal": {
+      "type": "number",
+      "default": 0
+    },
+    "discount_total": {
+      "type": "number",
+      "default": 0
+    },
+    "tax_total": {
+      "type": "number",
+      "default": 0
+    },
+    "total": {
+      "type": "number",
+      "default": 0
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "quote_number",
+    "customer_id",
+    "quote_date"
+  ]
+}

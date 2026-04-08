@@ -1,0 +1,43 @@
+{
+  "name": "Suppliers",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Supplier name"
+    },
+    "source_type": {
+      "type": "string",
+      "enum": [
+        "ebay",
+        "local_supplier",
+        "distributor",
+        "other"
+      ],
+      "description": "Source type"
+    },
+    "contact_name": {
+      "type": "string"
+    },
+    "phone": {
+      "type": "string"
+    },
+    "email": {
+      "type": "string"
+    },
+    "country": {
+      "type": "string"
+    },
+    "notes": {
+      "type": "string"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "required": [
+    "name",
+    "source_type"
+  ]
+}

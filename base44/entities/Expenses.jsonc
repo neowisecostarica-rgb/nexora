@@ -1,0 +1,39 @@
+{
+  "name": "Expenses",
+  "type": "object",
+  "properties": {
+    "date": {
+      "type": "string",
+      "format": "date"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "repair",
+        "packaging",
+        "courier",
+        "advertising",
+        "commission",
+        "other"
+      ]
+    },
+    "linked_entity_type": {
+      "type": "string"
+    },
+    "linked_entity_id": {
+      "type": "string"
+    },
+    "amount": {
+      "type": "number",
+      "default": 0
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "date",
+    "category",
+    "amount"
+  ]
+}

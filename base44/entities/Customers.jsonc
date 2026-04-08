@@ -1,0 +1,50 @@
+{
+  "name": "Customers",
+  "type": "object",
+  "properties": {
+    "customer_type": {
+      "type": "string",
+      "enum": [
+        "individual",
+        "business",
+        "reseller"
+      ]
+    },
+    "full_name": {
+      "type": "string"
+    },
+    "company_name": {
+      "type": "string"
+    },
+    "tax_id": {
+      "type": "string"
+    },
+    "phone": {
+      "type": "string"
+    },
+    "email": {
+      "type": "string"
+    },
+    "address": {
+      "type": "string"
+    },
+    "city": {
+      "type": "string"
+    },
+    "notes": {
+      "type": "string"
+    },
+    "preferred_channel": {
+      "type": "string",
+      "enum": [
+        "retail",
+        "wholesale",
+        "marketplace"
+      ]
+    }
+  },
+  "required": [
+    "full_name",
+    "customer_type"
+  ]
+}
