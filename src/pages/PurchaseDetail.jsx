@@ -51,38 +51,28 @@ export default function PurchaseDetail() {
   const generateUnitsMutation = useMutation({
     mutationFn: async () => {
       if (!order) return;
-      const totalQty = items.reduce((s, i) => s + (i.quantity || 1), 0);
-      const units = [];
-      for (const item of items) {
-        const qty = item.quantity || 1;
-        const allocatedTotal = order.order_total_paid ? (order.order_total_paid * qty) / (totalQty || 1) : item.item_subtotal || 0;
-        const unitCost = allocatedTotal / qty;
-        for (let i = 0; i < qty; i++) {
-          units.push({
-            purchase_item_id: item.id,
-            brand: item.brand,
-            model: item.model,
-            cpu: item.cpu,
-            ram_gb: item.ram_gb,
-            storage_type: item.storage_type,
-            storage_gb: item.storage_gb,
-            form_factor: item.form_factor,
-            condition_grade: item.condition_grade,
-            status: "available",
-            cost_purchase_unit: unitCost,
-            total_real_unit_cost: unitCost,
-            received_date: new Date().toISOString().split("T")[0],
-          });
-        }
+      // Cada item se convierte via función backend (con lock, idempotencia y trazabilidad)
+      const pendingItems = items.filter(item =>
+        (item.inventory_generated_count || 0) < (item.quantity || 1)
+      );
+      if (pendingItems.length === 0) {
+        toast({ title: "Sin pendientes", description: "Todos los items ya tienen sus unidades generadas." });
+        return;
       }
-      if (units.length > 0) {
-        await base44.entities.InventoryUnits.bulkCreate(units);
+      let totalCreated = 0;
+      for (const item of pendingItems) {
+        const result = await base44.functions.invoke("createInventoryFromPurchaseItem", {
+          purchaseItemId: item.id,
+          importBatchId: order.import_batch_id || null,
+        });
+        totalCreated += result.data?.created_count || 0;
       }
       await base44.entities.PurchaseOrders.update(poId, { status: "received" });
-      toast({ title: "Unidades generadas", description: `${units.length} unidades creadas en inventario.` });
+      toast({ title: "Inventario generado", description: `${totalCreated} unidades creadas con trazabilidad completa.` });
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["po", poId] });
+      qc.invalidateQueries({ queryKey: ["poItems", poId] });
       qc.invalidateQueries({ queryKey: ["inventory"] });
     },
   });
@@ -103,7 +93,7 @@ export default function PurchaseDetail() {
 
       <PageHeader title={`Orden ${order.purchase_code || order.order_number}`} subtitle={`Fecha: ${formatDate(order.purchase_date)}`}>
         <StatusBadge status={order.status} />
-        {order.status !== "received" && order.status !== "closed" && items.length > 0 && (
+        {items.length > 0 && items.some(i => (i.inventory_generated_count || 0) < (i.quantity || 1)) && (
           <Button onClick={() => generateUnitsMutation.mutate()} disabled={generateUnitsMutation.isPending}>
             <Package className="w-4 h-4 mr-2" />{generateUnitsMutation.isPending ? "Generando…" : "Generar Inventario"}
           </Button>
@@ -151,11 +141,16 @@ export default function PurchaseDetail() {
                   <TableHead>Condición</TableHead>
                   <TableHead>Cant.</TableHead>
                   <TableHead>Costo Asig.</TableHead>
+                  <TableHead>Inventariado</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {items.map((item) => {
                   const allocatedCost = order.order_total_paid ? (order.order_total_paid * (item.quantity || 1)) / (totalItemQty || 1) : item.item_subtotal;
+                  const generated = item.inventory_generated_count || 0;
+                  const total = item.quantity || 1;
+                  const fullyConverted = generated >= total;
+                  const inProgress = item.conversion_in_progress;
                   return (
                     <TableRow key={item.id}>
                       <TableCell className="font-medium">{item.brand}</TableCell>
@@ -166,6 +161,15 @@ export default function PurchaseDetail() {
                       <TableCell>{item.condition_grade}</TableCell>
                       <TableCell>{item.quantity}</TableCell>
                       <TableCell className="font-semibold">{formatCurrency(allocatedCost)}</TableCell>
+                      <TableCell>
+                        {inProgress ? (
+                          <span className="text-xs text-yellow-600 font-medium">En proceso…</span>
+                        ) : fullyConverted ? (
+                          <span className="text-xs text-green-600 font-medium">{generated}/{total} ✓</span>
+                        ) : (
+                          <span className="text-xs text-muted-foreground">{generated}/{total}</span>
+                        )}
+                      </TableCell>
                     </TableRow>
                   );
                 })}

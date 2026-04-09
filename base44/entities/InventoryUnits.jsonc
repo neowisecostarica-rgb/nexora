@@ -17,11 +17,20 @@
     "model": {
       "type": "string"
     },
-    "cpu": {
-      "type": "string"
+    "cpu_raw": {
+      "type": "string",
+      "description": "CPU tal como fue ingresado por el usuario"
+    },
+    "cpu_normalized": {
+      "type": "string",
+      "description": "CPU normalizado para agrupaci\u00f3n de cat\u00e1logo"
     },
     "ram_gb": {
       "type": "number"
+    },
+    "storage_type_raw": {
+      "type": "string",
+      "description": "Tipo de almacenamiento tal como fue ingresado"
     },
     "storage_type": {
       "type": "string",
@@ -30,13 +39,19 @@
         "HDD",
         "eMMC",
         "NVMe"
-      ]
+      ],
+      "description": "Tipo de almacenamiento normalizado"
     },
     "storage_gb": {
       "type": "number"
     },
-    "screen_size": {
-      "type": "string"
+    "screen_size_raw": {
+      "type": "string",
+      "description": "Tama\u00f1o de pantalla tal como fue ingresado"
+    },
+    "screen_size_normalized": {
+      "type": "string",
+      "description": "Tama\u00f1o de pantalla normalizado (ej. 15.6)"
     },
     "form_factor": {
       "type": "string",
@@ -105,26 +120,51 @@
     },
     "total_real_unit_cost": {
       "type": "number",
-      "default": 0
+      "default": 0,
+      "description": "SOT: Costo real total consolidado de la unidad"
+    },
+    "cost_frozen_at_sale": {
+      "type": "number",
+      "default": 0,
+      "description": "Costo congelado al momento de ser vendida. No se modifica despu\u00e9s."
     },
     "pricing_profile_id": {
       "type": "string"
     },
-    "suggested_sale_price": {
+    "retail_price": {
       "type": "number",
-      "default": 0
-    },
-    "minimum_sale_price": {
-      "type": "number",
-      "default": 0
+      "default": 0,
+      "description": "Cache del PricingEngine. No editar directamente."
     },
     "wholesale_price": {
       "type": "number",
-      "default": 0
+      "default": 0,
+      "description": "Cache del PricingEngine. No editar directamente."
     },
-    "retail_price": {
+    "minimum_sale_price": {
       "type": "number",
-      "default": 0
+      "default": 0,
+      "description": "Cache del PricingEngine. No editar directamente."
+    },
+    "margin_percent": {
+      "type": "number",
+      "default": 0,
+      "description": "Cache del PricingEngine. No editar directamente."
+    },
+    "pricing_calculated_at": {
+      "type": "string",
+      "description": "Timestamp del \u00faltimo c\u00e1lculo de precios"
+    },
+    "images": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "URLs de im\u00e1genes del producto"
+    },
+    "main_image": {
+      "type": "string",
+      "description": "URL de la imagen principal. Debe existir en images."
     },
     "received_date": {
       "type": "string",

@@ -75,6 +75,16 @@
       "type": "number",
       "default": 0
     },
+    "inventory_generated_count": {
+      "type": "number",
+      "default": 0,
+      "description": "N\u00famero de InventoryUnits ya generadas. No usar booleano."
+    },
+    "conversion_in_progress": {
+      "type": "boolean",
+      "default": false,
+      "description": "Lock l\u00f3gico. True mientras hay conversi\u00f3n en curso."
+    },
     "notes": {
       "type": "string"
     }

@@ -8,11 +8,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
-import { Search, Monitor, Pencil } from "lucide-react";
+import { Search, Monitor, Pencil, Image } from "lucide-react";
 import PageHeader from "@/components/shared/PageHeader";
 import StatusBadge from "@/components/shared/StatusBadge";
 import EmptyState from "@/components/shared/EmptyState";
 import { formatCurrency } from "@/lib/formatters";
+import ImageManager from "@/components/inventory/ImageManager";
+
+const PLACEHOLDER = "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=400&h=300&fit=crop";
 
 export default function Inventory() {
   const [search, setSearch] = useState("");
@@ -27,6 +30,11 @@ export default function Inventory() {
     queryFn: () => base44.entities.InventoryUnits.list("-created_date", 500),
   });
 
+  const { data: pricingProfiles = [] } = useQuery({
+    queryKey: ["pricingProfiles"],
+    queryFn: () => base44.entities.PricingProfiles.filter({ active: true }),
+  });
+
   const updateMutation = useMutation({
     mutationFn: ({ id, data }) => base44.entities.InventoryUnits.update(id, data),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["inventory"] }); setEditUnit(null); },
@@ -35,7 +43,7 @@ export default function Inventory() {
   const brands = [...new Set(units.map((u) => u.brand).filter(Boolean))].sort();
 
   const filtered = units.filter((u) => {
-    const matchSearch = !search || `${u.brand} ${u.model} ${u.cpu} ${u.serial_code_internal}`.toLowerCase().includes(search.toLowerCase());
+    const matchSearch = !search || `${u.brand} ${u.model} ${u.cpu_raw} ${u.cpu_normalized} ${u.serial_code_internal}`.toLowerCase().includes(search.toLowerCase());
     const matchStatus = statusFilter === "all" || u.status === statusFilter;
     const matchBrand = brandFilter === "all" || u.brand === brandFilter;
     return matchSearch && matchStatus && matchBrand;
@@ -54,6 +62,9 @@ export default function Inventory() {
       battery_notes: u.battery_notes || "",
       charger_included: u.charger_included || false,
       warehouse_location: u.warehouse_location || "",
+      pricing_profile_id: u.pricing_profile_id || "",
+      images: u.images || [],
+      main_image: u.main_image || null,
     });
   };
 
@@ -104,6 +115,7 @@ export default function Inventory() {
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead className="w-10"></TableHead>
                 <TableHead>Serie</TableHead>
                 <TableHead>Marca</TableHead>
                 <TableHead>Modelo</TableHead>
@@ -121,10 +133,18 @@ export default function Inventory() {
             <TableBody>
               {filtered.map((u) => (
                 <TableRow key={u.id} className="hover:bg-muted/50">
+                  <TableCell>
+                    <img
+                      src={u.main_image || (u.images && u.images[0]) || PLACEHOLDER}
+                      alt=""
+                      className="w-8 h-8 rounded object-cover"
+                      onError={e => { e.target.src = PLACEHOLDER; }}
+                    />
+                  </TableCell>
                   <TableCell className="font-mono text-xs">{u.serial_code_internal || "—"}</TableCell>
                   <TableCell className="font-medium">{u.brand}</TableCell>
                   <TableCell>{u.model}</TableCell>
-                  <TableCell className="text-sm">{u.cpu || "—"}</TableCell>
+                  <TableCell className="text-sm">{u.cpu_normalized || u.cpu_raw || "—"}</TableCell>
                   <TableCell>{u.ram_gb}GB</TableCell>
                   <TableCell>{u.storage_gb}GB {u.storage_type}</TableCell>
                   <TableCell>{u.condition_grade || "—"}</TableCell>
@@ -197,6 +217,30 @@ export default function Inventory() {
             </div>
             <div className="col-span-2 space-y-1.5"><Label>Notas Cosméticas</Label><Textarea value={editForm.cosmetic_notes || ""} onChange={(e) => setEditForm((f) => ({ ...f, cosmetic_notes: e.target.value }))} /></div>
             <div className="col-span-2 space-y-1.5"><Label>Notas Técnicas</Label><Textarea value={editForm.technical_notes || ""} onChange={(e) => setEditForm((f) => ({ ...f, technical_notes: e.target.value }))} /></div>
+
+            <div className="col-span-2 space-y-1.5">
+              <Label>Perfil de Precios</Label>
+              <Select value={editForm.pricing_profile_id || ""} onValueChange={(v) => setEditForm((f) => ({ ...f, pricing_profile_id: v }))}>
+                <SelectTrigger><SelectValue placeholder="Sin perfil (no vendible)" /></SelectTrigger>
+                <SelectContent>
+                  {pricingProfiles.map(p => (
+                    <SelectItem key={p.id} value={p.id}>{p.name} — {p.sales_channel}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {!editForm.pricing_profile_id && (
+                <p className="text-xs text-yellow-600">⚠ Sin perfil de precios, esta unidad no aparecerá en el catálogo.</p>
+              )}
+            </div>
+
+            <div className="col-span-2 space-y-1.5">
+              <Label className="flex items-center gap-1.5"><Image className="w-3.5 h-3.5" />Imágenes</Label>
+              <ImageManager
+                images={editForm.images || []}
+                mainImage={editForm.main_image}
+                onChange={(v) => setEditForm((f) => ({ ...f, ...v }))}
+              />
+            </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setEditUnit(null)}>Cancelar</Button>

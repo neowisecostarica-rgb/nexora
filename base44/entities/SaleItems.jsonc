@@ -17,15 +17,23 @@
     },
     "unit_sale_price": {
       "type": "number",
-      "default": 0
+      "default": 0,
+      "description": "Precio vendido. Congelado al momento de la venta."
     },
     "unit_cost": {
       "type": "number",
-      "default": 0
+      "default": 0,
+      "description": "Costo hist\u00f3rico congelado al momento de la venta (SOT para hist\u00f3rico)."
     },
     "unit_profit": {
       "type": "number",
-      "default": 0
+      "default": 0,
+      "description": "Utilidad real = unit_sale_price - unit_cost. Calculado y congelado."
+    },
+    "margin_percent_at_sale": {
+      "type": "number",
+      "default": 0,
+      "description": "Margen % real al momento de la venta."
     },
     "line_total": {
       "type": "number",

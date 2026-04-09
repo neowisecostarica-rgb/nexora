@@ -20,6 +20,7 @@ import QuoteDetail from '@/pages/QuoteDetail';
 import Sales from '@/pages/Sales';
 import Expenses from '@/pages/Expenses';
 import Settings from '@/pages/Settings';
+import Catalog from '@/pages/Catalog';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -51,6 +52,7 @@ const AuthenticatedApp = () => {
         <Route path="/imports" element={<ImportBatches />} />
         <Route path="/inventory" element={<Inventory />} />
         <Route path="/pricing" element={<PricingEngine />} />
+        <Route path="/catalog" element={<Catalog />} />
         <Route path="/customers" element={<Customers />} />
         <Route path="/quotes" element={<Quotes />} />
         <Route path="/quotes/:id" element={<QuoteDetail />} />
