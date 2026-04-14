@@ -1,52 +1,77 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+/**
+ * recalculatePricesForProfile
+ *
+ * Automation handler: se dispara cuando se actualiza un PricingProfile.
+ * Recalcula precios en batch para todas las unidades que usan ese perfil
+ * (directamente por assigned_pricing_profile_id, o por category_key, o globalmente
+ * si es el perfil default).
+ *
+ * Solo procesa unidades en estado available o reserved (no sold).
+ */
 
-// Función de recálculo masivo cuando cambia un PricingProfile.
-// Se invoca desde automatización de entidad PricingProfiles (on_update).
-// Procesa las unidades en lotes para no bloquear el sistema.
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
 Deno.serve(async (req) => {
   const base44 = createClientFromRequest(req);
+  const payload = await req.json();
 
-  const user = await base44.auth.me();
-  if (!user || user.role !== 'admin') {
-    return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
+  const profile_id = payload?.event?.entity_id;
+  const profile = payload?.data;
+
+  if (!profile_id) {
+    return Response.json({ error: 'profile_id no encontrado en payload' }, { status: 400 });
   }
 
-  const { pricingProfileId } = await req.json();
+  // Recopilar unidades candidatas según el scope del perfil
+  let units = [];
 
-  if (!pricingProfileId) {
-    return Response.json({ error: 'pricingProfileId es requerido' }, { status: 400 });
+  if (profile?.scope_type === 'unit_override') {
+    // Solo las unidades con override directo
+    units = await base44.asServiceRole.entities.InventoryUnits.filter({
+      assigned_pricing_profile_id: profile_id,
+      status: { $in: ['available', 'reserved'] }
+    });
+  } else if (profile?.scope_type === 'category' && profile?.category_key) {
+    // Unidades de esa categoría sin override propio
+    const categoryUnits = await base44.asServiceRole.entities.InventoryUnits.filter({
+      category_key: profile.category_key,
+      status: { $in: ['available', 'reserved'] }
+    });
+    // Excluir las que tienen override propio (se resolverán por su propio perfil)
+    units = categoryUnits.filter(u => !u.assigned_pricing_profile_id);
+  } else {
+    // Perfil global: todas las disponibles sin override ni perfil de categoría explícito
+    const allUnits = await base44.asServiceRole.entities.InventoryUnits.filter({
+      status: { $in: ['available', 'reserved'] }
+    });
+    units = allUnits.filter(u => !u.assigned_pricing_profile_id);
   }
 
-  // Obtener todas las unidades con este perfil (disponibles únicamente, sold ya tienen costo congelado)
-  const units = await base44.asServiceRole.entities.InventoryUnits.filter({
-    pricing_profile_id: pricingProfileId,
-    status: { $in: ['available', 'reserved', 'quoted'] }
-  });
+  if (units.length === 0) {
+    return Response.json({ success: true, total_units: 0, message: 'Sin unidades que recalcular' });
+  }
 
   const BATCH_SIZE = 20;
   const results = { success: 0, failed: 0, errors: [] };
 
-  // Procesar en lotes para evitar timeout y carga excesiva
   for (let i = 0; i < units.length; i += BATCH_SIZE) {
     const batch = units.slice(i, i + BATCH_SIZE);
-
-    const batchPromises = batch.map(unit =>
-      base44.asServiceRole.functions.invoke('calculateAndCachePricing', {
-        inventoryUnitId: unit.id
-      }).then(() => {
-        results.success++;
-      }).catch(err => {
-        results.failed++;
-        results.errors.push({ unitId: unit.id, error: err.message });
-      })
+    await Promise.all(
+      batch.map(unit =>
+        base44.asServiceRole.functions.invoke('calculateAndCachePricing', {
+          inventory_unit_id: unit.id
+        }).then(() => { results.success++; })
+          .catch(err => {
+            results.failed++;
+            results.errors.push({ unit_id: unit.id, error: err.message });
+          })
+      )
     );
-
-    await Promise.all(batchPromises);
   }
 
   return Response.json({
     success: true,
+    profile_id,
     total_units: units.length,
     ...results
   });

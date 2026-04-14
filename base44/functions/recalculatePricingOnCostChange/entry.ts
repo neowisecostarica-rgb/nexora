@@ -1,27 +1,31 @@
+/**
+ * recalculatePricingOnCostChange
+ *
+ * Automation handler: se dispara cuando cambia real_unit_cost o
+ * assigned_pricing_profile_id en InventoryUnits.
+ * Delega el cálculo a calculateAndCachePricing.
+ */
+
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
-// Automation: se dispara cuando cambia el costo real de una InventoryUnit.
-// Invoca calculateAndCachePricing para mantener precios sincronizados con costos.
 Deno.serve(async (req) => {
   const base44 = createClientFromRequest(req);
-
   const payload = await req.json();
-  const entityId = payload?.event?.entity_id;
+  const entity_id = payload?.event?.entity_id;
 
-  if (!entityId) {
+  if (!entity_id) {
     return Response.json({ error: 'entity_id no encontrado en el payload' }, { status: 400 });
   }
 
-  // Solo recalcular si la unidad tiene pricing_profile_id asignado
+  // Unidades vendidas no se recalculan
   const unit = payload?.data;
-  if (!unit?.pricing_profile_id) {
-    return Response.json({ skipped: true, reason: 'Sin pricing_profile_id, no se recalcula.' });
+  if (unit?.status === 'sold') {
+    return Response.json({ skipped: true, reason: 'Unidad ya vendida' });
   }
 
-  // Invocar calculateAndCachePricing
   const result = await base44.asServiceRole.functions.invoke('calculateAndCachePricing', {
-    inventoryUnitId: entityId
+    inventory_unit_id: entity_id
   });
 
-  return Response.json({ success: true, entityId, pricing_result: result });
+  return Response.json({ success: true, entity_id, result });
 });
