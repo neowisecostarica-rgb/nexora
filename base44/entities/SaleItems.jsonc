@@ -3,46 +3,44 @@
   "type": "object",
   "properties": {
     "sale_id": {
-      "type": "string"
+      "type": "string",
+      "description": "Referencia a la venta principal"
     },
     "inventory_unit_id": {
-      "type": "string"
-    },
-    "description": {
-      "type": "string"
+      "type": "string",
+      "description": "Referencia a la unidad de inventario vendida"
     },
     "quantity": {
       "type": "number",
-      "default": 1
+      "default": 1,
+      "description": "Cantidad vendida (normalmente 1 por unidad serializada)"
     },
-    "unit_sale_price": {
+    "unit_price_sold": {
       "type": "number",
       "default": 0,
-      "description": "Precio vendido. Congelado al momento de la venta."
+      "description": "Precio al que se vendi\u00f3 la unidad. Congelado al momento de la venta."
     },
-    "unit_cost": {
+    "unit_cost_frozen": {
       "type": "number",
       "default": 0,
-      "description": "Costo hist\u00f3rico congelado al momento de la venta (SOT para hist\u00f3rico)."
-    },
-    "unit_profit": {
-      "type": "number",
-      "default": 0,
-      "description": "Utilidad real = unit_sale_price - unit_cost. Calculado y congelado."
-    },
-    "margin_percent_at_sale": {
-      "type": "number",
-      "default": 0,
-      "description": "Margen % real al momento de la venta."
+      "description": "Costo real congelado desde InventoryUnits.real_unit_cost al momento de la venta. SOT hist\u00f3rico."
     },
     "line_total": {
       "type": "number",
-      "default": 0
+      "default": 0,
+      "description": "Total de la l\u00ednea (unit_price_sold \u00d7 quantity)"
+    },
+    "profit_amount": {
+      "type": "number",
+      "default": 0,
+      "description": "Utilidad real = line_total - (unit_cost_frozen \u00d7 quantity). Congelado."
     }
   },
   "required": [
     "sale_id",
-    "description",
-    "unit_sale_price"
+    "inventory_unit_id",
+    "quantity",
+    "unit_price_sold",
+    "unit_cost_frozen"
   ]
 }

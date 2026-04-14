@@ -3,24 +3,37 @@
   "type": "object",
   "properties": {
     "name": {
-      "type": "string"
+      "type": "string",
+      "description": "Nombre descriptivo del perfil de precios"
     },
-    "sales_channel": {
+    "scope_type": {
       "type": "string",
       "enum": [
-        "retail",
-        "wholesale",
-        "promo",
-        "marketplace"
-      ]
+        "global",
+        "category",
+        "unit_override"
+      ],
+      "default": "global",
+      "description": "Alcance del perfil: global (todos), category (una categor\u00eda), unit_override (una unidad espec\u00edfica)"
     },
-    "target_margin_percent": {
-      "type": "number",
-      "default": 30
+    "category_key": {
+      "type": "string",
+      "description": "Clave de categor\u00eda a la que aplica. Solo relevante si scope_type = category."
     },
-    "min_margin_percent": {
+    "margin_retail": {
       "type": "number",
-      "default": 15
+      "default": 30,
+      "description": "Margen % objetivo para precio retail"
+    },
+    "margin_wholesale": {
+      "type": "number",
+      "default": 15,
+      "description": "Margen % objetivo para precio mayorista"
+    },
+    "margin_minimum": {
+      "type": "number",
+      "default": 5,
+      "description": "Margen % m\u00ednimo aceptable"
     },
     "rounding_rule": {
       "type": "string",
@@ -28,18 +41,30 @@
         "none",
         "round_1",
         "round_5",
-        "round_10"
+        "round_10",
+        "round_100"
       ],
-      "default": "round_10"
+      "default": "none",
+      "description": "Regla de redondeo para los precios calculados"
     },
-    "active": {
+    "is_default": {
       "type": "boolean",
-      "default": true
+      "default": false,
+      "description": "Si true, es el perfil global por defecto cuando no aplica ning\u00fan otro"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true,
+      "description": "Si false, el perfil es ignorado por el PricingEngine"
     }
   },
   "required": [
     "name",
-    "sales_channel",
-    "target_margin_percent"
+    "scope_type",
+    "margin_retail",
+    "margin_wholesale",
+    "margin_minimum",
+    "is_default",
+    "is_active"
   ]
 }

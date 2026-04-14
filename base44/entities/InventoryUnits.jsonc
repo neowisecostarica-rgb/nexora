@@ -2,161 +2,45 @@
   "name": "InventoryUnits",
   "type": "object",
   "properties": {
-    "serial_code_internal": {
-      "type": "string"
-    },
     "purchase_item_id": {
-      "type": "string"
+      "type": "string",
+      "description": "Referencia al PurchaseItem de origen"
     },
     "import_batch_id": {
-      "type": "string"
-    },
-    "brand": {
-      "type": "string"
-    },
-    "model": {
-      "type": "string"
-    },
-    "cpu_raw": {
       "type": "string",
-      "description": "CPU tal como fue ingresado por el usuario"
+      "description": "Referencia al ImportBatch de origen"
     },
-    "cpu_normalized": {
+    "category_key": {
       "type": "string",
-      "description": "CPU normalizado para agrupaci\u00f3n de cat\u00e1logo"
-    },
-    "ram_gb": {
-      "type": "number"
-    },
-    "storage_type_raw": {
-      "type": "string",
-      "description": "Tipo de almacenamiento tal como fue ingresado"
-    },
-    "storage_type": {
-      "type": "string",
-      "enum": [
-        "SSD",
-        "HDD",
-        "eMMC",
-        "NVMe"
-      ],
-      "description": "Tipo de almacenamiento normalizado"
-    },
-    "storage_gb": {
-      "type": "number"
-    },
-    "screen_size_raw": {
-      "type": "string",
-      "description": "Tama\u00f1o de pantalla tal como fue ingresado"
-    },
-    "screen_size_normalized": {
-      "type": "string",
-      "description": "Tama\u00f1o de pantalla normalizado (ej. 15.6)"
-    },
-    "form_factor": {
-      "type": "string",
-      "enum": [
-        "clamshell",
-        "2-in-1",
-        "tablet",
-        "rugged"
-      ]
-    },
-    "condition_grade": {
-      "type": "string",
-      "enum": [
-        "A+",
-        "A",
-        "B+",
-        "B",
-        "C",
-        "D",
-        "parts"
-      ]
-    },
-    "cosmetic_notes": {
-      "type": "string"
-    },
-    "technical_notes": {
-      "type": "string"
-    },
-    "battery_notes": {
-      "type": "string"
-    },
-    "charger_included": {
-      "type": "boolean",
-      "default": false
+      "description": "Clave de categor\u00eda del producto (ej. laptops, sneakers, smartphones)"
     },
     "status": {
       "type": "string",
       "enum": [
         "available",
         "reserved",
-        "quoted",
         "sold",
-        "warranty",
-        "damaged",
-        "in_repair",
-        "discontinued"
+        "inactive"
       ],
       "default": "available",
-      "description": "Estado oficial del ciclo de vida de la unidad"
+      "description": "Estado del ciclo de vida de la unidad"
     },
-    "warehouse_location": {
-      "type": "string"
-    },
-    "cost_purchase_unit": {
-      "type": "number",
-      "default": 0
-    },
-    "cost_import_unit": {
-      "type": "number",
-      "default": 0
-    },
-    "cost_repair_unit": {
-      "type": "number",
-      "default": 0
-    },
-    "cost_local_unit": {
-      "type": "number",
-      "default": 0
-    },
-    "total_real_unit_cost": {
-      "type": "number",
-      "default": 0,
-      "description": "SOT: Costo real total consolidado de la unidad"
-    },
-    "cost_frozen_at_sale": {
-      "type": "number",
-      "default": 0,
-      "description": "Costo congelado al momento de ser vendida. No se modifica despu\u00e9s."
-    },
-    "pricing_profile_id": {
-      "type": "string"
-    },
-    "retail_price": {
-      "type": "number",
-      "default": 0,
-      "description": "Cache del PricingEngine. SOLO LECTURA. No editar directamente."
-    },
-    "wholesale_price": {
-      "type": "number",
-      "default": 0,
-      "description": "Cache del PricingEngine. SOLO LECTURA. No editar directamente."
-    },
-    "minimum_sale_price": {
-      "type": "number",
-      "default": 0,
-      "description": "Cache del PricingEngine. SOLO LECTURA. No editar directamente."
-    },
-    "margin_percent": {
-      "type": "number",
-      "default": 0,
-      "description": "Cache del PricingEngine. SOLO LECTURA. No editar directamente."
-    },
-    "pricing_calculated_at": {
+    "condition": {
       "type": "string",
-      "description": "Timestamp del \u00faltimo c\u00e1lculo de precios"
+      "description": "Condici\u00f3n/grado del producto (ej. A, B, C, A+)"
+    },
+    "location": {
+      "type": "string",
+      "description": "Ubicaci\u00f3n f\u00edsica en almac\u00e9n"
+    },
+    "attributes": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Atributos espec\u00edficos por categor\u00eda en formato JSON"
+    },
+    "normalized_display_name": {
+      "type": "string",
+      "description": "Nombre generado autom\u00e1ticamente por buildDisplayName. NO editar manualmente."
     },
     "images": {
       "type": "array",
@@ -167,15 +51,41 @@
     },
     "main_image": {
       "type": "string",
-      "description": "URL de la imagen principal. Debe existir en images."
+      "description": "URL de la imagen principal"
     },
-    "received_date": {
+    "real_unit_cost": {
+      "type": "number",
+      "default": 0,
+      "description": "Costo real total consolidado de la unidad. SOT del costo."
+    },
+    "assigned_pricing_profile_id": {
       "type": "string",
-      "format": "date"
+      "description": "Override de perfil de precios espec\u00edfico para esta unidad"
+    },
+    "retail_price": {
+      "type": "number",
+      "default": 0,
+      "description": "Precio retail calculado por PricingEngine. SOLO LECTURA."
+    },
+    "wholesale_price": {
+      "type": "number",
+      "default": 0,
+      "description": "Precio mayorista calculado por PricingEngine. SOLO LECTURA."
+    },
+    "minimum_price": {
+      "type": "number",
+      "default": 0,
+      "description": "Precio m\u00ednimo calculado por PricingEngine. SOLO LECTURA."
+    },
+    "margin_percent": {
+      "type": "number",
+      "default": 0,
+      "description": "Margen % calculado por PricingEngine. SOLO LECTURA."
     }
   },
   "required": [
-    "brand",
-    "model"
+    "category_key",
+    "status",
+    "real_unit_cost"
   ]
 }

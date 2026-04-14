@@ -1,0 +1,83 @@
+{
+  "name": "Payments",
+  "type": "object",
+  "properties": {
+    "amount": {
+      "type": "number",
+      "default": 0,
+      "description": "Monto del pago"
+    },
+    "currency": {
+      "type": "string",
+      "default": "CRC",
+      "description": "Moneda del pago (ej. CRC, USD)"
+    },
+    "payment_method": {
+      "type": "string",
+      "enum": [
+        "cash",
+        "transfer",
+        "card",
+        "sinpe",
+        "other"
+      ],
+      "description": "M\u00e9todo de pago utilizado"
+    },
+    "payment_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Fecha y hora del pago"
+    },
+    "payment_type": {
+      "type": "string",
+      "enum": [
+        "deposit",
+        "partial",
+        "full",
+        "refund",
+        "adjustment"
+      ],
+      "description": "Tipo de pago"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "confirmed",
+        "failed",
+        "refunded",
+        "cancelled"
+      ],
+      "default": "pending",
+      "description": "Estado del pago"
+    },
+    "reference": {
+      "type": "string",
+      "description": "Referencia externa del pago (n\u00famero de transacci\u00f3n, comprobante, etc.)"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Notas adicionales sobre el pago"
+    },
+    "customer_name": {
+      "type": "string",
+      "description": "Nombre del cliente que realiz\u00f3 el pago"
+    },
+    "reservation_id": {
+      "type": "string",
+      "description": "ID de la reserva asociada (si aplica)"
+    },
+    "sale_id": {
+      "type": "string",
+      "description": "ID de la venta asociada (si aplica)"
+    }
+  },
+  "required": [
+    "amount",
+    "currency",
+    "payment_method",
+    "payment_date",
+    "payment_type",
+    "status"
+  ]
+}

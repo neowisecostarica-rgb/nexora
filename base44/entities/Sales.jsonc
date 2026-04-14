@@ -2,156 +2,57 @@
   "name": "Sales",
   "type": "object",
   "properties": {
-    "sale_number": {
-      "type": "string"
-    },
-    "customer_id": {
-      "type": "string"
-    },
     "customer_name": {
-      "type": "string"
-    },
-    "quote_id": {
-      "type": "string"
-    },
-    "sale_date": {
       "type": "string",
-      "format": "date"
+      "description": "Nombre del cliente"
+    },
+    "customer_phone": {
+      "type": "string",
+      "description": "Tel\u00e9fono del cliente"
+    },
+    "customer_email": {
+      "type": "string",
+      "description": "Email del cliente (opcional)"
     },
     "channel": {
       "type": "string",
       "enum": [
         "retail",
         "wholesale",
-        "promo",
-        "marketplace"
-      ]
-    },
-    "sale_type": {
-      "type": "string",
-      "enum": [
-        "retail",
-        "wholesale",
-        "reseller",
-        "internal"
+        "marketplace",
+        "direct"
       ],
-      "default": "retail"
-    },
-    "payment_method": {
-      "type": "string",
-      "enum": [
-        "cash",
-        "transfer",
-        "card",
-        "credit",
-        "other"
-      ]
-    },
-    "invoice_required": {
-      "type": "boolean",
-      "default": false
-    },
-    "external_invoice_reference": {
-      "type": "string"
-    },
-    "external_invoice_status": {
-      "type": "string",
-      "enum": [
-        "none",
-        "pending",
-        "issued"
-      ],
-      "default": "none"
+      "description": "Canal de venta"
     },
     "subtotal": {
       "type": "number",
-      "default": 0
+      "default": 0,
+      "description": "Subtotal antes de descuentos e impuestos"
     },
     "discount_total": {
       "type": "number",
-      "default": 0
+      "default": 0,
+      "description": "Total de descuentos aplicados"
     },
     "tax_total": {
       "type": "number",
-      "default": 0
+      "default": 0,
+      "description": "Total de impuestos aplicados"
     },
     "total": {
       "type": "number",
-      "default": 0
+      "default": 0,
+      "description": "Total final de la venta. SOT del monto."
     },
-    "cogs_total": {
-      "type": "number",
-      "default": 0
-    },
-    "gross_profit_total": {
-      "type": "number",
-      "default": 0
-    },
-    "gross_margin_percent": {
-      "type": "number",
-      "default": 0
-    },
-    "status": {
+    "notes": {
       "type": "string",
-      "enum": [
-        "pending",
-        "completed",
-        "cancelled",
-        "refunded"
-      ],
-      "default": "pending"
-    },
-    "sale_notes_snapshot": {
-      "type": "string"
-    },
-    "organization_profile_snapshot": {
-      "type": "object",
-      "properties": {
-        "version": {
-          "type": "number"
-        },
-        "commercial_name": {
-          "type": "string"
-        },
-        "legal_name": {
-          "type": "string"
-        },
-        "logo_url": {
-          "type": "string"
-        },
-        "phone_main": {
-          "type": "string"
-        },
-        "email_main": {
-          "type": "string"
-        },
-        "address_line": {
-          "type": "string"
-        },
-        "city": {
-          "type": "string"
-        },
-        "country": {
-          "type": "string"
-        },
-        "payment_instructions": {
-          "type": "string"
-        },
-        "bank_details": {
-          "type": "string"
-        },
-        "sinpe_details": {
-          "type": "string"
-        },
-        "default_terms_conditions": {
-          "type": "string"
-        }
-      }
+      "description": "Notas adicionales sobre la venta"
     }
   },
   "required": [
-    "sale_number",
-    "customer_id",
-    "sale_date"
+    "customer_name",
+    "customer_phone",
+    "channel",
+    "total"
   ]
 }

@@ -1,0 +1,62 @@
+{
+  "name": "Reservations",
+  "type": "object",
+  "properties": {
+    "inventory_unit_id": {
+      "type": "string",
+      "description": "Referencia a la unidad de inventario reservada"
+    },
+    "customer_name": {
+      "type": "string",
+      "description": "Nombre del cliente"
+    },
+    "customer_phone": {
+      "type": "string",
+      "description": "Tel\u00e9fono del cliente"
+    },
+    "customer_email": {
+      "type": "string",
+      "description": "Email del cliente (opcional)"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "reserved",
+        "expired",
+        "converted_to_sale",
+        "cancelled"
+      ],
+      "default": "draft",
+      "description": "Estado de la reserva"
+    },
+    "reserved_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Fecha y hora en que se activ\u00f3 la reserva"
+    },
+    "expires_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Fecha y hora de expiraci\u00f3n de la reserva"
+    },
+    "required_deposit": {
+      "type": "number",
+      "description": "Monto de dep\u00f3sito requerido para activar la reserva"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Notas adicionales sobre la reserva"
+    },
+    "sale_id": {
+      "type": "string",
+      "description": "ID de la venta resultante si fue convertida"
+    }
+  },
+  "required": [
+    "inventory_unit_id",
+    "customer_name",
+    "customer_phone",
+    "status"
+  ]
+}
