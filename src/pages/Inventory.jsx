@@ -20,7 +20,7 @@ const PLACEHOLDER = "https://images.unsplash.com/photo-1496181133206-80ce9b88a85
 export default function Inventory() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
-  const [brandFilter, setBrandFilter] = useState("all");
+  const [categoryFilter, setCategoryFilter] = useState("all");
   const [editUnit, setEditUnit] = useState(null);
   const [editForm, setEditForm] = useState({});
   const qc = useQueryClient();
@@ -32,7 +32,7 @@ export default function Inventory() {
 
   const { data: pricingProfiles = [] } = useQuery({
     queryKey: ["pricingProfiles"],
-    queryFn: () => base44.entities.PricingProfiles.filter({ active: true }),
+    queryFn: () => base44.entities.PricingProfiles.filter({ is_active: true }),
   });
 
   const updateMutation = useMutation({
@@ -40,29 +40,25 @@ export default function Inventory() {
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["inventory"] }); setEditUnit(null); },
   });
 
-  const brands = [...new Set(units.map((u) => u.brand).filter(Boolean))].sort();
+  const categories = [...new Set(units.map((u) => u.category_key).filter(Boolean))].sort();
 
   const filtered = units.filter((u) => {
-    const matchSearch = !search || `${u.brand} ${u.model} ${u.cpu_raw} ${u.cpu_normalized} ${u.serial_code_internal}`.toLowerCase().includes(search.toLowerCase());
+    const attrs = u.attributes || {};
+    const searchable = `${u.normalized_display_name || ""} ${attrs.brand || ""} ${attrs.model || ""} ${u.category_key || ""}`.toLowerCase();
+    const matchSearch = !search || searchable.includes(search.toLowerCase());
     const matchStatus = statusFilter === "all" || u.status === statusFilter;
-    const matchBrand = brandFilter === "all" || u.brand === brandFilter;
-    return matchSearch && matchStatus && matchBrand;
+    const matchCategory = categoryFilter === "all" || u.category_key === categoryFilter;
+    return matchSearch && matchStatus && matchCategory;
   });
 
   const openEdit = (u) => {
     setEditUnit(u);
     setEditForm({
-      cost_repair_unit: u.cost_repair_unit || 0,
-      cost_local_unit: u.cost_local_unit || 0,
-      cost_import_unit: u.cost_import_unit || 0,
-      condition_grade: u.condition_grade || "B",
+      real_unit_cost: u.real_unit_cost || 0,
+      assigned_pricing_profile_id: u.assigned_pricing_profile_id || "",
+      condition: u.condition || "",
+      location: u.location || "",
       status: u.status || "available",
-      cosmetic_notes: u.cosmetic_notes || "",
-      technical_notes: u.technical_notes || "",
-      battery_notes: u.battery_notes || "",
-      charger_included: u.charger_included || false,
-      warehouse_location: u.warehouse_location || "",
-      pricing_profile_id: u.pricing_profile_id || "",
       images: u.images || [],
       main_image: u.main_image || null,
     });
@@ -70,12 +66,7 @@ export default function Inventory() {
 
   const saveEdit = () => {
     if (!editUnit) return;
-    const costPurchase = editUnit.cost_purchase_unit || 0;
-    const totalCost = costPurchase + (editForm.cost_import_unit || 0) + (editForm.cost_repair_unit || 0) + (editForm.cost_local_unit || 0);
-    updateMutation.mutate({
-      id: editUnit.id,
-      data: { ...editForm, total_real_unit_cost: totalCost },
-    });
+    updateMutation.mutate({ id: editUnit.id, data: editForm });
   };
 
   return (
@@ -93,19 +84,15 @@ export default function Inventory() {
             <SelectItem value="all">Todos</SelectItem>
             <SelectItem value="available">Disponible</SelectItem>
             <SelectItem value="reserved">Reservado</SelectItem>
-            <SelectItem value="quoted">Cotizado</SelectItem>
             <SelectItem value="sold">Vendido</SelectItem>
-            <SelectItem value="warranty">Garantía</SelectItem>
-            <SelectItem value="damaged">Dañado</SelectItem>
-            <SelectItem value="in_repair">En Reparación</SelectItem>
-            <SelectItem value="discontinued">Descontinuado</SelectItem>
+            <SelectItem value="inactive">Inactivo</SelectItem>
           </SelectContent>
         </Select>
-        <Select value={brandFilter} onValueChange={setBrandFilter}>
-          <SelectTrigger className="w-40"><SelectValue placeholder="Marca" /></SelectTrigger>
+        <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+          <SelectTrigger className="w-40"><SelectValue placeholder="Categoría" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Todas</SelectItem>
-            {brands.map((b) => <SelectItem key={b} value={b}>{b}</SelectItem>)}
+            {categories.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
           </SelectContent>
         </Select>
       </div>
@@ -118,17 +105,14 @@ export default function Inventory() {
             <TableHeader>
               <TableRow>
                 <TableHead className="w-10"></TableHead>
-                <TableHead>Serie</TableHead>
-                <TableHead>Marca</TableHead>
-                <TableHead>Modelo</TableHead>
-                <TableHead>CPU</TableHead>
-                <TableHead>RAM</TableHead>
-                <TableHead>Disco</TableHead>
-                <TableHead>Cond.</TableHead>
+                <TableHead>Producto</TableHead>
+                <TableHead>Categoría</TableHead>
+                <TableHead>Condición</TableHead>
                 <TableHead>Estado</TableHead>
                 <TableHead>Costo Real</TableHead>
                 <TableHead>Retail</TableHead>
                 <TableHead>Mayoreo</TableHead>
+                <TableHead>Mínimo</TableHead>
                 <TableHead className="w-10"></TableHead>
               </TableRow>
             </TableHeader>
@@ -143,19 +127,20 @@ export default function Inventory() {
                       onError={e => { e.target.src = PLACEHOLDER; }}
                     />
                   </TableCell>
-                  <TableCell className="font-mono text-xs">{u.serial_code_internal || "—"}</TableCell>
-                  <TableCell className="font-medium">{u.brand}</TableCell>
-                  <TableCell>{u.model}</TableCell>
-                  <TableCell className="text-sm">{u.cpu_normalized || u.cpu_raw || "—"}</TableCell>
-                  <TableCell>{u.ram_gb}GB</TableCell>
-                  <TableCell>{u.storage_gb}GB {u.storage_type}</TableCell>
-                  <TableCell>{u.condition_grade || "—"}</TableCell>
+                  <TableCell className="font-medium max-w-[200px] truncate">
+                    {u.normalized_display_name || u.category_key || "—"}
+                  </TableCell>
+                  <TableCell className="text-sm text-muted-foreground">{u.category_key || "—"}</TableCell>
+                  <TableCell>{u.condition || "—"}</TableCell>
                   <TableCell><StatusBadge status={u.status} /></TableCell>
-                  <TableCell className="font-semibold">{formatCurrency(u.total_real_unit_cost)}</TableCell>
+                  <TableCell className="font-semibold">{formatCurrency(u.real_unit_cost)}</TableCell>
                   <TableCell>{formatCurrency(u.retail_price)}</TableCell>
                   <TableCell>{formatCurrency(u.wholesale_price)}</TableCell>
+                  <TableCell>{formatCurrency(u.minimum_price)}</TableCell>
                   <TableCell>
-                    <Button variant="ghost" size="icon" onClick={() => openEdit(u)}><Pencil className="w-3.5 h-3.5" /></Button>
+                    <Button variant="ghost" size="icon" onClick={() => openEdit(u)}>
+                      <Pencil className="w-3.5 h-3.5" />
+                    </Button>
                   </TableCell>
                 </TableRow>
               ))}
@@ -167,9 +152,10 @@ export default function Inventory() {
       <Dialog open={!!editUnit} onOpenChange={(o) => { if (!o) setEditUnit(null); }}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle>Editar {editUnit?.brand} {editUnit?.model}</DialogTitle>
+            <DialogTitle>Editar {editUnit?.normalized_display_name || editUnit?.category_key}</DialogTitle>
           </DialogHeader>
           <div className="grid grid-cols-2 gap-4">
+
             <div className="space-y-1.5">
               <Label>Estado</Label>
               <Select value={editForm.status} onValueChange={(v) => setEditForm((f) => ({ ...f, status: v }))}>
@@ -177,75 +163,78 @@ export default function Inventory() {
                 <SelectContent>
                   <SelectItem value="available">Disponible</SelectItem>
                   <SelectItem value="reserved">Reservado</SelectItem>
-                  <SelectItem value="quoted">Cotizado</SelectItem>
                   <SelectItem value="sold">Vendido</SelectItem>
-                  <SelectItem value="warranty">Garantía</SelectItem>
-                  <SelectItem value="damaged">Dañado</SelectItem>
-                  <SelectItem value="in_repair">En Reparación</SelectItem>
-                  <SelectItem value="discontinued">Descontinuado</SelectItem>
+                  <SelectItem value="inactive">Inactivo</SelectItem>
                 </SelectContent>
               </Select>
             </div>
+
             <div className="space-y-1.5">
               <Label>Condición</Label>
-              <Select value={editForm.condition_grade} onValueChange={(v) => setEditForm((f) => ({ ...f, condition_grade: v }))}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+              <Select value={editForm.condition || ""} onValueChange={(v) => setEditForm((f) => ({ ...f, condition: v }))}>
+                <SelectTrigger><SelectValue placeholder="Seleccionar" /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="A+">A+</SelectItem><SelectItem value="A">A</SelectItem>
-                  <SelectItem value="B+">B+</SelectItem><SelectItem value="B">B</SelectItem>
-                  <SelectItem value="C">C</SelectItem><SelectItem value="D">D</SelectItem>
+                  {["A+","A","B+","B","C","D","parts"].map(c => (
+                    <SelectItem key={c} value={c}>Grado {c}</SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
-            <div className="space-y-1.5"><Label>Costo Importación</Label><Input type="number" step="0.01" value={editForm.cost_import_unit || ""} onChange={(e) => setEditForm((f) => ({ ...f, cost_import_unit: parseFloat(e.target.value) || 0 }))} /></div>
-            <div className="space-y-1.5"><Label>Costo Reparación</Label><Input type="number" step="0.01" value={editForm.cost_repair_unit || ""} onChange={(e) => setEditForm((f) => ({ ...f, cost_repair_unit: parseFloat(e.target.value) || 0 }))} /></div>
-            <div className="space-y-1.5"><Label>Costos Locales</Label><Input type="number" step="0.01" value={editForm.cost_local_unit || ""} onChange={(e) => setEditForm((f) => ({ ...f, cost_local_unit: parseFloat(e.target.value) || 0 }))} /></div>
-            <div className="space-y-1.5"><Label>Ubicación</Label><Input value={editForm.warehouse_location || ""} onChange={(e) => setEditForm((f) => ({ ...f, warehouse_location: e.target.value }))} /></div>
-            <div className="col-span-2 p-3 bg-muted rounded-lg">
-              <div className="flex justify-between text-sm">
-                <span>Compra:</span><span className="font-medium">{formatCurrency(editUnit?.cost_purchase_unit)}</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span>Import:</span><span className="font-medium">{formatCurrency(editForm.cost_import_unit)}</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span>Reparación:</span><span className="font-medium">{formatCurrency(editForm.cost_repair_unit)}</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span>Locales:</span><span className="font-medium">{formatCurrency(editForm.cost_local_unit)}</span>
-              </div>
-              <div className="flex justify-between text-sm font-bold border-t mt-2 pt-2">
-                <span>Costo Real Total:</span>
-                <span>{formatCurrency((editUnit?.cost_purchase_unit || 0) + (editForm.cost_import_unit || 0) + (editForm.cost_repair_unit || 0) + (editForm.cost_local_unit || 0))}</span>
-              </div>
+
+            <div className="space-y-1.5">
+              <Label>Costo Real (SOT)</Label>
+              <Input
+                type="number"
+                step="0.01"
+                value={editForm.real_unit_cost || ""}
+                onChange={(e) => setEditForm((f) => ({ ...f, real_unit_cost: parseFloat(e.target.value) || 0 }))}
+              />
+              <p className="text-xs text-muted-foreground">Al guardar, precios se recalculan automáticamente.</p>
             </div>
+
+            <div className="space-y-1.5">
+              <Label>Ubicación</Label>
+              <Input
+                value={editForm.location || ""}
+                onChange={(e) => setEditForm((f) => ({ ...f, location: e.target.value }))}
+              />
+            </div>
+
             {/* PRECIOS: Solo lectura — calculados por PricingEngine */}
             <div className="col-span-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
               <div className="flex items-center gap-1.5 text-xs font-semibold text-blue-700 mb-2">
                 <span>🔒</span> Precios calculados automáticamente (solo lectura)
               </div>
               <div className="grid grid-cols-3 gap-2 text-xs">
-                <div><p className="text-muted-foreground">Retail</p><p className="font-semibold">{formatCurrency(editUnit?.retail_price)}</p></div>
-                <div><p className="text-muted-foreground">Mayoreo</p><p className="font-semibold text-primary">{formatCurrency(editUnit?.wholesale_price)}</p></div>
-                <div><p className="text-muted-foreground">Mínimo</p><p className="font-semibold">{formatCurrency(editUnit?.minimum_sale_price)}</p></div>
+                <div>
+                  <p className="text-muted-foreground">Retail</p>
+                  <p className="font-semibold">{formatCurrency(editUnit?.retail_price)}</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground">Mayoreo</p>
+                  <p className="font-semibold text-primary">{formatCurrency(editUnit?.wholesale_price)}</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground">Mínimo</p>
+                  <p className="font-semibold">{formatCurrency(editUnit?.minimum_price)}</p>
+                </div>
               </div>
             </div>
-            <div className="col-span-2 space-y-1.5"><Label>Notas Cosméticas</Label><Textarea value={editForm.cosmetic_notes || ""} onChange={(e) => setEditForm((f) => ({ ...f, cosmetic_notes: e.target.value }))} /></div>
-            <div className="col-span-2 space-y-1.5"><Label>Notas Técnicas</Label><Textarea value={editForm.technical_notes || ""} onChange={(e) => setEditForm((f) => ({ ...f, technical_notes: e.target.value }))} /></div>
 
             <div className="col-span-2 space-y-1.5">
-              <Label>Perfil de Precios</Label>
-              <Select value={editForm.pricing_profile_id || ""} onValueChange={(v) => setEditForm((f) => ({ ...f, pricing_profile_id: v }))}>
-                <SelectTrigger><SelectValue placeholder="Sin perfil (no vendible)" /></SelectTrigger>
+              <Label>Perfil de Precios (override)</Label>
+              <Select
+                value={editForm.assigned_pricing_profile_id || ""}
+                onValueChange={(v) => setEditForm((f) => ({ ...f, assigned_pricing_profile_id: v || null }))}
+              >
+                <SelectTrigger><SelectValue placeholder="Sin override (usa perfil por categoría/global)" /></SelectTrigger>
                 <SelectContent>
+                  <SelectItem value={null}>Sin override</SelectItem>
                   {pricingProfiles.map(p => (
-                    <SelectItem key={p.id} value={p.id}>{p.name} — {p.sales_channel}</SelectItem>
+                    <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
-              {!editForm.pricing_profile_id && (
-                <p className="text-xs text-yellow-600">⚠ Sin perfil de precios, esta unidad no aparecerá en el catálogo.</p>
-              )}
             </div>
 
             <div className="col-span-2 space-y-1.5">

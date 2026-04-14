@@ -1,8 +1,22 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+/**
+ * distributeImportCosts
+ *
+ * Distribuye costos de un ImportBatch proporcionalmente entre
+ * las InventoryUnits vinculadas que NO estén vendidas.
+ *
+ * Schema v1.0 — SOLO escribe real_unit_cost.
+ *
+ * REGLAS CRÍTICAS:
+ * - NUNCA modifica unidades con status "sold" (costo ya congelado en SaleItem)
+ * - real_unit_cost = real_unit_cost actual + costo de importación prorrateado
+ * - NO escribe ningún campo legacy (cost_import_unit, total_real_unit_cost, etc.)
+ * - Después de actualizar real_unit_cost, el pricing se recalcula automáticamente
+ *   vía la automation "Recalcular Pricing al Cambiar Costo Real"
+ *
+ * INPUT: { importBatchId }
+ */
 
-// Distribuye costos de ImportBatch a InventoryUnits vinculadas.
-// Invocado por automatización on_update de ImportBatches.
-// NO modifica unidades con status "sold" (costo ya congelado).
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
 Deno.serve(async (req) => {
   const base44 = createClientFromRequest(req);
@@ -23,38 +37,63 @@ Deno.serve(async (req) => {
     return Response.json({ error: 'ImportBatch no encontrado' }, { status: 404 });
   }
 
-  // Obtener unidades vinculadas que NO estén vendidas (no tocar historial)
+  // Solo unidades available o reserved — NUNCA sold (costo congelado)
   const units = await base44.asServiceRole.entities.InventoryUnits.filter({
     import_batch_id: importBatchId,
-    status: { $in: ['available', 'reserved', 'quoted', 'warranty', 'damaged'] }
+    status: { $in: ['available', 'reserved'] }
   });
 
-  if (units.length === 0) {
-    return Response.json({ message: 'No hay unidades activas vinculadas a este batch', updated: 0 });
+  if (!units || units.length === 0) {
+    return Response.json({
+      success: true,
+      message: 'No hay unidades activas vinculadas a este batch',
+      updated: 0
+    });
   }
 
-  // Costo total del batch = suma de todos los costos de importación
-  const totalImportCost = (batch.customs_total || 0) +
-    (batch.freight_total || 0) +
-    (batch.local_transport_total || 0) +
-    (batch.extra_cost_total || 0);
+  // Costo total de importación del batch
+  const totalImportCost =
+    (batch.customs_total          || 0) +
+    (batch.freight_total          || 0) +
+    (batch.local_transport_total  || 0) +
+    (batch.extra_cost_total       || 0);
 
-  // Prorrateo por cantidad de unidades activas vinculadas
-  const costPerUnit = totalImportCost / units.length;
+  if (totalImportCost <= 0) {
+    return Response.json({
+      success: true,
+      message: 'El batch no tiene costos de importación registrados',
+      updated: 0
+    });
+  }
+
+  // Prorrateo equitativo entre unidades activas del batch
+  const importCostPerUnit = totalImportCost / units.length;
 
   let updated = 0;
-  for (const unit of units) {
-    const newTotalCost = (unit.cost_purchase_unit || 0) +
-      costPerUnit +
-      (unit.cost_repair_unit || 0) +
-      (unit.cost_local_unit || 0);
+  const BATCH_SIZE = 20;
 
-    await base44.asServiceRole.entities.InventoryUnits.update(unit.id, {
-      cost_import_unit: costPerUnit,
-      total_real_unit_cost: newTotalCost
-    });
-    updated++;
+  for (let i = 0; i < units.length; i += BATCH_SIZE) {
+    const batch_slice = units.slice(i, i + BATCH_SIZE);
+    await Promise.all(
+      batch_slice.map(async (unit) => {
+        // real_unit_cost nuevo = costo base actual + porción de importación
+        // Usamos real_unit_cost como SOT — no acumulamos sobre campos legacy
+        const currentCost = unit.real_unit_cost || 0;
+        const newCost = Math.round((currentCost + importCostPerUnit) * 100) / 100;
+
+        await base44.asServiceRole.entities.InventoryUnits.update(unit.id, {
+          real_unit_cost: newCost
+        });
+        updated++;
+      })
+    );
   }
 
-  return Response.json({ success: true, updated, cost_per_unit: costPerUnit, total_import_cost: totalImportCost });
+  return Response.json({
+    success: true,
+    import_batch_id: importBatchId,
+    total_import_cost: totalImportCost,
+    import_cost_per_unit: Math.round(importCostPerUnit * 100) / 100,
+    units_updated: updated
+  });
 });

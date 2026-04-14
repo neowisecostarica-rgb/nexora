@@ -1,7 +1,11 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+/**
+ * cleanupConversionLocks
+ *
+ * Limpia locks de conversión huérfanos (conversion_in_progress = true por más de 10 min).
+ * Invocado por automatización programada cada 15 minutos.
+ */
 
-// Limpia locks de conversión huérfanos (conversion_in_progress = true por más de 10 min).
-// Invocado por automatización programada cada 15 minutos.
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
 Deno.serve(async (req) => {
   const base44 = createClientFromRequest(req);
@@ -31,5 +35,9 @@ Deno.serve(async (req) => {
     }
   }
 
-  return Response.json({ success: true, locks_cleaned: cleaned, total_checked: lockedItems.length });
+  return Response.json({
+    success: true,
+    locks_cleaned: cleaned,
+    total_checked: lockedItems.length
+  });
 });

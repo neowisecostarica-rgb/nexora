@@ -1,4 +1,22 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
+/**
+ * createInventoryFromPurchaseItem
+ *
+ * Genera InventoryUnits desde un PurchaseItem.
+ * Schema v1.0 — 100% compatible con CategoryConfig y PricingEngine.
+ *
+ * MODELO DE DATOS:
+ * - category_key: clave de categoría (ej. "laptops")
+ * - attributes: JSON con todos los atributos del producto (brand, model, cpu, etc.)
+ * - real_unit_cost: costo base inicial (SOT del costo)
+ * - status: "available"
+ *
+ * NO escribe ningún campo plano legacy (brand, model, cpu_raw, etc.)
+ * NO escribe total_real_unit_cost, cost_purchase_unit ni similares
+ *
+ * INPUT: { purchaseItemId, importBatchId?, category_key, unitsData? }
+ */
+
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
 Deno.serve(async (req) => {
   const base44 = createClientFromRequest(req);
@@ -8,19 +26,19 @@ Deno.serve(async (req) => {
     return Response.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const { purchaseItemId, importBatchId, unitsData } = await req.json();
+  const { purchaseItemId, importBatchId, category_key, unitsData } = await req.json();
 
   if (!purchaseItemId) {
     return Response.json({ error: 'purchaseItemId es requerido' }, { status: 400 });
   }
 
-  // 1. Leer el PurchaseItem más reciente
+  // 1. Leer el PurchaseItem
   const purchaseItem = await base44.asServiceRole.entities.PurchaseItems.get(purchaseItemId);
   if (!purchaseItem) {
     return Response.json({ error: 'PurchaseItem no encontrado' }, { status: 404 });
   }
 
-  // 2. Verificar si ya está bloqueado (otra conversión en curso)
+  // 2. Verificar lock de conversión en curso
   if (purchaseItem.conversion_in_progress === true) {
     return Response.json({
       error: 'Ya hay una conversión en curso para este ítem. Espere unos momentos y reintente.',
@@ -39,53 +57,72 @@ Deno.serve(async (req) => {
     });
   }
 
-  // 4. Adquirir el lock lógico
+  // 4. Adquirir lock lógico
   await base44.asServiceRole.entities.PurchaseItems.update(purchaseItemId, {
     conversion_in_progress: true
   });
 
-  const createdUnits = [];
-  let currentCount = purchaseItem.inventory_generated_count || 0;
-  const baseCostPerUnit = purchaseItem.item_subtotal > 0
-    ? purchaseItem.item_subtotal / purchaseItem.quantity
+  // ─── Determinar category_key ───────────────────────────────────────────────
+  // Prioridad: parámetro explícito > campo del PurchaseItem > "laptops" como fallback
+  const resolvedCategoryKey = category_key || purchaseItem.category_key || 'laptops';
+
+  // ─── Calcular costo base unitario desde PurchaseItem ──────────────────────
+  // item_subtotal / quantity = costo de compra por unidad
+  const baseCostPerUnit = purchaseItem.quantity > 0
+    ? (purchaseItem.item_subtotal || 0) / purchaseItem.quantity
     : (purchaseItem.estimated_unit_cost_from_order_total || 0);
 
+  // ─── Construir attributes base desde PurchaseItem ─────────────────────────
+  // Solo incluye campos con valor real, sin legacy
+  const baseAttributes = {};
+  if (purchaseItem.brand)        baseAttributes.brand        = purchaseItem.brand;
+  if (purchaseItem.model)        baseAttributes.model        = purchaseItem.model;
+  if (purchaseItem.line_family)  baseAttributes.line_family  = purchaseItem.line_family;
+  if (purchaseItem.cpu)          baseAttributes.cpu          = purchaseItem.cpu;
+  if (purchaseItem.ram_gb)       baseAttributes.ram          = `${purchaseItem.ram_gb}GB`;
+  if (purchaseItem.storage_gb && purchaseItem.storage_type) {
+    baseAttributes.storage = `${purchaseItem.storage_gb}GB ${purchaseItem.storage_type}`;
+  } else if (purchaseItem.storage_gb) {
+    baseAttributes.storage = `${purchaseItem.storage_gb}GB`;
+  }
+  if (purchaseItem.screen_size)    baseAttributes.screen_size    = purchaseItem.screen_size;
+  if (purchaseItem.screen_type)    baseAttributes.screen_type    = purchaseItem.screen_type;
+  if (purchaseItem.form_factor)    baseAttributes.form_factor    = purchaseItem.form_factor;
+  if (purchaseItem.condition_grade) baseAttributes.condition     = purchaseItem.condition_grade;
+
+  const createdUnits = [];
+  let currentCount = purchaseItem.inventory_generated_count || 0;
+
   try {
-    // 5. Crear las unidades pendientes, incrementando el contador por cada éxito
     for (let i = 0; i < pending; i++) {
+      // Merge de atributos: base del PurchaseItem + override por unidad si aplica
+      const unitOverride = unitsData && unitsData[i] ? unitsData[i] : {};
+      const mergedAttributes = { ...baseAttributes, ...(unitOverride.attributes || {}) };
+
       const unitPayload = {
         purchase_item_id: purchaseItemId,
         import_batch_id: importBatchId || purchaseItem.import_batch_id || null,
-        brand: purchaseItem.brand,
-        model: purchaseItem.model,
-        cpu_raw: purchaseItem.cpu || '',
-        cpu_normalized: normalizeCpu(purchaseItem.cpu || ''),
-        ram_gb: purchaseItem.ram_gb || null,
-        storage_type_raw: purchaseItem.storage_type || '',
-        storage_type: purchaseItem.storage_type || null,
-        storage_gb: purchaseItem.storage_gb || null,
-        screen_size_raw: purchaseItem.screen_size || '',
-        screen_size_normalized: normalizeScreenSize(purchaseItem.screen_size || ''),
-        form_factor: purchaseItem.form_factor || null,
-        condition_grade: purchaseItem.condition_grade || null,
+        category_key: resolvedCategoryKey,
+        attributes: mergedAttributes,
+        real_unit_cost: baseCostPerUnit,   // SOT del costo — real_unit_cost NUNCA total_real_unit_cost
         status: 'available',
-        cost_purchase_unit: baseCostPerUnit,
-        total_real_unit_cost: baseCostPerUnit,
-        received_date: new Date().toISOString().split('T')[0],
-        ...(unitsData && unitsData[i] ? unitsData[i] : {})
+        condition: purchaseItem.condition_grade || null,
+        location: unitOverride.location || null,
+        images: [],
+        main_image: null
       };
 
       const newUnit = await base44.asServiceRole.entities.InventoryUnits.create(unitPayload);
       createdUnits.push(newUnit.id);
       currentCount++;
 
-      // Incrementar el contador en cada éxito (idempotencia incremental)
+      // Incrementar contador en cada éxito (idempotencia incremental)
       await base44.asServiceRole.entities.PurchaseItems.update(purchaseItemId, {
         inventory_generated_count: currentCount
       });
     }
 
-    // 6. Liberar el lock
+    // 5. Liberar lock
     await base44.asServiceRole.entities.PurchaseItems.update(purchaseItemId, {
       conversion_in_progress: false
     });
@@ -95,11 +132,13 @@ Deno.serve(async (req) => {
       created_count: createdUnits.length,
       inventory_unit_ids: createdUnits,
       inventory_generated_count: currentCount,
-      quantity: purchaseItem.quantity
+      quantity: purchaseItem.quantity,
+      category_key: resolvedCategoryKey,
+      base_cost_per_unit: baseCostPerUnit
     });
 
   } catch (error) {
-    // En caso de error, liberar el lock para permitir reintentos
+    // En caso de error, liberar lock para permitir reintentos
     await base44.asServiceRole.entities.PurchaseItems.update(purchaseItemId, {
       conversion_in_progress: false,
       inventory_generated_count: currentCount
@@ -111,20 +150,3 @@ Deno.serve(async (req) => {
     }, { status: 500 });
   }
 });
-
-function normalizeCpu(cpu) {
-  if (!cpu) return '';
-  return cpu
-    .toLowerCase()
-    .replace(/\s+/g, ' ')
-    .trim()
-    .replace(/core i/g, 'i')
-    .replace(/intel /g, '')
-    .replace(/amd /g, '');
-}
-
-function normalizeScreenSize(size) {
-  if (!size) return '';
-  const match = size.match(/(\d+\.?\d*)/);
-  return match ? match[1] : size.trim();
-}

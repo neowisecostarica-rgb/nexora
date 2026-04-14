@@ -9,19 +9,22 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Switch } from "@/components/ui/switch";
-import { Plus, Calculator, RefreshCw } from "lucide-react";
+import { Plus, RefreshCw } from "lucide-react";
 import PageHeader from "@/components/shared/PageHeader";
 import { formatCurrency, formatPercent } from "@/lib/formatters";
 import { useToast } from "@/components/ui/use-toast";
 
-const EMPTY_PROFILE = { name: "", sales_channel: "retail", target_margin_percent: 30, min_margin_percent: 15, rounding_rule: "round_10", active: true };
-
-function applyRounding(price, rule) {
-  if (rule === "round_1") return Math.ceil(price);
-  if (rule === "round_5") return Math.ceil(price / 5) * 5;
-  if (rule === "round_10") return Math.ceil(price / 10) * 10;
-  return price;
-}
+const EMPTY_PROFILE = {
+  name: "",
+  scope_type: "global",
+  category_key: "",
+  margin_retail: 30,
+  margin_wholesale: 15,
+  margin_minimum: 5,
+  rounding_rule: "none",
+  is_default: false,
+  is_active: true,
+};
 
 export default function PricingEngine() {
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -41,43 +44,39 @@ export default function PricingEngine() {
   });
 
   const saveMutation = useMutation({
-    mutationFn: (data) => editing ? base44.entities.PricingProfiles.update(editing.id, data) : base44.entities.PricingProfiles.create(data),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["pricingProfiles"] }); setDialogOpen(false); setEditing(null); setForm(EMPTY_PROFILE); },
+    mutationFn: (data) =>
+      editing
+        ? base44.entities.PricingProfiles.update(editing.id, data)
+        : base44.entities.PricingProfiles.create(data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["pricingProfiles"] });
+      setDialogOpen(false);
+      setEditing(null);
+      setForm(EMPTY_PROFILE);
+    },
   });
 
+  // Recalculación masiva vía backend — NO en frontend
   const recalcMutation = useMutation({
     mutationFn: async () => {
-      const retailProfile = profiles.find((p) => p.sales_channel === "retail" && p.active);
-      const wholesaleProfile = profiles.find((p) => p.sales_channel === "wholesale" && p.active);
-      const retailMargin = retailProfile ? retailProfile.target_margin_percent / 100 : 0.3;
-      const wholesaleMargin = wholesaleProfile ? wholesaleProfile.target_margin_percent / 100 : 0.15;
-      const minMargin = retailProfile ? retailProfile.min_margin_percent / 100 : 0.1;
-      const retailRounding = retailProfile?.rounding_rule || "round_10";
-      const wholesaleRounding = wholesaleProfile?.rounding_rule || "round_10";
-
-      const available = inventory.filter((u) => u.status === "available" && u.total_real_unit_cost > 0);
+      const available = inventory.filter((u) => u.status === "available");
       let count = 0;
       for (const u of available) {
-        const cost = u.total_real_unit_cost;
-        const retail = applyRounding(cost * (1 + retailMargin), retailRounding);
-        const wholesale = applyRounding(cost * (1 + wholesaleMargin), wholesaleRounding);
-        const minimum = applyRounding(cost * (1 + minMargin), "round_1");
-        await base44.entities.InventoryUnits.update(u.id, {
-          retail_price: retail,
-          wholesale_price: wholesale,
-          minimum_sale_price: minimum,
-          suggested_sale_price: retail,
-          pricing_profile_id: retailProfile?.id || "",
+        await base44.functions.invoke("calculateAndCachePricing", {
+          inventory_unit_id: u.id,
         });
         count++;
       }
+      return count;
+    },
+    onSuccess: (count) => {
+      qc.invalidateQueries({ queryKey: ["inventory"] });
       toast({ title: "Precios recalculados", description: `${count} unidades actualizadas.` });
     },
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["inventory"] }); },
   });
 
   const openNew = () => { setForm(EMPTY_PROFILE); setEditing(null); setDialogOpen(true); };
-  const openEdit = (p) => { setForm(p); setEditing(p); setDialogOpen(true); };
+  const openEdit = (p) => { setForm({ ...EMPTY_PROFILE, ...p }); setEditing(p); setDialogOpen(true); };
   const sf = (k, v) => setForm((f) => ({ ...f, [k]: v }));
 
   const availableUnits = inventory.filter((u) => u.status === "available");
@@ -87,7 +86,7 @@ export default function PricingEngine() {
       <PageHeader title="Pricing Engine" subtitle="Perfiles de margen y cálculo de precios">
         <Button variant="outline" onClick={() => recalcMutation.mutate()} disabled={recalcMutation.isPending}>
           <RefreshCw className={`w-4 h-4 mr-2 ${recalcMutation.isPending ? "animate-spin" : ""}`} />
-          {recalcMutation.isPending ? "Recalculando…" : "Recalcular Precios"}
+          {recalcMutation.isPending ? "Recalculando…" : "Recalcular Todos"}
         </Button>
         <Button onClick={openNew}><Plus className="w-4 h-4 mr-2" />Nuevo Perfil</Button>
       </PageHeader>
@@ -98,26 +97,39 @@ export default function PricingEngine() {
             <CardHeader className="pb-2">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-sm font-semibold">{p.name}</CardTitle>
-                <span className={`w-2 h-2 rounded-full ${p.active ? "bg-green-500" : "bg-gray-400"}`}></span>
+                <div className="flex items-center gap-1.5">
+                  {p.is_default && <span className="text-xs bg-primary/10 text-primary px-1.5 py-0.5 rounded">Default</span>}
+                  <span className={`w-2 h-2 rounded-full ${p.is_active ? "bg-green-500" : "bg-gray-400"}`}></span>
+                </div>
               </div>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 gap-2 text-sm">
                 <div>
-                  <p className="text-muted-foreground text-xs">Canal</p>
-                  <p className="font-medium capitalize">{p.sales_channel}</p>
+                  <p className="text-muted-foreground text-xs">Alcance</p>
+                  <p className="font-medium capitalize">{p.scope_type}</p>
+                </div>
+                {p.category_key && (
+                  <div>
+                    <p className="text-muted-foreground text-xs">Categoría</p>
+                    <p className="font-medium">{p.category_key}</p>
+                  </div>
+                )}
+                <div>
+                  <p className="text-muted-foreground text-xs">Margen Retail</p>
+                  <p className="font-medium">{p.margin_retail}%</p>
                 </div>
                 <div>
-                  <p className="text-muted-foreground text-xs">Margen Objetivo</p>
-                  <p className="font-medium">{p.target_margin_percent}%</p>
+                  <p className="text-muted-foreground text-xs">Margen Mayoreo</p>
+                  <p className="font-medium">{p.margin_wholesale}%</p>
                 </div>
                 <div>
                   <p className="text-muted-foreground text-xs">Margen Mínimo</p>
-                  <p className="font-medium">{p.min_margin_percent}%</p>
+                  <p className="font-medium">{p.margin_minimum}%</p>
                 </div>
                 <div>
                   <p className="text-muted-foreground text-xs">Redondeo</p>
-                  <p className="font-medium">{p.rounding_rule?.replace("round_", "× ") || "Ninguno"}</p>
+                  <p className="font-medium">{p.rounding_rule === "none" ? "Ninguno" : p.rounding_rule?.replace("round_", "×")}</p>
                 </div>
               </div>
             </CardContent>
@@ -127,41 +139,37 @@ export default function PricingEngine() {
 
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-semibold">Vista Previa de Precios — Unidades Disponibles</CardTitle>
+          <CardTitle className="text-sm font-semibold">Vista Previa — Unidades Disponibles</CardTitle>
         </CardHeader>
         <CardContent>
           {availableUnits.length === 0 ? (
-            <p className="text-center text-sm text-muted-foreground py-8">No hay unidades disponibles para calcular precios</p>
+            <p className="text-center text-sm text-muted-foreground py-8">No hay unidades disponibles</p>
           ) : (
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Equipo</TableHead>
+                    <TableHead>Producto</TableHead>
                     <TableHead>Costo Real</TableHead>
                     <TableHead>Retail</TableHead>
                     <TableHead>Mayoreo</TableHead>
                     <TableHead>Mínimo</TableHead>
-                    <TableHead>Utilidad Retail</TableHead>
                     <TableHead>Margen %</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {availableUnits.slice(0, 20).map((u) => {
-                    const profit = (u.retail_price || 0) - (u.total_real_unit_cost || 0);
-                    const margin = u.total_real_unit_cost > 0 ? (profit / u.total_real_unit_cost) * 100 : 0;
-                    return (
-                      <TableRow key={u.id}>
-                        <TableCell className="font-medium">{u.brand} {u.model}</TableCell>
-                        <TableCell>{formatCurrency(u.total_real_unit_cost)}</TableCell>
-                        <TableCell className="font-semibold text-primary">{formatCurrency(u.retail_price)}</TableCell>
-                        <TableCell>{formatCurrency(u.wholesale_price)}</TableCell>
-                        <TableCell>{formatCurrency(u.minimum_sale_price)}</TableCell>
-                        <TableCell className="text-green-600 font-medium">{formatCurrency(profit)}</TableCell>
-                        <TableCell>{formatPercent(margin)}</TableCell>
-                      </TableRow>
-                    );
-                  })}
+                  {availableUnits.slice(0, 20).map((u) => (
+                    <TableRow key={u.id}>
+                      <TableCell className="font-medium max-w-[200px] truncate">
+                        {u.normalized_display_name || u.category_key || "—"}
+                      </TableCell>
+                      <TableCell>{formatCurrency(u.real_unit_cost)}</TableCell>
+                      <TableCell className="font-semibold text-primary">{formatCurrency(u.retail_price)}</TableCell>
+                      <TableCell>{formatCurrency(u.wholesale_price)}</TableCell>
+                      <TableCell>{formatCurrency(u.minimum_price)}</TableCell>
+                      <TableCell>{formatPercent(u.margin_percent)}</TableCell>
+                    </TableRow>
+                  ))}
                 </TableBody>
               </Table>
             </div>
@@ -171,20 +179,46 @@ export default function PricingEngine() {
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent>
-          <DialogHeader><DialogTitle>{editing ? "Editar Perfil" : "Nuevo Perfil de Pricing"}</DialogTitle></DialogHeader>
+          <DialogHeader>
+            <DialogTitle>{editing ? "Editar Perfil" : "Nuevo Perfil de Pricing"}</DialogTitle>
+          </DialogHeader>
           <div className="grid grid-cols-2 gap-4">
-            <div className="col-span-2 space-y-1.5"><Label>Nombre *</Label><Input value={form.name} onChange={(e) => sf("name", e.target.value)} /></div>
+            <div className="col-span-2 space-y-1.5">
+              <Label>Nombre *</Label>
+              <Input value={form.name} onChange={(e) => sf("name", e.target.value)} />
+            </div>
             <div className="space-y-1.5">
-              <Label>Canal</Label>
-              <Select value={form.sales_channel} onValueChange={(v) => sf("sales_channel", v)}>
+              <Label>Alcance</Label>
+              <Select value={form.scope_type} onValueChange={(v) => sf("scope_type", v)}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="retail">Retail</SelectItem>
-                  <SelectItem value="wholesale">Mayoreo</SelectItem>
-                  <SelectItem value="promo">Promoción</SelectItem>
-                  <SelectItem value="marketplace">Marketplace</SelectItem>
+                  <SelectItem value="global">Global</SelectItem>
+                  <SelectItem value="category">Categoría</SelectItem>
+                  <SelectItem value="unit_override">Override por unidad</SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+            {form.scope_type === "category" && (
+              <div className="space-y-1.5">
+                <Label>Clave de Categoría</Label>
+                <Input
+                  placeholder="ej. laptops, sneakers"
+                  value={form.category_key || ""}
+                  onChange={(e) => sf("category_key", e.target.value)}
+                />
+              </div>
+            )}
+            <div className="space-y-1.5">
+              <Label>Margen Retail (%)</Label>
+              <Input type="number" value={form.margin_retail ?? ""} onChange={(e) => sf("margin_retail", parseFloat(e.target.value) || 0)} />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Margen Mayoreo (%)</Label>
+              <Input type="number" value={form.margin_wholesale ?? ""} onChange={(e) => sf("margin_wholesale", parseFloat(e.target.value) || 0)} />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Margen Mínimo (%)</Label>
+              <Input type="number" value={form.margin_minimum ?? ""} onChange={(e) => sf("margin_minimum", parseFloat(e.target.value) || 0)} />
             </div>
             <div className="space-y-1.5">
               <Label>Redondeo</Label>
@@ -195,19 +229,25 @@ export default function PricingEngine() {
                   <SelectItem value="round_1">Al entero</SelectItem>
                   <SelectItem value="round_5">Múltiplo de 5</SelectItem>
                   <SelectItem value="round_10">Múltiplo de 10</SelectItem>
+                  <SelectItem value="round_100">Múltiplo de 100</SelectItem>
                 </SelectContent>
               </Select>
             </div>
-            <div className="space-y-1.5"><Label>Margen Objetivo (%)</Label><Input type="number" value={form.target_margin_percent || ""} onChange={(e) => sf("target_margin_percent", parseFloat(e.target.value) || 0)} /></div>
-            <div className="space-y-1.5"><Label>Margen Mínimo (%)</Label><Input type="number" value={form.min_margin_percent || ""} onChange={(e) => sf("min_margin_percent", parseFloat(e.target.value) || 0)} /></div>
-            <div className="flex items-center gap-2 pt-5">
-              <Switch checked={form.active !== false} onCheckedChange={(v) => sf("active", v)} />
+            <div className="flex items-center gap-2 pt-4">
+              <Switch checked={!!form.is_default} onCheckedChange={(v) => sf("is_default", v)} />
+              <Label>Perfil por defecto</Label>
+            </div>
+            <div className="flex items-center gap-2 pt-4">
+              <Switch checked={form.is_active !== false} onCheckedChange={(v) => sf("is_active", v)} />
               <Label>Activo</Label>
             </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancelar</Button>
-            <Button onClick={() => saveMutation.mutate(form)} disabled={!form.name || saveMutation.isPending}>
+            <Button
+              onClick={() => saveMutation.mutate(form)}
+              disabled={!form.name || saveMutation.isPending}
+            >
               {saveMutation.isPending ? "Guardando…" : "Guardar"}
             </Button>
           </DialogFooter>
