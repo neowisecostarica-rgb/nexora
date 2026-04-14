@@ -29,8 +29,10 @@ export default function Dashboard() {
 
   const available = inventory.filter((u) => u.status === "available");
   const totalInventoryValue = available.reduce((s, u) => s + (u.total_real_unit_cost || 0), 0);
-  const totalRetailValue = available.reduce((s, u) => s + (u.retail_price || 0), 0);
-  const potentialProfit = totalRetailValue - totalInventoryValue;
+  const totalWholesaleValue = available.reduce((s, u) => s + (u.wholesale_price || 0), 0);
+  const potentialProfit = totalWholesaleValue - totalInventoryValue;
+
+  const readyToQuote = available.filter(u => u.wholesale_price > 0 && u.pricing_profile_id);
 
   const completedSales = sales.filter((s) => s.status === "completed");
   const totalRevenue = completedSales.reduce((s, v) => s + (v.total || 0), 0);
@@ -56,10 +58,10 @@ export default function Dashboard() {
       <PageHeader title="Dashboard" subtitle="Vista general del negocio" />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <StatCard title="Inventario Disponible" value={formatNumber(available.length)} subtitle="unidades" icon={Monitor} />
-        <StatCard title="Valor en Inventario" value={formatCurrency(totalInventoryValue)} subtitle="costo real" icon={Package} />
-        <StatCard title="Utilidad Potencial" value={formatCurrency(potentialProfit)} subtitle="si se vende todo a retail" icon={TrendingUp} />
-        <StatCard title="Ventas Totales" value={formatCurrency(totalRevenue)} subtitle={`${completedSales.length} ventas`} icon={HandCoins} />
+        <StatCard title="Disponibles para Vender" value={formatNumber(available.length)} subtitle={`${readyToQuote.length} listos para cotizar`} icon={Monitor} />
+        <StatCard title="Valor en Inventario" value={formatCurrency(totalInventoryValue)} subtitle="costo real total" icon={Package} />
+        <StatCard title="Utilidad Potencial Mayoreo" value={formatCurrency(potentialProfit)} subtitle="precio mayoreo − costo real" icon={TrendingUp} />
+        <StatCard title="Ventas Completadas" value={formatCurrency(totalRevenue)} subtitle={`${completedSales.length} ventas`} icon={HandCoins} />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">

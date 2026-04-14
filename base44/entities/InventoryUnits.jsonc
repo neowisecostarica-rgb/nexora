@@ -95,9 +95,12 @@
         "quoted",
         "sold",
         "warranty",
-        "damaged"
+        "damaged",
+        "in_repair",
+        "discontinued"
       ],
-      "default": "available"
+      "default": "available",
+      "description": "Estado oficial del ciclo de vida de la unidad"
     },
     "warehouse_location": {
       "type": "string"
@@ -134,22 +137,22 @@
     "retail_price": {
       "type": "number",
       "default": 0,
-      "description": "Cache del PricingEngine. No editar directamente."
+      "description": "Cache del PricingEngine. SOLO LECTURA. No editar directamente."
     },
     "wholesale_price": {
       "type": "number",
       "default": 0,
-      "description": "Cache del PricingEngine. No editar directamente."
+      "description": "Cache del PricingEngine. SOLO LECTURA. No editar directamente."
     },
     "minimum_sale_price": {
       "type": "number",
       "default": 0,
-      "description": "Cache del PricingEngine. No editar directamente."
+      "description": "Cache del PricingEngine. SOLO LECTURA. No editar directamente."
     },
     "margin_percent": {
       "type": "number",
       "default": 0,
-      "description": "Cache del PricingEngine. No editar directamente."
+      "description": "Cache del PricingEngine. SOLO LECTURA. No editar directamente."
     },
     "pricing_calculated_at": {
       "type": "string",

@@ -27,6 +27,16 @@
         "marketplace"
       ]
     },
+    "sale_type": {
+      "type": "string",
+      "enum": [
+        "retail",
+        "wholesale",
+        "reseller",
+        "internal"
+      ],
+      "default": "retail"
+    },
     "payment_method": {
       "type": "string",
       "enum": [
@@ -40,6 +50,18 @@
     "invoice_required": {
       "type": "boolean",
       "default": false
+    },
+    "external_invoice_reference": {
+      "type": "string"
+    },
+    "external_invoice_status": {
+      "type": "string",
+      "enum": [
+        "none",
+        "pending",
+        "issued"
+      ],
+      "default": "none"
     },
     "subtotal": {
       "type": "number",
@@ -78,6 +100,53 @@
         "refunded"
       ],
       "default": "pending"
+    },
+    "sale_notes_snapshot": {
+      "type": "string"
+    },
+    "organization_profile_snapshot": {
+      "type": "object",
+      "properties": {
+        "version": {
+          "type": "number"
+        },
+        "commercial_name": {
+          "type": "string"
+        },
+        "legal_name": {
+          "type": "string"
+        },
+        "logo_url": {
+          "type": "string"
+        },
+        "phone_main": {
+          "type": "string"
+        },
+        "email_main": {
+          "type": "string"
+        },
+        "address_line": {
+          "type": "string"
+        },
+        "city": {
+          "type": "string"
+        },
+        "country": {
+          "type": "string"
+        },
+        "payment_instructions": {
+          "type": "string"
+        },
+        "bank_details": {
+          "type": "string"
+        },
+        "sinpe_details": {
+          "type": "string"
+        },
+        "default_terms_conditions": {
+          "type": "string"
+        }
+      }
     }
   },
   "required": [

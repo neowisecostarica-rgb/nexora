@@ -1,0 +1,105 @@
+{
+  "name": "OrganizationProfile",
+  "type": "object",
+  "properties": {
+    "legal_name": {
+      "type": "string"
+    },
+    "commercial_name": {
+      "type": "string"
+    },
+    "brand_name": {
+      "type": "string"
+    },
+    "legal_id": {
+      "type": "string"
+    },
+    "logo_url": {
+      "type": "string"
+    },
+    "phone_main": {
+      "type": "string"
+    },
+    "phone_secondary": {
+      "type": "string"
+    },
+    "email_main": {
+      "type": "string"
+    },
+    "website": {
+      "type": "string"
+    },
+    "address_line": {
+      "type": "string"
+    },
+    "city": {
+      "type": "string"
+    },
+    "country": {
+      "type": "string"
+    },
+    "payment_instructions": {
+      "type": "string"
+    },
+    "bank_details": {
+      "type": "string"
+    },
+    "sinpe_details": {
+      "type": "string"
+    },
+    "default_quote_notes": {
+      "type": "string"
+    },
+    "default_sale_notes": {
+      "type": "string"
+    },
+    "default_terms_conditions": {
+      "type": "string"
+    },
+    "quote_validity_days": {
+      "type": "number",
+      "default": 7
+    },
+    "document_prefix_quote": {
+      "type": "string",
+      "default": "COT"
+    },
+    "document_prefix_sale": {
+      "type": "string",
+      "default": "VTA"
+    },
+    "next_quote_number_sequence": {
+      "type": "number",
+      "default": 1
+    },
+    "next_sale_number_sequence": {
+      "type": "number",
+      "default": 1
+    },
+    "show_logo_on_documents": {
+      "type": "boolean",
+      "default": false
+    },
+    "show_bank_details_on_quotes": {
+      "type": "boolean",
+      "default": false
+    },
+    "show_terms_on_quotes": {
+      "type": "boolean",
+      "default": false
+    },
+    "invoice_external_system_note": {
+      "type": "string"
+    },
+    "active": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "required": [
+    "legal_name",
+    "commercial_name",
+    "email_main",
+    "active"
+  ]
+}

@@ -97,6 +97,8 @@ export default function Inventory() {
             <SelectItem value="sold">Vendido</SelectItem>
             <SelectItem value="warranty">Garantía</SelectItem>
             <SelectItem value="damaged">Dañado</SelectItem>
+            <SelectItem value="in_repair">En Reparación</SelectItem>
+            <SelectItem value="discontinued">Descontinuado</SelectItem>
           </SelectContent>
         </Select>
         <Select value={brandFilter} onValueChange={setBrandFilter}>
@@ -179,6 +181,8 @@ export default function Inventory() {
                   <SelectItem value="sold">Vendido</SelectItem>
                   <SelectItem value="warranty">Garantía</SelectItem>
                   <SelectItem value="damaged">Dañado</SelectItem>
+                  <SelectItem value="in_repair">En Reparación</SelectItem>
+                  <SelectItem value="discontinued">Descontinuado</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -213,6 +217,17 @@ export default function Inventory() {
               <div className="flex justify-between text-sm font-bold border-t mt-2 pt-2">
                 <span>Costo Real Total:</span>
                 <span>{formatCurrency((editUnit?.cost_purchase_unit || 0) + (editForm.cost_import_unit || 0) + (editForm.cost_repair_unit || 0) + (editForm.cost_local_unit || 0))}</span>
+              </div>
+            </div>
+            {/* PRECIOS: Solo lectura — calculados por PricingEngine */}
+            <div className="col-span-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+              <div className="flex items-center gap-1.5 text-xs font-semibold text-blue-700 mb-2">
+                <span>🔒</span> Precios calculados automáticamente (solo lectura)
+              </div>
+              <div className="grid grid-cols-3 gap-2 text-xs">
+                <div><p className="text-muted-foreground">Retail</p><p className="font-semibold">{formatCurrency(editUnit?.retail_price)}</p></div>
+                <div><p className="text-muted-foreground">Mayoreo</p><p className="font-semibold text-primary">{formatCurrency(editUnit?.wholesale_price)}</p></div>
+                <div><p className="text-muted-foreground">Mínimo</p><p className="font-semibold">{formatCurrency(editUnit?.minimum_sale_price)}</p></div>
               </div>
             </div>
             <div className="col-span-2 space-y-1.5"><Label>Notas Cosméticas</Label><Textarea value={editForm.cosmetic_notes || ""} onChange={(e) => setEditForm((f) => ({ ...f, cosmetic_notes: e.target.value }))} /></div>

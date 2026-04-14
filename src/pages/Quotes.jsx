@@ -8,42 +8,99 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Search, FileText, Eye, Trash2 } from "lucide-react";
+import { Plus, Search, FileText, Eye } from "lucide-react";
 import { Link } from "react-router-dom";
 import PageHeader from "@/components/shared/PageHeader";
 import StatusBadge from "@/components/shared/StatusBadge";
 import EmptyState from "@/components/shared/EmptyState";
-import { formatCurrency, formatDate, generateCode } from "@/lib/formatters";
+import OrgProfileAlert from "@/components/settings/OrgProfileAlert";
+import { formatCurrency, formatDate } from "@/lib/formatters";
+import { buildOrgSnapshot, validateProfileForOperation } from "@/lib/orgProfileSnapshot";
+import { addDays, format } from "date-fns";
+import { useToast } from "@/components/ui/use-toast";
 
 export default function QuotesPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [form, setForm] = useState({ quote_number: "", customer_id: "", quote_date: new Date().toISOString().split("T")[0], valid_until: "", sales_channel: "retail", status: "draft", notes: "" });
+  const [form, setForm] = useState({});
+  const [search, setSearch] = useState("");
   const qc = useQueryClient();
+  const { toast } = useToast();
 
-  const { data: quotes = [], isLoading } = useQuery({ queryKey: ["quotes"], queryFn: () => base44.entities.Quotes.list("-created_date", 200) });
-  const { data: customers = [] } = useQuery({ queryKey: ["customers"], queryFn: () => base44.entities.Customers.list("-created_date", 200) });
-
-  const createMutation = useMutation({
-    mutationFn: (data) => {
-      const customer = customers.find((c) => c.id === data.customer_id);
-      return base44.entities.Quotes.create({ ...data, customer_name: customer?.full_name || "" });
-    },
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["quotes"] }); setDialogOpen(false); },
+  const { data: quotes = [], isLoading } = useQuery({
+    queryKey: ["quotes"],
+    queryFn: () => base44.entities.Quotes.list("-created_date", 200),
+  });
+  const { data: customers = [] } = useQuery({
+    queryKey: ["customers"],
+    queryFn: () => base44.entities.Customers.list("-created_date", 200),
+  });
+  const { data: orgProfiles = [] } = useQuery({
+    queryKey: ["orgProfile"],
+    queryFn: () => base44.entities.OrganizationProfile.filter({ active: true }),
   });
 
-  const openNew = () => { setForm({ quote_number: generateCode("COT"), customer_id: "", quote_date: new Date().toISOString().split("T")[0], valid_until: "", sales_channel: "retail", status: "draft", notes: "" }); setDialogOpen(true); };
+  const orgProfile = orgProfiles[0] || null;
+  const { valid, missing } = validateProfileForOperation(orgProfile);
+
+  const openNew = () => {
+    if (!valid) {
+      toast({ title: "Perfil incompleto", description: "Completa el perfil de empresa antes de cotizar.", variant: "destructive" });
+      return;
+    }
+    const today = new Date();
+    const validUntil = addDays(today, orgProfile?.quote_validity_days || 7);
+    setForm({
+      customer_id: "",
+      quote_date: format(today, "yyyy-MM-dd"),
+      valid_until: format(validUntil, "yyyy-MM-dd"),
+      sales_channel: "wholesale",
+      status: "draft",
+      notes: orgProfile?.default_quote_notes || "",
+      terms_conditions_snapshot: orgProfile?.default_terms_conditions || "",
+    });
+    setDialogOpen(true);
+  };
+
+  const createMutation = useMutation({
+    mutationFn: async (data) => {
+      // 1. Generar número de documento transaccional
+      const numRes = await base44.functions.invoke("generateDocumentNumber", { type: "quote" });
+      const quoteNumber = numRes?.data?.document_number;
+      if (!quoteNumber) throw new Error("No se pudo generar el número de cotización");
+
+      // 2. Construir snapshot versionado de organización
+      const orgSnapshot = buildOrgSnapshot(orgProfile);
+
+      const customer = customers.find((c) => c.id === data.customer_id);
+      return base44.entities.Quotes.create({
+        ...data,
+        quote_number: quoteNumber,
+        customer_name: customer?.full_name || "",
+        organization_profile_snapshot: orgSnapshot,
+      });
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["quotes"] });
+      qc.invalidateQueries({ queryKey: ["orgProfile"] });
+      setDialogOpen(false);
+    },
+  });
+
   const sf = (k, v) => setForm((f) => ({ ...f, [k]: v }));
 
-  const [search, setSearch] = useState("");
   const filtered = quotes.filter((q) =>
     `${q.quote_number} ${q.customer_name}`.toLowerCase().includes(search.toLowerCase())
   );
 
   return (
     <div>
-      <PageHeader title="Cotizaciones" subtitle="Gestiona cotizaciones a clientes">
-        <Button onClick={openNew}><Plus className="w-4 h-4 mr-2" />Nueva Cotización</Button>
+      <PageHeader title="Cotizaciones" subtitle="Gestión de cotizaciones mayoristas">
+        <Button onClick={openNew} disabled={!valid}>
+          <Plus className="w-4 h-4 mr-2" />Nueva Cotización
+        </Button>
       </PageHeader>
+
+      {!valid && <div className="mb-4"><OrgProfileAlert missing={missing} /></div>}
 
       <div className="mb-4">
         <div className="relative max-w-sm">
@@ -53,7 +110,7 @@ export default function QuotesPage() {
       </div>
 
       {filtered.length === 0 && !isLoading ? (
-        <EmptyState icon={FileText} title="Sin cotizaciones" description="Crea tu primera cotización" actionLabel="Nueva Cotización" onAction={openNew} />
+        <EmptyState icon={FileText} title="Sin cotizaciones" description="Crea tu primera cotización mayorista" actionLabel="Nueva Cotización" onAction={openNew} />
       ) : (
         <div className="bg-card rounded-xl border overflow-hidden">
           <Table>
@@ -72,11 +129,11 @@ export default function QuotesPage() {
             <TableBody>
               {filtered.map((q) => (
                 <TableRow key={q.id}>
-                  <TableCell className="font-medium">{q.quote_number}</TableCell>
+                  <TableCell className="font-medium font-mono text-xs">{q.quote_number}</TableCell>
                   <TableCell>{q.customer_name || "—"}</TableCell>
                   <TableCell>{formatDate(q.quote_date)}</TableCell>
                   <TableCell>{formatDate(q.valid_until)}</TableCell>
-                  <TableCell className="capitalize">{q.sales_channel}</TableCell>
+                  <TableCell><span className="capitalize">{q.sales_channel === "wholesale" ? "Mayoreo" : q.sales_channel}</span></TableCell>
                   <TableCell className="font-semibold">{formatCurrency(q.total)}</TableCell>
                   <TableCell><StatusBadge status={q.status} /></TableCell>
                   <TableCell>
@@ -92,34 +149,46 @@ export default function QuotesPage() {
       )}
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent>
-          <DialogHeader><DialogTitle>Nueva Cotización</DialogTitle></DialogHeader>
+        <DialogContent className="max-w-lg">
+          <DialogHeader><DialogTitle>Nueva Cotización Mayorista</DialogTitle></DialogHeader>
           <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1.5"><Label>Número</Label><Input value={form.quote_number} onChange={(e) => sf("quote_number", e.target.value)} /></div>
-            <div className="space-y-1.5">
+            <div className="col-span-2 space-y-1.5">
               <Label>Cliente *</Label>
               <Select value={form.customer_id} onValueChange={(v) => sf("customer_id", v)}>
-                <SelectTrigger><SelectValue placeholder="Seleccionar…" /></SelectTrigger>
+                <SelectTrigger><SelectValue placeholder="Seleccionar cliente…" /></SelectTrigger>
                 <SelectContent>
-                  {customers.map((c) => <SelectItem key={c.id} value={c.id}>{c.full_name}{c.company_name ? ` — ${c.company_name}` : ""}</SelectItem>)}
+                  {customers.map((c) => (
+                    <SelectItem key={c.id} value={c.id}>
+                      {c.full_name}{c.company_name ? ` — ${c.company_name}` : ""}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
-            <div className="space-y-1.5"><Label>Fecha</Label><Input type="date" value={form.quote_date} onChange={(e) => sf("quote_date", e.target.value)} /></div>
-            <div className="space-y-1.5"><Label>Válida hasta</Label><Input type="date" value={form.valid_until || ""} onChange={(e) => sf("valid_until", e.target.value)} /></div>
             <div className="space-y-1.5">
+              <Label>Fecha</Label>
+              <Input type="date" value={form.quote_date || ""} onChange={(e) => sf("quote_date", e.target.value)} />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Válida hasta</Label>
+              <Input type="date" value={form.valid_until || ""} onChange={(e) => sf("valid_until", e.target.value)} />
+            </div>
+            <div className="col-span-2 space-y-1.5">
               <Label>Canal</Label>
               <Select value={form.sales_channel} onValueChange={(v) => sf("sales_channel", v)}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="retail">Retail</SelectItem>
                   <SelectItem value="wholesale">Mayoreo</SelectItem>
+                  <SelectItem value="retail">Retail</SelectItem>
                   <SelectItem value="promo">Promo</SelectItem>
                   <SelectItem value="marketplace">Marketplace</SelectItem>
                 </SelectContent>
               </Select>
             </div>
-            <div className="col-span-2 space-y-1.5"><Label>Notas</Label><Textarea value={form.notes || ""} onChange={(e) => sf("notes", e.target.value)} /></div>
+            <div className="col-span-2 space-y-1.5">
+              <Label>Notas</Label>
+              <Textarea rows={3} value={form.notes || ""} onChange={(e) => sf("notes", e.target.value)} />
+            </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancelar</Button>

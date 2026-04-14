@@ -15,11 +15,11 @@ import ImportBatches from '@/pages/ImportBatches';
 import Inventory from '@/pages/Inventory';
 import PricingEngine from '@/pages/PricingEngine';
 import Customers from '@/pages/Customers';
-import Quotes from '@/pages/Quotes';
-import QuoteDetail from '@/pages/QuoteDetail';
-import Sales from '@/pages/Sales';
+import Quotes from '@/pages/Quotes.jsx';
+import QuoteDetail from '@/pages/QuoteDetail.jsx';
+import Sales from '@/pages/Sales.jsx';
 import Expenses from '@/pages/Expenses';
-import Settings from '@/pages/Settings';
+import Settings from '@/pages/Settings.jsx';
 import Catalog from '@/pages/Catalog';
 
 const AuthenticatedApp = () => {
