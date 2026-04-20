@@ -17,6 +17,15 @@
         "other"
       ]
     },
+    "allocation_category": {
+      "type": "string",
+      "enum": [
+        "repair",
+        "local",
+        "other"
+      ],
+      "description": "Categor\u00eda de asignaci\u00f3n de costo. Solo 'repair' y 'local' afectan el costo real de unidades."
+    },
     "linked_entity_type": {
       "type": "string"
     },
@@ -34,6 +43,7 @@
   "required": [
     "date",
     "category",
+    "allocation_category",
     "amount"
   ]
 }

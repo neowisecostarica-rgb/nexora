@@ -53,10 +53,45 @@
       "type": "string",
       "description": "URL de la imagen principal"
     },
-    "real_unit_cost": {
+    "legacy_real_unit_cost": {
       "type": "number",
       "default": 0,
-      "description": "Costo real total consolidado de la unidad. SOT del costo."
+      "description": "Campo original real_unit_cost \u2014 renombrado para compatibilidad. NO usar para nuevos c\u00e1lculos."
+    },
+    "cost_purchase_unit": {
+      "type": "number",
+      "default": 0,
+      "description": "Costo directo de compra de la unidad (sin gastos adicionales)"
+    },
+    "allocated_import_cost": {
+      "type": "number",
+      "default": 0,
+      "description": "Costo de importaci\u00f3n (customs + freight + local_transport + extra) asignado proporcionalmente a esta unidad"
+    },
+    "allocated_tax_cost": {
+      "type": "number",
+      "default": 0,
+      "description": "Impuestos de la orden de compra (usa_tax) asignados proporcionalmente a esta unidad"
+    },
+    "allocated_local_cost": {
+      "type": "number",
+      "default": 0,
+      "description": "Gastos locales (Expenses tipo local) asignados a esta unidad"
+    },
+    "allocated_repair_cost": {
+      "type": "number",
+      "default": 0,
+      "description": "Gastos de reparaci\u00f3n (Expenses tipo repair) asignados directamente a esta unidad"
+    },
+    "allocated_other_cost": {
+      "type": "number",
+      "default": 0,
+      "description": "Otros costos asignados a esta unidad (ej. shipping USA)"
+    },
+    "total_real_unit_cost": {
+      "type": "number",
+      "default": 0,
+      "description": "Costo real total consolidado. SOT del costo. Suma de todos los costos asignados."
     },
     "assigned_pricing_profile_id": {
       "type": "string",
@@ -86,6 +121,6 @@
   "required": [
     "category_key",
     "status",
-    "real_unit_cost"
+    "total_real_unit_cost"
   ]
 }
