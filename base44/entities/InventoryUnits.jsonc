@@ -2,6 +2,10 @@
   "name": "InventoryUnits",
   "type": "object",
   "properties": {
+    "organization_id": {
+      "type": "string",
+      "description": "ID de la organizaci\u00f3n propietaria. Requerido para multi-tenancy y para el motor de costos."
+    },
     "purchase_item_id": {
       "type": "string",
       "description": "Referencia al PurchaseItem de origen"
