@@ -1,6 +1,7 @@
 // ============================================================
 // NEXORA — calculateRealUnitCost — Motor de Costos v2
 // Bloque P0.2 — Componentes Dinámicos
+// Bloque P0.2.1 — Hardening (validaciones reforzadas)
 // ============================================================
 //
 // ARQUITECTURA:
@@ -40,6 +41,11 @@ function sumCostPurchaseUnits(units = []) {
   return units.reduce((acc, u) => acc + Number(u.cost_purchase_unit || 0), 0);
 }
 
+// FIX #1 — Validación de organization_id
+function isValidOrganizationId(orgId) {
+  return typeof orgId === 'string' && orgId.trim().length > 0;
+}
+
 // ────────────────────────────────────────────────────────────
 // HANDLER PRINCIPAL
 // ────────────────────────────────────────────────────────────
@@ -51,6 +57,9 @@ Deno.serve(async (req) => {
     const base44 = createClientFromRequest(req);
     const body = await req.json();
     inventoryUnitId = body?.inventoryUnitId || null;
+
+    // FIX #5 — Log de inicio
+    console.log(`[START] calculateRealUnitCost invoked. inventoryUnitId: ${inventoryUnitId}`);
 
     // ──────────────────────────────────────────────────────
     // PASO 1 — Validar input
@@ -74,9 +83,26 @@ Deno.serve(async (req) => {
       );
     }
 
-    const organizationId = unit.organization_id || null;
+    // FIX #1 — Validar organization_id ANTES de cualquier operación
+    // (antes de delete, create, o update)
+    const organizationId = unit.organization_id;
+    console.log(`[VALIDATION] organization_id for unit ${inventoryUnitId}: "${organizationId}"`);
+
+    if (!isValidOrganizationId(organizationId)) {
+      console.warn(`[ABORT] InventoryUnit ${inventoryUnitId} has invalid organization_id: ${organizationId}`);
+      return Response.json(
+        {
+          success: false,
+          inventory_unit_id: inventoryUnitId,
+          error: 'INVALID_ORGANIZATION_ID',
+          message: 'InventoryUnit must have a valid organization_id'
+        },
+        { status: 422 }
+      );
+    }
 
     // Unidades vendidas: proteger costo histórico congelado
+    // (guard no modificado — FIX #6)
     if (unit.status === 'sold') {
       console.log(`[SKIP] InventoryUnit ${inventoryUnitId} is sold. Cost is frozen. No recalculation.`);
       return Response.json({
@@ -95,7 +121,7 @@ Deno.serve(async (req) => {
     const costPurchaseUnit = Number(unit.cost_purchase_unit || 0);
 
     if (!costPurchaseUnit || costPurchaseUnit <= 0) {
-      console.warn(`[ERROR] InventoryUnit ${inventoryUnitId} has no valid cost_purchase_unit. Aborting.`);
+      console.warn(`[ABORT] InventoryUnit ${inventoryUnitId} has no valid cost_purchase_unit. Aborting before any delete.`);
       return Response.json(
         {
           success: false,
@@ -107,17 +133,22 @@ Deno.serve(async (req) => {
       );
     }
 
-    console.log(`[START] Calculating cost for InventoryUnit: ${inventoryUnitId} | org: ${organizationId} | cost_purchase_unit: ${costPurchaseUnit}`);
+    console.log(`[VALIDATED] unit ${inventoryUnitId} | org: ${organizationId} | cost_purchase_unit: ${costPurchaseUnit}`);
 
     // ──────────────────────────────────────────────────────
     // PASO 4 — Borrar componentes previos (idempotencia)
+    // FIX #2: Este delete solo se ejecuta si organization_id y cost_purchase_unit
+    // ya pasaron validación arriba — garantizado por el flujo secuencial.
     // ──────────────────────────────────────────────────────
     const existingComponents = await base44.entities.InventoryUnitCostComponents.filter({
       inventory_unit_id: inventoryUnitId
     });
 
-    if (existingComponents && existingComponents.length > 0) {
-      console.log(`[CLEAN] Deleting ${existingComponents.length} existing cost components for unit ${inventoryUnitId}`);
+    const existingCount = existingComponents?.length || 0;
+    // FIX #5 — Log cantidad eliminada
+    console.log(`[CLEAN] Deleting ${existingCount} existing cost components for unit ${inventoryUnitId}`);
+
+    if (existingCount > 0) {
       for (const comp of existingComponents) {
         await base44.entities.InventoryUnitCostComponents.delete(comp.id);
       }
@@ -322,21 +353,63 @@ Deno.serve(async (req) => {
 
     // ──────────────────────────────────────────────────────
     // PASO 5b — Persistir componentes (solo amount > 0)
+    // FIX #3 — Creación segura: cada componente se crea de forma individual.
+    // Fallos individuales se capturan como warnings sin detener toda la ejecución.
+    // FIX #3 — Garantizar que todos los componentes tengan organization_id y
+    // inventory_unit_id válidos antes de intentar crear.
     // ──────────────────────────────────────────────────────
-    const validComponents = componentsToCreate.filter(c => c.amount > 0);
-    console.log(`[CREATE] Inserting ${validComponents.length} cost components for unit ${inventoryUnitId}`);
+    const validComponents = componentsToCreate.filter(c =>
+      c.amount > 0 &&
+      isValidOrganizationId(c.organization_id) &&
+      c.inventory_unit_id
+    );
+
+    // FIX #5 — Log cantidad a crear
+    console.log(`[CREATE] Attempting to create ${validComponents.length} cost components for unit ${inventoryUnitId}`);
+
+    const createdComponents = [];
 
     for (const comp of validComponents) {
-      await base44.entities.InventoryUnitCostComponents.create(comp);
+      try {
+        await base44.entities.InventoryUnitCostComponents.create(comp);
+        createdComponents.push(comp);
+      } catch (createError) {
+        // FIX #3 — Capturar fallo individual sin romper la ejecución
+        const warnMsg = `component_creation_failed: key=${comp.cost_component_key}, amount=${comp.amount}, error=${createError?.message || 'unknown'}`;
+        console.warn(`[WARN] ${warnMsg}`);
+        warnings.push(warnMsg);
+      }
+    }
+
+    // FIX #5 — Log cantidad creada exitosamente
+    console.log(`[CREATED] ${createdComponents.length} of ${validComponents.length} components successfully created for unit ${inventoryUnitId}`);
+
+    // ──────────────────────────────────────────────────────
+    // FIX #4 — PROTECCIÓN POST-CREATE
+    // No actualizar total_real_unit_cost si no se creó al menos 1 componente válido
+    // ──────────────────────────────────────────────────────
+    if (createdComponents.length === 0) {
+      console.warn(`[ABORT] No valid cost components were created for unit ${inventoryUnitId}. Skipping update of total_real_unit_cost.`);
+      return Response.json(
+        {
+          success: false,
+          inventory_unit_id: inventoryUnitId,
+          error: 'NO_VALID_COMPONENTS',
+          message: 'No valid cost components generated',
+          warnings: warnings.length > 0 ? warnings : undefined
+        },
+        { status: 422 }
+      );
     }
 
     // ──────────────────────────────────────────────────────
     // PASO 6 — Calcular total final
     // ──────────────────────────────────────────────────────
     const totalRealUnitCost = round2(
-      validComponents.reduce((acc, c) => acc + c.amount, 0)
+      createdComponents.reduce((acc, c) => acc + c.amount, 0)
     );
 
+    // FIX #5 — Log total calculado
     console.log(`[TOTAL] total_real_unit_cost for ${inventoryUnitId}: ${totalRealUnitCost}`);
 
     // ──────────────────────────────────────────────────────
@@ -359,8 +432,8 @@ Deno.serve(async (req) => {
       success: true,
       inventory_unit_id: inventoryUnitId,
       organization_id: organizationId,
-      components_created: validComponents.length,
-      components_summary: validComponents.map(c => ({
+      components_created: createdComponents.length,
+      components_summary: createdComponents.map(c => ({
         key: c.cost_component_key,
         amount: c.amount,
         source_type: c.metadata?.source_type
