@@ -1,0 +1,48 @@
+{
+  "name": "InventoryUnitCostComponents",
+  "type": "object",
+  "properties": {
+    "organization_id": {
+      "type": "string",
+      "description": "ID de la organizaci\u00f3n propietaria. Requerido para multi-tenancy."
+    },
+    "inventory_unit_id": {
+      "type": "string",
+      "description": "Referencia l\u00f3gica a InventoryUnits.id. Convenci\u00f3n Base44, sin FK estricta."
+    },
+    "cost_component_key": {
+      "type": "string",
+      "description": "Referencia l\u00f3gica a CostComponentDefinitions.key. Identifica el tipo de costo de este componente."
+    },
+    "amount": {
+      "type": "number",
+      "default": 0,
+      "description": "Monto asignado a esta unidad para este componente de costo. Siempre positivo."
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Contexto adicional del componente. Puede incluir source_type (purchase, import, expense), source_id (ID de la entidad origen), y notas de c\u00e1lculo.",
+      "properties": {
+        "source_type": {
+          "type": "string",
+          "description": "Tipo de entidad origen del costo (ej. ImportBatch, Expense, PurchaseOrder)."
+        },
+        "source_id": {
+          "type": "string",
+          "description": "ID de la entidad origen espec\u00edfica."
+        },
+        "notes": {
+          "type": "string",
+          "description": "Notas adicionales sobre el c\u00e1lculo o asignaci\u00f3n de este componente."
+        }
+      }
+    }
+  },
+  "required": [
+    "organization_id",
+    "inventory_unit_id",
+    "cost_component_key",
+    "amount"
+  ]
+}

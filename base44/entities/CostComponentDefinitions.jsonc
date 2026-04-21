@@ -1,0 +1,33 @@
+{
+  "name": "CostComponentDefinitions",
+  "type": "object",
+  "properties": {
+    "organization_id": {
+      "type": "string",
+      "description": "ID de la organizaci\u00f3n propietaria. Requerido para multi-tenancy."
+    },
+    "key": {
+      "type": "string",
+      "description": "Clave t\u00e9cnica \u00fanica e inmutable del tipo de costo (ej. import_freight, repair_fee, customs_duty). NO modificar una vez creado."
+    },
+    "label": {
+      "type": "string",
+      "description": "Etiqueta legible para la UI (ej. Flete de Importaci\u00f3n, Tarifa de Reparaci\u00f3n)."
+    },
+    "description": {
+      "type": "string",
+      "description": "Descripci\u00f3n extendida del tipo de costo para el administrador."
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true,
+      "description": "Si false, este tipo de costo es ignorado por el motor de costos."
+    }
+  },
+  "required": [
+    "organization_id",
+    "key",
+    "label",
+    "is_active"
+  ]
+}
