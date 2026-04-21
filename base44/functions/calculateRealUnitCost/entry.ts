@@ -2,6 +2,7 @@
 // NEXORA — calculateRealUnitCost — Motor de Costos v2
 // Bloque P0.2 — Componentes Dinámicos
 // Bloque P0.2.1 — Hardening (validaciones reforzadas)
+// Bloque P0.5 — Fix: asServiceRole para invocación desde worker
 // ============================================================
 //
 // ARQUITECTURA:
@@ -9,6 +10,7 @@
 //   - Descomposición: InventoryUnitCostComponents
 //   - Distribución: Proporcional a cost_purchase_unit (regla oficial aprobada)
 //   - Idempotencia: delete + recreate por unidad
+//   - Auth: siempre usa asServiceRole (invocado por worker o directamente por admin)
 //
 // CAMPOS LEGACY — IGNORADOS INTENCIONALMENTE:
 //   - allocated_import_cost     ← LEGACY, NO USADO
@@ -35,13 +37,10 @@ function round2(value) {
   return parseFloat(num.toFixed(2));
 }
 
-// Suma el cost_purchase_unit de un array de InventoryUnits
-// Usa el campo persistido directamente (ya es confiable en el nuevo modelo)
 function sumCostPurchaseUnits(units = []) {
   return units.reduce((acc, u) => acc + Number(u.cost_purchase_unit || 0), 0);
 }
 
-// FIX #1 — Validación de organization_id
 function isValidOrganizationId(orgId) {
   return typeof orgId === 'string' && orgId.trim().length > 0;
 }
@@ -55,10 +54,14 @@ Deno.serve(async (req) => {
 
   try {
     const base44 = createClientFromRequest(req);
+    // P0.5 FIX: usar asServiceRole para todas las operaciones de datos.
+    // Este motor es invocado por el worker (sin token de usuario) o directamente
+    // por admin. En ambos casos, las operaciones de entidad deben correr como servicio.
+    const db = base44.asServiceRole;
+
     const body = await req.json();
     inventoryUnitId = body?.inventoryUnitId || null;
 
-    // FIX #5 — Log de inicio
     console.log(`[START] calculateRealUnitCost invoked. inventoryUnitId: ${inventoryUnitId}`);
 
     // ──────────────────────────────────────────────────────
@@ -74,7 +77,7 @@ Deno.serve(async (req) => {
     // ──────────────────────────────────────────────────────
     // PASO 2 — Cargar InventoryUnit
     // ──────────────────────────────────────────────────────
-    const unit = await base44.entities.InventoryUnits.get(inventoryUnitId);
+    const unit = await db.entities.InventoryUnits.get(inventoryUnitId);
 
     if (!unit) {
       return Response.json(
@@ -83,11 +86,10 @@ Deno.serve(async (req) => {
       );
     }
 
-    // FIX #1 — Validar organization_id ANTES de cualquier operación
-    // (antes de delete, create, o update)
     const organizationId = unit.organization_id;
     console.log(`[VALIDATION] organization_id for unit ${inventoryUnitId}: "${organizationId}"`);
 
+    // Hard fail si no tiene organization_id válido
     if (!isValidOrganizationId(organizationId)) {
       console.warn(`[ABORT] InventoryUnit ${inventoryUnitId} has invalid organization_id: ${organizationId}`);
       return Response.json(
@@ -101,10 +103,9 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Unidades vendidas: proteger costo histórico congelado
-    // (guard no modificado — FIX #6)
+    // Unidades vendidas: costo histórico congelado — no recalcular
     if (unit.status === 'sold') {
-      console.log(`[SKIP] InventoryUnit ${inventoryUnitId} is sold. Cost is frozen. No recalculation.`);
+      console.log(`[SKIP] InventoryUnit ${inventoryUnitId} is sold. Cost is frozen.`);
       return Response.json({
         success: true,
         inventory_unit_id: inventoryUnitId,
@@ -121,7 +122,7 @@ Deno.serve(async (req) => {
     const costPurchaseUnit = Number(unit.cost_purchase_unit || 0);
 
     if (!costPurchaseUnit || costPurchaseUnit <= 0) {
-      console.warn(`[ABORT] InventoryUnit ${inventoryUnitId} has no valid cost_purchase_unit. Aborting before any delete.`);
+      console.warn(`[ABORT] InventoryUnit ${inventoryUnitId} has no valid cost_purchase_unit.`);
       return Response.json(
         {
           success: false,
@@ -137,20 +138,18 @@ Deno.serve(async (req) => {
 
     // ──────────────────────────────────────────────────────
     // PASO 4 — Borrar componentes previos (idempotencia)
-    // FIX #2: Este delete solo se ejecuta si organization_id y cost_purchase_unit
-    // ya pasaron validación arriba — garantizado por el flujo secuencial.
+    // Solo se ejecuta después de pasar todas las validaciones.
     // ──────────────────────────────────────────────────────
-    const existingComponents = await base44.entities.InventoryUnitCostComponents.filter({
+    const existingComponents = await db.entities.InventoryUnitCostComponents.filter({
       inventory_unit_id: inventoryUnitId
     });
 
     const existingCount = existingComponents?.length || 0;
-    // FIX #5 — Log cantidad eliminada
     console.log(`[CLEAN] Deleting ${existingCount} existing cost components for unit ${inventoryUnitId}`);
 
     if (existingCount > 0) {
       for (const comp of existingComponents) {
-        await base44.entities.InventoryUnitCostComponents.delete(comp.id);
+        await db.entities.InventoryUnitCostComponents.delete(comp.id);
       }
     }
 
@@ -175,11 +174,10 @@ Deno.serve(async (req) => {
 
     // ── COMPONENTE 2: COSTOS DE IMPORT BATCH (PROPORCIONAL) ──
     if (unit.import_batch_id) {
-      const importBatch = await base44.entities.ImportBatches.get(unit.import_batch_id);
+      const importBatch = await db.entities.ImportBatches.get(unit.import_batch_id);
 
       if (importBatch) {
-        // Obtener todas las unidades de este batch para calcular la base proporcional
-        const batchUnits = await base44.entities.InventoryUnits.filter({
+        const batchUnits = await db.entities.InventoryUnits.filter({
           import_batch_id: unit.import_batch_id
         });
 
@@ -188,12 +186,11 @@ Deno.serve(async (req) => {
         if (totalBatchPurchaseCost > 0) {
           const proportionFactor = costPurchaseUnit / totalBatchPurchaseCost;
 
-          // Cada campo de costo del batch genera su propio componente dinámico
           const batchCostFields = [
-            { key: 'import_customs',         field: 'customs_total',         label: 'Customs duty from import batch' },
-            { key: 'import_freight',          field: 'freight_total',         label: 'Freight cost from import batch' },
-            { key: 'import_local_transport',  field: 'local_transport_total', label: 'Local transport from import batch' },
-            { key: 'import_extra',            field: 'extra_cost_total',      label: 'Extra costs from import batch' },
+            { key: 'import_customs',        field: 'customs_total',         label: 'Customs duty from import batch' },
+            { key: 'import_freight',         field: 'freight_total',         label: 'Freight cost from import batch' },
+            { key: 'import_local_transport', field: 'local_transport_total', label: 'Local transport from import batch' },
+            { key: 'import_extra',           field: 'extra_cost_total',      label: 'Extra costs from import batch' },
           ];
 
           for (const { key, field, label } of batchCostFields) {
@@ -218,7 +215,6 @@ Deno.serve(async (req) => {
             }
           }
 
-          // Costo fijo por unidad (no proporcional) — si existe en el batch
           const perUnitDefault = Number(importBatch.per_unit_import_default || 0);
           if (perUnitDefault > 0) {
             componentsToCreate.push({
@@ -235,7 +231,7 @@ Deno.serve(async (req) => {
           }
 
         } else {
-          const msg = `ImportBatch ${unit.import_batch_id} has no units with valid cost_purchase_unit for proportional distribution. Import costs skipped.`;
+          const msg = `ImportBatch ${unit.import_batch_id} has no units with valid cost_purchase_unit. Import costs skipped.`;
           console.warn(`[WARN] ${msg}`);
           warnings.push(msg);
         }
@@ -249,17 +245,11 @@ Deno.serve(async (req) => {
 
     // ── COMPONENTE 3: EXPENSES RELACIONADOS ──
     //
-    // Fuentes a consultar:
+    // Fuentes:
     //   A) Expenses directos a esta InventoryUnit
     //   B) Expenses vinculados a su ImportBatch (distribuidos proporcionalmente)
     //
-    // RELACIÓN NO DISPONIBLE: PurchaseItem → Expenses
-    //   El esquema actual de Expenses usa linked_entity_type/linked_entity_id.
-    //   No hay un vínculo directo Expense → PurchaseItem que sea confiable
-    //   en el contexto de distribución proporcional al cost_purchase_unit,
-    //   ya que PurchaseItems no expone un aggregado de costo por unidad confiable
-    //   para base proporcional sin recalcular dinámicamente cada ítem del lote.
-    //   → Esta fuente queda documentada como PENDIENTE para el siguiente bloque.
+    // PENDIENTE: Expenses vinculados a PurchaseItems — no implementado.
 
     const expenseQueries = [
       { linked_entity_type: 'InventoryUnits', linked_entity_id: inventoryUnitId }
@@ -272,10 +262,9 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Recopilar y deduplicar expenses
     const expenseMap = new Map();
     for (const query of expenseQueries) {
-      const fetched = await base44.entities.Expenses.filter(query);
+      const fetched = await db.entities.Expenses.filter(query);
       for (const exp of (fetched || [])) {
         if (exp?.id) expenseMap.set(exp.id, exp);
       }
@@ -288,8 +277,6 @@ Deno.serve(async (req) => {
       const expenseAmount = Number(expense.amount || 0);
       if (expenseAmount <= 0) continue;
 
-      // Mapeo dinámico de allocation_category a cost_component_key
-      // NO hardcodeado — la clave refleja el allocation_category del gasto
       const componentKey = expense.allocation_category
         ? `expense_${expense.allocation_category}`
         : 'expense_other';
@@ -318,7 +305,7 @@ Deno.serve(async (req) => {
         expense.linked_entity_type === 'ImportBatches' &&
         unit.import_batch_id === expense.linked_entity_id
       ) {
-        const batchUnits = await base44.entities.InventoryUnits.filter({
+        const batchUnits = await db.entities.InventoryUnits.filter({
           import_batch_id: expense.linked_entity_id
         });
 
@@ -344,7 +331,7 @@ Deno.serve(async (req) => {
             });
           }
         } else {
-          const msg = `Expense ${expense.id} linked to ImportBatch ${expense.linked_entity_id} could not be distributed: no valid cost_purchase_unit in batch units.`;
+          const msg = `Expense ${expense.id} linked to ImportBatch ${expense.linked_entity_id} could not be distributed.`;
           console.warn(`[WARN] ${msg}`);
           warnings.push(msg);
         }
@@ -352,11 +339,7 @@ Deno.serve(async (req) => {
     }
 
     // ──────────────────────────────────────────────────────
-    // PASO 5b — Persistir componentes (solo amount > 0)
-    // FIX #3 — Creación segura: cada componente se crea de forma individual.
-    // Fallos individuales se capturan como warnings sin detener toda la ejecución.
-    // FIX #3 — Garantizar que todos los componentes tengan organization_id y
-    // inventory_unit_id válidos antes de intentar crear.
+    // PASO 5b — Persistir componentes válidos
     // ──────────────────────────────────────────────────────
     const validComponents = componentsToCreate.filter(c =>
       c.amount > 0 &&
@@ -364,32 +347,26 @@ Deno.serve(async (req) => {
       c.inventory_unit_id
     );
 
-    // FIX #5 — Log cantidad a crear
     console.log(`[CREATE] Attempting to create ${validComponents.length} cost components for unit ${inventoryUnitId}`);
 
     const createdComponents = [];
 
     for (const comp of validComponents) {
       try {
-        await base44.entities.InventoryUnitCostComponents.create(comp);
+        await db.entities.InventoryUnitCostComponents.create(comp);
         createdComponents.push(comp);
       } catch (createError) {
-        // FIX #3 — Capturar fallo individual sin romper la ejecución
         const warnMsg = `component_creation_failed: key=${comp.cost_component_key}, amount=${comp.amount}, error=${createError?.message || 'unknown'}`;
         console.warn(`[WARN] ${warnMsg}`);
         warnings.push(warnMsg);
       }
     }
 
-    // FIX #5 — Log cantidad creada exitosamente
-    console.log(`[CREATED] ${createdComponents.length} of ${validComponents.length} components successfully created for unit ${inventoryUnitId}`);
+    console.log(`[CREATED] ${createdComponents.length} of ${validComponents.length} components created for unit ${inventoryUnitId}`);
 
-    // ──────────────────────────────────────────────────────
-    // FIX #4 — PROTECCIÓN POST-CREATE
-    // No actualizar total_real_unit_cost si no se creó al menos 1 componente válido
-    // ──────────────────────────────────────────────────────
+    // Protección: no actualizar si no se creó ningún componente válido
     if (createdComponents.length === 0) {
-      console.warn(`[ABORT] No valid cost components were created for unit ${inventoryUnitId}. Skipping update of total_real_unit_cost.`);
+      console.warn(`[ABORT] No valid cost components created for unit ${inventoryUnitId}.`);
       return Response.json(
         {
           success: false,
@@ -403,31 +380,21 @@ Deno.serve(async (req) => {
     }
 
     // ──────────────────────────────────────────────────────
-    // PASO 6 — Calcular total final
+    // PASO 6 — Calcular y persistir total final
+    // NOTA: SOLO escribe total_real_unit_cost. Los campos allocated_* son LEGACY.
     // ──────────────────────────────────────────────────────
     const totalRealUnitCost = round2(
       createdComponents.reduce((acc, c) => acc + c.amount, 0)
     );
 
-    // FIX #5 — Log total calculado
     console.log(`[TOTAL] total_real_unit_cost for ${inventoryUnitId}: ${totalRealUnitCost}`);
 
-    // ──────────────────────────────────────────────────────
-    // PASO 7 — Actualizar InventoryUnit (SOLO total_real_unit_cost)
-    //
-    // NOTA: Los campos allocated_* NO se actualizan.
-    //       Son campos legacy y serán eliminados en una fase futura.
-    //       El único campo que escribe este motor es total_real_unit_cost.
-    // ──────────────────────────────────────────────────────
-    await base44.entities.InventoryUnits.update(inventoryUnitId, {
+    await db.entities.InventoryUnits.update(inventoryUnitId, {
       total_real_unit_cost: totalRealUnitCost
     });
 
     console.log(`[DONE] InventoryUnit ${inventoryUnitId} updated. total_real_unit_cost = ${totalRealUnitCost}`);
 
-    // ──────────────────────────────────────────────────────
-    // PASO 8 — Responder resultado estructurado
-    // ──────────────────────────────────────────────────────
     return Response.json({
       success: true,
       inventory_unit_id: inventoryUnitId,
