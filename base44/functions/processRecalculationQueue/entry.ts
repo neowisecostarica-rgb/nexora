@@ -98,11 +98,13 @@ Deno.serve(async (req) => {
       }
 
       // ── 2b) Invocar calculateRealUnitCost ──
+      // NOTA: usar base44.functions.invoke (user-scoped) para propagar el token del caller.
+      // asServiceRole.functions.invoke no propaga token de usuario y causa 403 en la función hija.
       let calcResult = null;
       let calcError = null;
 
       try {
-        const calcResponse = await base44.asServiceRole.functions.invoke('calculateRealUnitCost', {
+        const calcResponse = await base44.functions.invoke('calculateRealUnitCost', {
           inventoryUnitId: unitId
         });
         calcResult = calcResponse?.data || calcResponse;
