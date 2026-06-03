@@ -54,7 +54,6 @@ export default function Inventory() {
   const openEdit = (u) => {
     setEditUnit(u);
     setEditForm({
-      real_unit_cost: u.real_unit_cost || 0,
       assigned_pricing_profile_id: u.assigned_pricing_profile_id || "",
       condition: u.condition || "",
       location: u.location || "",
@@ -133,7 +132,7 @@ export default function Inventory() {
                   <TableCell className="text-sm text-muted-foreground">{u.category_key || "—"}</TableCell>
                   <TableCell>{u.condition || "—"}</TableCell>
                   <TableCell><StatusBadge status={u.status} /></TableCell>
-                  <TableCell className="font-semibold">{formatCurrency(u.real_unit_cost)}</TableCell>
+                  <TableCell className="font-semibold">{formatCurrency(u.total_real_unit_cost)}</TableCell>
                   <TableCell>{formatCurrency(u.retail_price)}</TableCell>
                   <TableCell>{formatCurrency(u.wholesale_price)}</TableCell>
                   <TableCell>{formatCurrency(u.minimum_price)}</TableCell>
@@ -185,11 +184,12 @@ export default function Inventory() {
               <Label>Costo Real (SOT)</Label>
               <Input
                 type="number"
-                step="0.01"
-                value={editForm.real_unit_cost || ""}
-                onChange={(e) => setEditForm((f) => ({ ...f, real_unit_cost: parseFloat(e.target.value) || 0 }))}
+                value={editUnit?.total_real_unit_cost ?? 0}
+                readOnly
+                disabled
+                className="bg-muted cursor-not-allowed"
               />
-              <p className="text-xs text-muted-foreground">Al guardar, precios se recalculan automáticamente.</p>
+              <p className="text-xs text-muted-foreground">Calculado automáticamente por el motor de costos. Solo lectura.</p>
             </div>
 
             <div className="space-y-1.5">

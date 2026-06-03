@@ -4,14 +4,16 @@
  * Genera InventoryUnits desde un PurchaseItem.
  * Schema v1.0 — 100% compatible con CategoryConfig y PricingEngine.
  *
- * MODELO DE DATOS:
+ * MODELO DE DATOS (SOT v2):
  * - category_key: clave de categoría (ej. "laptops")
  * - attributes: JSON con todos los atributos del producto (brand, model, cpu, etc.)
- * - real_unit_cost: costo base inicial (SOT del costo)
+ * - cost_purchase_unit: costo base de compra por unidad (SOT)
+ * - total_real_unit_cost: inicializado igual a cost_purchase_unit (SOT activo)
  * - status: "available"
  *
- * NO escribe ningún campo plano legacy (brand, model, cpu_raw, etc.)
- * NO escribe total_real_unit_cost, cost_purchase_unit ni similares
+ * NO escribe real_unit_cost ni campos legacy allocated_*
+ * El motor de costos (calculateRealUnitCost) actualizará total_real_unit_cost
+ * cuando se asignen costos de importación y gastos adicionales.
  *
  * INPUT: { purchaseItemId, importBatchId?, category_key, unitsData? }
  */
@@ -104,7 +106,9 @@ Deno.serve(async (req) => {
         import_batch_id: importBatchId || purchaseItem.import_batch_id || null,
         category_key: resolvedCategoryKey,
         attributes: mergedAttributes,
-        real_unit_cost: baseCostPerUnit,   // SOT del costo — real_unit_cost NUNCA total_real_unit_cost
+        // SOT v2: cost_purchase_unit = costo base; total_real_unit_cost = SOT activo inicial
+        cost_purchase_unit: baseCostPerUnit,
+        total_real_unit_cost: baseCostPerUnit,
         status: 'available',
         condition: purchaseItem.condition_grade || null,
         location: unitOverride.location || null,

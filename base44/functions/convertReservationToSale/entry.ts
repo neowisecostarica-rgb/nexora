@@ -6,7 +6,9 @@
  * REGLAS CRÍTICAS:
  * - Reservation.status MUST BE "reserved"
  * - InventoryUnit.status MUST BE "reserved"
- * - unit_cost_frozen ← InventoryUnits.real_unit_cost (nunca pricing ni promedios)
+ * - unit_cost_frozen ← InventoryUnits.total_real_unit_cost (SOT activo)
+ *   Fallback temporal: legacy_real_unit_cost si total_real_unit_cost es 0/null
+ *   → emite warning SOT_FALLBACK_USED para identificar registros pendientes de migración
  * - Una vez creado el SaleItem, NO se recalcula nada
  * - Una unidad solo puede venderse una vez (validación anti-duplicado)
  *
@@ -81,8 +83,16 @@ Deno.serve(async (req) => {
     );
   }
 
-  // --- CONGELAMIENTO DE COSTO: SOT es InventoryUnits.real_unit_cost ---
-  const unit_cost_frozen = unit.real_unit_cost || 0;
+  // --- CONGELAMIENTO DE COSTO: SOT es InventoryUnits.total_real_unit_cost ---
+  // Fallback temporal: legacy_real_unit_cost si total_real_unit_cost es 0/null
+  let unit_cost_frozen = unit.total_real_unit_cost || 0;
+  if (unit_cost_frozen <= 0) {
+    const fallbackCost = unit.legacy_real_unit_cost || 0;
+    if (fallbackCost > 0) {
+      unit_cost_frozen = fallbackCost;
+      console.warn(`[SOT_FALLBACK_USED] inventory_unit_id: ${unit.id} | Context: convertReservationToSale freeze | Reason: total_real_unit_cost missing or zero | Fallback: legacy_real_unit_cost (${fallbackCost}) | Action: unit requires cost recalculation before sale`);
+    }
+  }
   const quantity = 1;
   const line_total = unit_price_sold * quantity;
   const profit_amount = line_total - (unit_cost_frozen * quantity);

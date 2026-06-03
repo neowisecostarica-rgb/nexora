@@ -12,7 +12,9 @@
  * REGLAS CRÍTICAS:
  * - Pricing NUNCA se calcula en frontend
  * - Pricing NUNCA se escribe manualmente como fuente
- * - real_unit_cost es el SOT del costo (nunca pricing, nunca promedio)
+ * - total_real_unit_cost es el SOT del costo (nunca pricing, nunca promedio)
+ * - Fallback temporal: legacy_real_unit_cost (si total_real_unit_cost es 0/null)
+ *   → emite warning SOT_FALLBACK_USED para identificar registros pendientes de migración
  * - Unidades sold NO se recalculan (costo ya congelado en SaleItem)
  *
  * INPUT: { inventory_unit_id }
@@ -88,9 +90,22 @@ Deno.serve(async (req) => {
     });
   }
 
-  const cost = unit.real_unit_cost || 0;
+  // SOT v2: fuente primaria = total_real_unit_cost
+  // Fallback temporal permitido: legacy_real_unit_cost (registros históricos sin migrar)
+  let cost = unit.total_real_unit_cost || 0;
+  let usedFallback = false;
+
   if (cost <= 0) {
-    return Response.json({ error: 'real_unit_cost debe ser mayor a 0' }, { status: 400 });
+    const fallbackCost = unit.legacy_real_unit_cost || 0;
+    if (fallbackCost > 0) {
+      cost = fallbackCost;
+      usedFallback = true;
+      console.warn(`[SOT_FALLBACK_USED] inventory_unit_id: ${inventory_unit_id} | Reason: total_real_unit_cost missing or zero | Fallback: legacy_real_unit_cost (${fallbackCost}) | Action: unit requires cost recalculation`);
+    }
+  }
+
+  if (cost <= 0) {
+    return Response.json({ error: 'total_real_unit_cost debe ser mayor a 0 (sin fallback disponible)' }, { status: 400 });
   }
 
   // Resolver perfil de precios
@@ -141,6 +156,7 @@ Deno.serve(async (req) => {
     profile_id: profile.id,
     profile_name: profile.name,
     cost,
+    cost_source: usedFallback ? 'legacy_real_unit_cost (FALLBACK_TEMPORAL)' : 'total_real_unit_cost',
     retail_price,
     wholesale_price,
     minimum_price,
