@@ -70,27 +70,27 @@
     "allocated_import_cost": {
       "type": "number",
       "default": 0,
-      "description": "Costo de importaci\u00f3n (customs + freight + local_transport + extra) asignado proporcionalmente a esta unidad"
+      "description": "Costo de importaci\u00f3n asignado proporcionalmente a esta unidad"
     },
     "allocated_tax_cost": {
       "type": "number",
       "default": 0,
-      "description": "Impuestos de la orden de compra (usa_tax) asignados proporcionalmente a esta unidad"
+      "description": "Impuestos de la orden de compra asignados proporcionalmente a esta unidad"
     },
     "allocated_local_cost": {
       "type": "number",
       "default": 0,
-      "description": "Gastos locales (Expenses tipo local) asignados a esta unidad"
+      "description": "Gastos locales asignados a esta unidad"
     },
     "allocated_repair_cost": {
       "type": "number",
       "default": 0,
-      "description": "Gastos de reparaci\u00f3n (Expenses tipo repair) asignados directamente a esta unidad"
+      "description": "Gastos de reparaci\u00f3n asignados directamente a esta unidad"
     },
     "allocated_other_cost": {
       "type": "number",
       "default": 0,
-      "description": "Otros costos asignados a esta unidad (ej. shipping USA)"
+      "description": "Otros costos asignados a esta unidad"
     },
     "total_real_unit_cost": {
       "type": "number",
@@ -120,6 +120,14 @@
       "type": "number",
       "default": 0,
       "description": "Margen % calculado por PricingEngine. SOLO LECTURA."
+    },
+    "product_definition_id": {
+      "type": "string",
+      "description": "[M1 Cat\u00e1logo Sat\u00e9lite] Referencia opcional a ProductDefinition. No afecta motor de costos ni pricing."
+    },
+    "product_variant_id": {
+      "type": "string",
+      "description": "[M1 Cat\u00e1logo Sat\u00e9lite] Referencia opcional a ProductVariant. No afecta motor de costos ni pricing."
     }
   },
   "required": [

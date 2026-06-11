@@ -1,0 +1,41 @@
+{
+  "name": "ProductVariant",
+  "type": "object",
+  "properties": {
+    "product_definition_id": {
+      "type": "string",
+      "description": "Referencia l\u00f3gica a ProductDefinition.id. Identifica el producto padre."
+    },
+    "sku": {
+      "type": "string",
+      "description": "SKU \u00fanico comercial de esta variante (ej. LNV-X1C-G11-I7-16-512)"
+    },
+    "variant_hash": {
+      "type": "string",
+      "description": "Hash \u00fanico de variante: base64(product_definition_id|attributes_json_sorted). NO modificar manualmente."
+    },
+    "attributes": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Atributos t\u00e9cnicos diferenciales de la variante (ej. { ram: '16GB', cpu: 'i7-1365U', storage: '512GB NVMe' })"
+    },
+    "base_cost_override": {
+      "type": "number",
+      "description": "Costo base opcional para esta variante. No reemplaza al motor de costos."
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true,
+      "description": "Si false, esta variante es ignorada por el cat\u00e1logo."
+    },
+    "notes": {
+      "type": "string",
+      "description": "Notas internas sobre esta variante."
+    }
+  },
+  "required": [
+    "product_definition_id",
+    "sku",
+    "variant_hash"
+  ]
+}

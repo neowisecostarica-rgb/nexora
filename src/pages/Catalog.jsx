@@ -1,151 +1,249 @@
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Search, Package, Layers } from "lucide-react";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Search, BookOpen, GitBranch, RefreshCw, AlertTriangle, CheckCircle, Loader2 } from "lucide-react";
 import PageHeader from "@/components/shared/PageHeader";
-import EmptyState from "@/components/shared/EmptyState";
-import { formatCurrency } from "@/lib/formatters";
-
-const PLACEHOLDER = "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=400&h=300&fit=crop";
 
 export default function Catalog() {
   const [search, setSearch] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState("all");
+  const [activeTab, setActiveTab] = useState("definitions");
+  const [analyzeResult, setAnalyzeResult] = useState(null);
+  const [mirrorResult, setMirrorResult] = useState(null);
+  const [linkResult, setLinkResult] = useState(null);
+  const [isRunning, setIsRunning] = useState(false);
+  const qc = useQueryClient();
 
-  const { data, isLoading } = useQuery({
-    queryKey: ["catalog"],
-    queryFn: () =>
-      base44.functions.invoke("getGroupedCatalogItems", {}).then((r) => r.data),
-    staleTime: 60_000,
+  const { data: definitions = [], isLoading: loadingDefs } = useQuery({
+    queryKey: ["productDefinitions"],
+    queryFn: () => base44.entities.ProductDefinition.list("-created_date", 200),
   });
 
-  // Contrato v1.0: data.groups
-  const groups = data?.groups || [];
+  const { data: variants = [], isLoading: loadingVars } = useQuery({
+    queryKey: ["productVariants"],
+    queryFn: () => base44.entities.ProductVariant.list("-created_date", 200),
+  });
 
-  const categories = [...new Set(groups.map((g) => g.category_key).filter(Boolean))].sort();
+  const runAction = async (action) => {
+    setIsRunning(true);
+    const res = await base44.functions.invoke("normalizeCatalog", { action });
+    const data = res.data;
+    if (action === "analyze") setAnalyzeResult(data);
+    if (action === "mirror") { setMirrorResult(data); qc.invalidateQueries({ queryKey: ["productDefinitions"] }); }
+    if (action === "link") { setLinkResult(data); }
+    setIsRunning(false);
+  };
 
-  const filtered = groups.filter((g) => {
-    const matchSearch =
-      !search ||
-      (g.display_name || "").toLowerCase().includes(search.toLowerCase()) ||
-      (g.category_key || "").toLowerCase().includes(search.toLowerCase());
-    const matchCategory =
-      categoryFilter === "all" || g.category_key === categoryFilter;
-    return matchSearch && matchCategory;
+  const filteredDefs = definitions.filter(d => {
+    const s = `${d.brand} ${d.model} ${d.category_key}`.toLowerCase();
+    return !search || s.includes(search.toLowerCase());
+  });
+
+  const filteredVars = variants.filter(v => {
+    const s = `${v.sku} ${v.product_definition_id}`.toLowerCase();
+    return !search || s.includes(search.toLowerCase());
   });
 
   return (
     <div>
       <PageHeader
-        title="Catálogo"
-        subtitle={
-          isLoading
-            ? "Cargando…"
-            : `${filtered.length} grupo${filtered.length !== 1 ? "s" : ""} disponibles`
-        }
+        title="Catálogo Maestro"
+        subtitle="M1 — ProductDefinition & ProductVariant (Espejo de Datos)"
       />
 
-      <div className="flex flex-wrap gap-3 mb-6">
-        <div className="relative flex-1 min-w-[200px] max-w-sm">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input
-            placeholder="Buscar producto…"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="pl-9"
-          />
-        </div>
-        <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-          <SelectTrigger className="w-44">
-            <SelectValue placeholder="Categoría" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Todas las categorías</SelectItem>
-            {categories.map((c) => (
-              <SelectItem key={c} value={c}>{c}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+      {/* ── Tabs ── */}
+      <div className="flex gap-2 mb-6 border-b">
+        {[
+          { id: "definitions", label: "Definiciones", icon: BookOpen },
+          { id: "variants", label: "Variantes", icon: GitBranch },
+          { id: "tools", label: "Herramientas M1", icon: RefreshCw },
+        ].map(({ id, label, icon: TabIcon }) => (
+          <button
+            key={id}
+            onClick={() => setActiveTab(id)}
+            className={`flex items-center gap-2 px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors ${
+              activeTab === id
+                ? "border-primary text-primary"
+                : "border-transparent text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <TabIcon className="w-4 h-4" />
+            {label}
+          </button>
+        ))}
       </div>
 
-      {isLoading && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {Array.from({ length: 8 }).map((_, i) => (
-            <div key={i} className="bg-card rounded-xl border h-72 animate-pulse" />
-          ))}
+      {/* ── Definiciones ── */}
+      {activeTab === "definitions" && (
+        <div>
+          <div className="relative mb-4 max-w-sm">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input placeholder="Buscar…" value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
+          </div>
+          <div className="bg-card rounded-xl border overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Marca</TableHead>
+                  <TableHead>Modelo</TableHead>
+                  <TableHead>Categoría</TableHead>
+                  <TableHead>Familia</TableHead>
+                  <TableHead>Estado</TableHead>
+                  <TableHead>Hash</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {loadingDefs ? (
+                  <TableRow><TableCell colSpan={6} className="text-center py-8 text-muted-foreground">Cargando…</TableCell></TableRow>
+                ) : filteredDefs.length === 0 ? (
+                  <TableRow><TableCell colSpan={6} className="text-center py-8 text-muted-foreground">Sin definiciones. Usa Herramientas M1 → mirror para generar.</TableCell></TableRow>
+                ) : filteredDefs.map(d => (
+                  <TableRow key={d.id}>
+                    <TableCell className="font-medium">{d.brand}</TableCell>
+                    <TableCell>{d.model}</TableCell>
+                    <TableCell><Badge variant="outline">{d.category_key}</Badge></TableCell>
+                    <TableCell className="text-muted-foreground">{d.product_family_code || "—"}</TableCell>
+                    <TableCell>
+                      <Badge className={d.is_active !== false ? "bg-green-500/10 text-green-600" : "bg-gray-500/10 text-gray-500"}>
+                        {d.is_active !== false ? "Activo" : "Inactivo"}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-xs text-muted-foreground font-mono truncate max-w-[120px]">{d.identity_hash?.slice(0, 16)}…</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
         </div>
       )}
 
-      {!isLoading && filtered.length === 0 && (
-        <EmptyState
-          icon={Layers}
-          title="Sin productos disponibles"
-          description="No hay unidades disponibles en catálogo. Verifique que las unidades tengan perfil de precios asignado."
-        />
-      )}
-
-      {!isLoading && filtered.length > 0 && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {filtered.map((group) => (
-            <CatalogCard key={group.group_key} group={group} />
-          ))}
+      {/* ── Variantes ── */}
+      {activeTab === "variants" && (
+        <div>
+          <div className="relative mb-4 max-w-sm">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input placeholder="Buscar SKU…" value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
+          </div>
+          <div className="bg-card rounded-xl border overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>SKU</TableHead>
+                  <TableHead>ProductDefinition ID</TableHead>
+                  <TableHead>Atributos</TableHead>
+                  <TableHead>Costo Base Override</TableHead>
+                  <TableHead>Estado</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {loadingVars ? (
+                  <TableRow><TableCell colSpan={5} className="text-center py-8 text-muted-foreground">Cargando…</TableCell></TableRow>
+                ) : filteredVars.length === 0 ? (
+                  <TableRow><TableCell colSpan={5} className="text-center py-8 text-muted-foreground">Sin variantes registradas aún.</TableCell></TableRow>
+                ) : filteredVars.map(v => (
+                  <TableRow key={v.id}>
+                    <TableCell className="font-mono text-sm font-semibold">{v.sku}</TableCell>
+                    <TableCell className="text-xs text-muted-foreground truncate max-w-[150px]">{v.product_definition_id}</TableCell>
+                    <TableCell className="text-xs">{v.attributes ? JSON.stringify(v.attributes) : "—"}</TableCell>
+                    <TableCell>{v.base_cost_override ?? "—"}</TableCell>
+                    <TableCell>
+                      <Badge className={v.is_active !== false ? "bg-green-500/10 text-green-600" : "bg-gray-500/10 text-gray-500"}>
+                        {v.is_active !== false ? "Activo" : "Inactivo"}
+                      </Badge>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
         </div>
       )}
-    </div>
-  );
-}
 
-function CatalogCard({ group }) {
-  const imgSrc = group.main_image || PLACEHOLDER;
+      {/* ── Herramientas M1 ── */}
+      {activeTab === "tools" && (
+        <div className="space-y-6 max-w-3xl">
 
-  return (
-    <div className="bg-card rounded-xl border overflow-hidden hover:shadow-lg transition-all duration-200 group flex flex-col">
-      <div className="relative overflow-hidden h-44 bg-muted">
-        <img
-          src={imgSrc}
-          alt={group.display_name}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-          onError={(e) => { e.target.src = PLACEHOLDER; }}
-        />
-        <div className="absolute top-2 left-2">
-          <Badge variant="secondary" className="text-xs font-medium capitalize">
-            {group.category_key}
-          </Badge>
-        </div>
-        <div className="absolute top-2 right-2">
-          <Badge variant="secondary" className="text-xs font-semibold flex items-center gap-1">
-            <Package className="w-3 h-3" />{group.available_quantity} uds.
-          </Badge>
-        </div>
-      </div>
+          <div className="p-4 bg-blue-50 border border-blue-200 rounded-xl text-sm text-blue-800">
+            <strong>🛡️ Modo Satélite M1:</strong> Estas herramientas <strong>NO modifican</strong> el motor de costos, pricing, ventas ni reservas.
+            Los campos <code>product_definition_id</code> y <code>product_variant_id</code> son opcionales y nullable.
+          </div>
 
-      <div className="p-4 flex flex-col flex-1">
-        <div className="flex-1">
-          <h3 className="font-bold text-foreground leading-tight line-clamp-2">
-            {group.display_name || group.category_key}
-          </h3>
-        </div>
-
-        <div className="mt-4 pt-3 border-t flex items-end justify-between">
-          <div>
-            <p className="text-xs text-muted-foreground">Desde</p>
-            <p className="text-lg font-bold text-green-600">
-              {group.price_from ? formatCurrency(group.price_from) : "—"}
-            </p>
-            {group.wholesale_price_from && (
-              <p className="text-xs text-muted-foreground">
-                Mayoreo: {formatCurrency(group.wholesale_price_from)}
-              </p>
+          {/* Analyze */}
+          <div className="bg-card border rounded-xl p-5 space-y-3">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="font-semibold">1. Analizar Catálogo</h3>
+                <p className="text-sm text-muted-foreground">Solo lectura. Genera reporte de candidatos. No escribe nada.</p>
+              </div>
+              <Button variant="outline" onClick={() => runAction("analyze")} disabled={isRunning}>
+                {isRunning ? <Loader2 className="w-4 h-4 animate-spin" /> : "Analizar"}
+              </Button>
+            </div>
+            {analyzeResult && (
+              <div className="text-sm bg-muted rounded-lg p-3 space-y-1">
+                <p><strong>Candidatos exactos:</strong> {analyzeResult.total_exact_candidates}</p>
+                <p><strong>Duplicados fuzzy (solo reporte):</strong> {analyzeResult.fuzzy_duplicate_candidates?.length || 0}</p>
+                {analyzeResult.fuzzy_duplicate_candidates?.length > 0 && (
+                  <div className="mt-2 space-y-1">
+                    <p className="text-yellow-700 font-medium flex items-center gap-1"><AlertTriangle className="w-3.5 h-3.5" /> Requieren revisión humana:</p>
+                    {analyzeResult.fuzzy_duplicate_candidates.map((fc, i) => (
+                      <p key={i} className="text-xs text-muted-foreground pl-4">
+                        "{fc.candidate_a.brand} {fc.candidate_a.model}" ↔ "{fc.candidate_b.brand} {fc.candidate_b.model}"
+                      </p>
+                    ))}
+                  </div>
+                )}
+              </div>
             )}
           </div>
-          <button className="text-xs px-3 py-1.5 rounded-lg bg-primary text-primary-foreground font-medium hover:bg-primary/90 transition-colors">
-            Consultar
-          </button>
+
+          {/* Mirror */}
+          <div className="bg-card border rounded-xl p-5 space-y-3">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="font-semibold">2. Espejo de Catálogo (Mirror)</h3>
+                <p className="text-sm text-muted-foreground">Crea ProductDefinitions por hash exacto. Idempotente. No fusiona por similitud.</p>
+              </div>
+              <Button onClick={() => runAction("mirror")} disabled={isRunning}>
+                {isRunning ? <Loader2 className="w-4 h-4 animate-spin" /> : "Ejecutar Mirror"}
+              </Button>
+            </div>
+            {mirrorResult && (
+              <div className="text-sm bg-muted rounded-lg p-3 space-y-1">
+                <p className="flex items-center gap-1.5"><CheckCircle className="w-3.5 h-3.5 text-green-500" /><strong>Creadas:</strong> {mirrorResult.created_count}</p>
+                <p><strong>Ya existían:</strong> {mirrorResult.already_existed}</p>
+                {mirrorResult.created?.map((c, i) => (
+                  <p key={i} className="text-xs text-muted-foreground pl-4">+ {c.brand} {c.model} ({c.category_key})</p>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Link */}
+          <div className="bg-card border rounded-xl p-5 space-y-3">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="font-semibold">3. Vincular Registros (Link)</h3>
+                <p className="text-sm text-muted-foreground">Asocia InventoryUnits y PurchaseItems a su ProductDefinition. Idempotente. Nullable si no hay match exacto.</p>
+              </div>
+              <Button variant="outline" onClick={() => runAction("link")} disabled={isRunning}>
+                {isRunning ? <Loader2 className="w-4 h-4 animate-spin" /> : "Vincular"}
+              </Button>
+            </div>
+            {linkResult && (
+              <div className="text-sm bg-muted rounded-lg p-3 space-y-1">
+                <p><strong>PurchaseItems vinculados:</strong> {linkResult.linked_purchase_items}</p>
+                <p><strong>InventoryUnits vinculadas:</strong> {linkResult.linked_inventory_units}</p>
+                <p><strong>Sin match exacto (null):</strong> {linkResult.skipped_no_match}</p>
+              </div>
+            )}
+          </div>
+
         </div>
-      </div>
+      )}
     </div>
   );
 }

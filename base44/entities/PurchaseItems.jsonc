@@ -87,6 +87,14 @@
     },
     "notes": {
       "type": "string"
+    },
+    "product_definition_id": {
+      "type": "string",
+      "description": "[M1 Cat\u00e1logo Sat\u00e9lite] Referencia opcional a ProductDefinition. No afecta motor de costos ni pricing."
+    },
+    "product_variant_id": {
+      "type": "string",
+      "description": "[M1 Cat\u00e1logo Sat\u00e9lite] Referencia opcional a ProductVariant. No afecta motor de costos ni pricing."
     }
   },
   "required": [
