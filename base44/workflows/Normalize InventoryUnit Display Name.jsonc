@@ -1,0 +1,38 @@
+{
+  "name": "Normalize InventoryUnit Display Name",
+  "description": "Genera normalized_display_name autom\u00e1ticamente usando CategoryConfig + buildDisplayName cada vez que se crea o actualiza un InventoryUnit.",
+  "trigger": {
+    "condition": "${ (.trigger.changed_fields | index(\"normalized_display_name\") == null) }",
+    "config": {
+      "trigger_type": "entity",
+      "events": [
+        "create",
+        "update"
+      ],
+      "entity_name": "InventoryUnits"
+    }
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "normalize_inventoryunit_display_name",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "run_function": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "normalizeInventoryUnit",
+            "args": {}
+          },
+          "then": "end"
+        }
+      }
+    ]
+  },
+  "x-base44-migrated-from-automation": {
+    "legacy_payload_function": "normalizeInventoryUnit"
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "name": "ImportBatch: Distribuir costos al actualizar",
+  "description": "",
+  "trigger": {
+    "condition": "${ ((.trigger.changed_fields | index(\"customs_total\") != null) or (.trigger.changed_fields | index(\"freight_total\") != null) or (.trigger.changed_fields | index(\"local_transport_total\") != null) or (.trigger.changed_fields | index(\"extra_cost_total\") != null)) }",
+    "config": {
+      "trigger_type": "entity",
+      "events": [
+        "update"
+      ],
+      "entity_name": "ImportBatches"
+    }
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "importbatch_distribuir_costos_al_actualizar",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "run_function": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "distributeImportCosts",
+            "args": {}
+          },
+          "then": "end"
+        }
+      }
+    ]
+  },
+  "x-base44-migrated-from-automation": {
+    "legacy_payload_function": "distributeImportCosts"
+  }
+}

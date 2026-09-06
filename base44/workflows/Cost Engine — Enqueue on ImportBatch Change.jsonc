@@ -1,0 +1,38 @@
+{
+  "name": "Cost Engine \u2014 Enqueue on ImportBatch Change",
+  "description": "Encola rec\u00e1lculo para todas las InventoryUnits del batch cuando un ImportBatch cambia. NO recalcula directamente \u2014 solo llama enqueueRecalculation para cada unidad afectada.",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "entity",
+      "events": [
+        "create",
+        "update"
+      ],
+      "entity_name": "ImportBatches"
+    }
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "cost_engine_enqueue_on_importbatch_change",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "run_function": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "onImportBatchChanged",
+            "args": {}
+          },
+          "then": "end"
+        }
+      }
+    ]
+  },
+  "x-base44-migrated-from-automation": {
+    "legacy_payload_function": "onImportBatchChanged"
+  }
+}
