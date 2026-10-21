@@ -1,45 +1,24 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+import { getOrganizationProfile } from './handler.mjs';
 
-// SOT: Única función autorizada para obtener el perfil activo de la organización.
-// Devuelve el perfil activo o error si no existe o hay duplicados.
+// MG01: scope full company profile to a verified owner membership.
+// Legacy data must be migrated before this draft is merged.
 Deno.serve(async (req) => {
+ try {
   const base44 = createClientFromRequest(req);
-
-  const user = await base44.auth.me();
-  if (!user) {
-    return Response.json({ error: 'Unauthorized' }, { status: 401 });
+  let input = {};
+  if (req.method !== 'GET') {
+   const raw = await req.text();
+   if (raw) {
+    try { input = JSON.parse(raw); }
+    catch { return Response.json({error:'INVALID_JSON'}, {status:400}); }
+    if (!input || typeof input !== 'object' || Array.isArray(input)) return Response.json({error:'INVALID_JSON'}, {status:400});
+   }
   }
-
-  const profiles = await base44.asServiceRole.entities.OrganizationProfile.filter({ active: true });
-
-  if (!profiles || profiles.length === 0) {
-    return Response.json({
-      error: 'NO_PROFILE',
-      message: 'No existe un perfil de organización activo. Configure su empresa en Ajustes.'
-    }, { status: 404 });
-  }
-
-  if (profiles.length > 1) {
-    return Response.json({
-      error: 'MULTIPLE_PROFILES',
-      message: 'Se encontraron múltiples perfiles activos. Contacte al administrador.'
-    }, { status: 409 });
-  }
-
-  const profile = profiles[0];
-
-  // Validar campos REQUIRED_FIELDS_FOR_OPERATION
-  const REQUIRED_FIELDS = [
-    'legal_name', 'commercial_name', 'email_main',
-    'document_prefix_quote', 'document_prefix_sale',
-    'quote_validity_days'
-  ];
-
-  const missingFields = REQUIRED_FIELDS.filter(f => !profile[f]);
-
-  return Response.json({
-    profile,
-    is_complete: missingFields.length === 0,
-    missing_fields: missingFields
-  });
+  const result = await getOrganizationProfile(base44, input.organization_id);
+  return Response.json(result.body, {status:result.status});
+ } catch {
+  // Do not expose profile details or provider errors on failed authorization lookup.
+  return Response.json({error:'PROFILE_LOOKUP_FAILED'}, {status:500});
+ }
 });

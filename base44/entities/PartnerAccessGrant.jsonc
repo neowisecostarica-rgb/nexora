@@ -1,0 +1,72 @@
+{
+  "name": "PartnerAccessGrant",
+  "type": "object",
+  "properties": {
+    "partner_organization_id": {
+      "type": "string"
+    },
+    "client_organization_id": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "revoked"
+      ]
+    },
+    "permissions": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "operations.read",
+          "operations.write",
+          "tracking.read",
+          "tracking.write",
+          "documents.read",
+          "documents.write"
+        ]
+      }
+    },
+    "operation_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "expires_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "partner_organization_id",
+    "client_organization_id",
+    "status",
+    "permissions",
+    "operation_ids"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
