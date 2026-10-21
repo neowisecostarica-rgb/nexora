@@ -127,6 +127,8 @@ test('nested backend invocation preserves user transport and verified company',a
  const f=fake(),c=await createTenantClient(f.client,'a');
  await c.asServiceRole.functions.invoke('calculateAndCachePricing',{organization_id:'b',inventory_unit_id:'ia'});
  assert.deepEqual(f.invocations[0],{name:'calculateAndCachePricing',args:{organization_id:'a',inventory_unit_id:'ia'}});
+ await c.functions.invoke('calculateAndCachePricing',{organization_id:'b',inventory_unit_id:'ia'});
+ assert.deepEqual(f.invocations[1],{name:'calculateAndCachePricing',args:{organization_id:'a',inventory_unit_id:'ia'}});
 });
 test('tenant cannot access privileged entity or create/delete company profile',async()=>{
  const f=fake(),c=await createTenantClient(f.client,'a');

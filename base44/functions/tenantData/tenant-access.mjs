@@ -119,7 +119,7 @@ export async function createTenantClient(client,requestedId,now=Date.now()){
  const entities=scopedEntities(client.asServiceRole.entities,context);
  const functions={invoke:(name,args={})=>client.functions.invoke(name,{...args,...(context.organizationId?{organization_id:context.organizationId}:{})})};
  const service=new Proxy(client.asServiceRole,{get:(target,key)=>key==='entities'?entities:key==='functions'?functions:Reflect.get(target,key)});
- return new Proxy(client,{get:(target,key)=>key==='entities'?entities:key==='asServiceRole'?service:key==='tenantContext'?context:Reflect.get(target,key)});
+ return new Proxy(client,{get:(target,key)=>key==='entities'?entities:key==='asServiceRole'?service:key==='functions'?functions:key==='tenantContext'?context:Reflect.get(target,key)});
 }
 export async function clientForRequest(client,req){
  let input={};
