@@ -21,7 +21,7 @@
         "sinpe",
         "other"
       ],
-      "description": "M\u00e9todo de pago utilizado"
+      "description": "Método de pago utilizado"
     },
     "payment_date": {
       "type": "string",
@@ -53,7 +53,7 @@
     },
     "reference": {
       "type": "string",
-      "description": "Referencia externa del pago (n\u00famero de transacci\u00f3n, comprobante, etc.)"
+      "description": "Referencia externa del pago (número de transacción, comprobante, etc.)"
     },
     "notes": {
       "type": "string",
@@ -61,7 +61,7 @@
     },
     "customer_name": {
       "type": "string",
-      "description": "Nombre del cliente que realiz\u00f3 el pago"
+      "description": "Nombre del cliente que realizó el pago"
     },
     "reservation_id": {
       "type": "string",
@@ -70,6 +70,10 @@
     "sale_id": {
       "type": "string",
       "description": "ID de la venta asociada (si aplica)"
+    },
+    "organization_id": {
+      "type": "string",
+      "description": "ID de OrganizationProfile propietaria. Campo opcional durante transición; registros sin asignación requieren revisión, no inferir dueño."
     }
   },
   "required": [

@@ -8,3 +8,5 @@
 
 Base auditada: 54e8532a72a9bd7f51f56cbc993b4b17ac43a93c.
 Alcance de esta entrega: documentación y comentarios; no cambia comportamiento, datos, permisos ni automatizaciones.
+
+Entrega administrativa actual: NEXORA-MG01-PLATFORM-DELIVERY.md. El aislamiento integral sigue pendiente.

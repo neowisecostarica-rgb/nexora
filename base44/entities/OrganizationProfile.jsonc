@@ -94,6 +94,15 @@
     "active": {
       "type": "boolean",
       "default": true
+    },
+    "organization_type": {
+      "type": "string",
+      "enum": [
+        "importer",
+        "partner",
+        "platform"
+      ],
+      "description": "Clasificación asignada explícitamente por Super Admin; legacy sin valor no se reclasifica automáticamente."
     }
   },
   "required": [

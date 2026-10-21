@@ -34,6 +34,10 @@
     "is_active": {
       "type": "boolean",
       "default": true
+    },
+    "organization_id": {
+      "type": "string",
+      "description": "ID de OrganizationProfile propietaria. Campo opcional durante transición; registros sin asignación requieren revisión, no inferir dueño."
     }
   },
   "required": [

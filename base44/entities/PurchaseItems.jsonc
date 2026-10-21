@@ -78,23 +78,27 @@
     "inventory_generated_count": {
       "type": "number",
       "default": 0,
-      "description": "N\u00famero de InventoryUnits ya generadas. No usar booleano."
+      "description": "Número de InventoryUnits ya generadas. No usar booleano."
     },
     "conversion_in_progress": {
       "type": "boolean",
       "default": false,
-      "description": "Lock l\u00f3gico. True mientras hay conversi\u00f3n en curso."
+      "description": "Lock lógico. True mientras hay conversión en curso."
     },
     "notes": {
       "type": "string"
     },
     "product_definition_id": {
       "type": "string",
-      "description": "[M1 Cat\u00e1logo Sat\u00e9lite] Referencia opcional a ProductDefinition. No afecta motor de costos ni pricing."
+      "description": "[M1 Catálogo Satélite] Referencia opcional a ProductDefinition. No afecta motor de costos ni pricing."
     },
     "product_variant_id": {
       "type": "string",
-      "description": "[M1 Cat\u00e1logo Sat\u00e9lite] Referencia opcional a ProductVariant. No afecta motor de costos ni pricing."
+      "description": "[M1 Catálogo Satélite] Referencia opcional a ProductVariant. No afecta motor de costos ni pricing."
+    },
+    "organization_id": {
+      "type": "string",
+      "description": "ID de OrganizationProfile propietaria. Campo opcional durante transición; registros sin asignación requieren revisión, no inferir dueño."
     }
   },
   "required": [

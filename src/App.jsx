@@ -29,6 +29,7 @@ import Sales from '@/pages/Sales.jsx';
 import Expenses from '@/pages/Expenses';
 import Settings from '@/pages/Settings.jsx';
 import Catalog from '@/pages/Catalog';
+import PlatformAdmin from '@/pages/PlatformAdmin';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -67,6 +68,7 @@ const AuthenticatedApp = () => {
         <Route path="/sales" element={<Sales />} />
         <Route path="/expenses" element={<Expenses />} />
         <Route path="/settings" element={<Settings />} />
+        <Route path="/platform" element={<PlatformAdmin />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>
