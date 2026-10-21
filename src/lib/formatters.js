@@ -1,3 +1,11 @@
+/**
+ * NEXORA — MAPA PARA DESARROLLADORES
+ * Propósito: Formatea moneda, números, porcentajes y fechas; genera códigos. No convierte tipos de cambio ni traduce la aplicación.
+ * Datos/efectos detectados: Sin acceso directo SDK a entidades detectado.
+ * Dependencias: Revisar imports y consumidores; sin invoke literal detectado.
+ * Límites: Preservar contratos; ver docs/NEXORA-REGRESSION-MATRIX.md. Runtime no certificado.
+ * Referencia: docs/NEXORA-INVENTORY.md (base 54e8532).
+ */
 export function formatCurrency(value, currency = "USD") {
   if (value === null || value === undefined) return "$0.00";
   return new Intl.NumberFormat("en-US", {

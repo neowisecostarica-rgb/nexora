@@ -1,3 +1,11 @@
+/**
+ * NEXORA — MAPA PARA DESARROLLADORES
+ * Propósito: Resuelve parámetros de inicialización de la app; revisar contrato con Base44 antes de cambiarlo.
+ * Datos/efectos detectados: Sin acceso directo SDK a entidades detectado.
+ * Dependencias: Revisar imports y consumidores; sin invoke literal detectado.
+ * Límites: Preservar contratos; ver docs/NEXORA-REGRESSION-MATRIX.md. Runtime no certificado.
+ * Referencia: docs/NEXORA-INVENTORY.md (base 54e8532).
+ */
 const isNode = typeof window === 'undefined';
 const windowObj = isNode ? { localStorage: new Map() } : window;
 const storage = windowObj.localStorage;

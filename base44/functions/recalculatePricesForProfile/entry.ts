@@ -1,4 +1,12 @@
 /**
+ * NEXORA — MAPA PARA DESARROLLADORES
+ * Propósito: Automation handler: se dispara cuando se actualiza un PricingProfile. Recalcula precios en batch para todas las unidades que usan ese perfil
+ * Datos/efectos detectados: InventoryUnits.filter
+ * Dependencias: calculateAndCachePricing
+ * Límites: Preservar contratos; ver docs/NEXORA-REGRESSION-MATRIX.md. Runtime no certificado.
+ * Referencia: docs/NEXORA-INVENTORY.md (base 54e8532).
+ */
+/**
  * recalculatePricesForProfile
  *
  * Automation handler: se dispara cuando se actualiza un PricingProfile.

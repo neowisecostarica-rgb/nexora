@@ -1,4 +1,12 @@
 /**
+ * NEXORA — MAPA PARA DESARROLLADORES
+ * Propósito: finalizeSaleWithCostFreeze — ARCHIVADA / ZOMBIE ESTA FUNCIÓN ESTÁ DESACTIVADA Y NO DEBE INVOCARSE.
+ * Datos/efectos detectados: Sin acceso directo SDK a entidades detectado.
+ * Dependencias: Revisar imports y consumidores; sin invoke literal detectado.
+ * Límites: Preservar contratos; ver docs/NEXORA-REGRESSION-MATRIX.md. Runtime no certificado. También existe venta directa en QuoteDetail; exclusividad y atomicidad antiguas no certificadas.
+ * Referencia: docs/NEXORA-INVENTORY.md (base 54e8532).
+ */
+/**
  * finalizeSaleWithCostFreeze — ARCHIVADA / ZOMBIE
  *
  * ESTA FUNCIÓN ESTÁ DESACTIVADA Y NO DEBE INVOCARSE.

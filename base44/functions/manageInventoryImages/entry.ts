@@ -1,3 +1,11 @@
+/**
+ * NEXORA — MAPA PARA DESARROLLADORES
+ * Propósito: Gestiona imágenes de la unidad de inventario.
+ * Datos/efectos detectados: InventoryUnits.get, InventoryUnits.update
+ * Dependencias: Revisar imports y consumidores; sin invoke literal detectado.
+ * Límites: Preservar contratos; ver docs/NEXORA-REGRESSION-MATRIX.md. Runtime no certificado.
+ * Referencia: docs/NEXORA-INVENTORY.md (base 54e8532).
+ */
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 
 // Valida y sanitiza imágenes de InventoryUnits.

@@ -1,4 +1,12 @@
 /**
+ * NEXORA — MAPA PARA DESARROLLADORES
+ * Propósito: Automation handler: se dispara cuando cambia real_unit_cost o assigned_pricing_profile_id en InventoryUnits.
+ * Datos/efectos detectados: Sin acceso directo SDK a entidades detectado.
+ * Dependencias: calculateAndCachePricing
+ * Límites: Preservar contratos; ver docs/NEXORA-REGRESSION-MATRIX.md. Runtime no certificado.
+ * Referencia: docs/NEXORA-INVENTORY.md (base 54e8532).
+ */
+/**
  * recalculatePricingOnCostChange
  *
  * Automation handler: se dispara cuando cambia real_unit_cost o

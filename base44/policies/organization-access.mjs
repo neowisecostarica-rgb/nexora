@@ -1,4 +1,12 @@
 /**
+ * NEXORA — MAPA PARA DESARROLLADORES
+ * Propósito: Política pura de permisos por empresa, rol, destinatario y autorización de aliado; sus entradas deben cargarse en servidor.
+ * Datos/efectos detectados: Sin acceso directo SDK a entidades detectado.
+ * Dependencias: Revisar imports y consumidores; sin invoke literal detectado.
+ * Límites: Preservar contratos; ver docs/NEXORA-REGRESSION-MATRIX.md. Runtime no certificado.
+ * Referencia: docs/NEXORA-INVENTORY.md (base 54e8532).
+ */
+/**
  * Pure server authorization policy. Caller must derive userId from auth and
  * load memberships, grants and resource from trusted storage, never request data.
  * Does not replace entity RLS or enforce itself on existing endpoints.

@@ -1,4 +1,12 @@
 /**
+ * NEXORA — MAPA PARA DESARROLLADORES
+ * Propósito: Función backend que genera normalized_display_name para un InventoryUnit usando CategoryConfig + buildDisplayName.
+ * Datos/efectos detectados: InventoryUnits.get, InventoryUnits.update
+ * Dependencias: Revisar imports y consumidores; sin invoke literal detectado.
+ * Límites: Preservar contratos; ver docs/NEXORA-REGRESSION-MATRIX.md. Runtime no certificado.
+ * Referencia: docs/NEXORA-INVENTORY.md (base 54e8532).
+ */
+/**
  * normalizeInventoryUnit
  *
  * Función backend que genera normalized_display_name para un InventoryUnit

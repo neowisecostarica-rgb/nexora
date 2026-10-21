@@ -1,3 +1,11 @@
+/**
+ * NEXORA — MAPA PARA DESARROLLADORES
+ * Propósito: Encola o actualiza trabajo de recálculo por unidad; preservar deduplicación y trazabilidad.
+ * Datos/efectos detectados: InventoryUnits.get, RecalculationQueue.create, RecalculationQueue.filter, RecalculationQueue.update
+ * Dependencias: Revisar imports y consumidores; sin invoke literal detectado.
+ * Límites: Preservar contratos; ver docs/NEXORA-REGRESSION-MATRIX.md. Runtime no certificado.
+ * Referencia: docs/NEXORA-INVENTORY.md (base 54e8532).
+ */
 // ============================================================
 // NEXORA — enqueueRecalculation
 // Bloque P0.4 — Orquestación Cost Engine

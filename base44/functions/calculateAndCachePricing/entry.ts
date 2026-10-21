@@ -1,4 +1,12 @@
 /**
+ * NEXORA — MAPA PARA DESARROLLADORES
+ * Propósito: Motor de precios central. Resuelve el PricingProfile correcto para una unidad y calcula + guarda los precios en InventoryUnits.
+ * Datos/efectos detectados: InventoryUnits.get, InventoryUnits.update, PricingProfiles.filter, PricingProfiles.get
+ * Dependencias: Revisar imports y consumidores; sin invoke literal detectado.
+ * Límites: Preservar contratos; ver docs/NEXORA-REGRESSION-MATRIX.md. Runtime no certificado.
+ * Referencia: docs/NEXORA-INVENTORY.md (base 54e8532).
+ */
+/**
  * calculateAndCachePricing
  *
  * Motor de precios central. Resuelve el PricingProfile correcto para una unidad

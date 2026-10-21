@@ -1,3 +1,11 @@
+/**
+ * NEXORA — MAPA PARA DESARROLLADORES
+ * Propósito: Listado y alta de órdenes de compra; conserva moneda, proveedor y asociación con importación.
+ * Datos/efectos detectados: PurchaseOrders.create, PurchaseOrders.list
+ * Dependencias: Revisar imports y consumidores; sin invoke literal detectado.
+ * Límites: Preservar contratos; ver docs/NEXORA-REGRESSION-MATRIX.md. Runtime no certificado.
+ * Referencia: docs/NEXORA-INVENTORY.md (base 54e8532).
+ */
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";

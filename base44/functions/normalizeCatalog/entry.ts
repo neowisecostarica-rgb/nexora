@@ -1,4 +1,12 @@
 /**
+ * NEXORA — MAPA PARA DESARROLLADORES
+ * Propósito: Utilería idempotente para análisis y espejo del catálogo M1. MODOS:
+ * Datos/efectos detectados: InventoryUnits.list, InventoryUnits.update, ProductDefinition.create, ProductDefinition.list, PurchaseItems.list, PurchaseItems.update
+ * Dependencias: Revisar imports y consumidores; sin invoke literal detectado.
+ * Límites: Preservar contratos; ver docs/NEXORA-REGRESSION-MATRIX.md. Runtime no certificado.
+ * Referencia: docs/NEXORA-INVENTORY.md (base 54e8532).
+ */
+/**
  * normalizeCatalog
  *
  * Utilería idempotente para análisis y espejo del catálogo M1.

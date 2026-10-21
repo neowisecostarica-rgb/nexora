@@ -1,3 +1,11 @@
+/**
+ * NEXORA — MAPA PARA DESARROLLADORES
+ * Propósito: Obtiene y actualiza secuencias del perfil empresarial; revisar concurrencia y ámbito antes de certificar.
+ * Datos/efectos detectados: OrganizationProfile.filter, OrganizationProfile.update
+ * Dependencias: Revisar imports y consumidores; sin invoke literal detectado.
+ * Límites: Preservar contratos; ver docs/NEXORA-REGRESSION-MATRIX.md. Runtime no certificado.
+ * Referencia: docs/NEXORA-INVENTORY.md (base 54e8532).
+ */
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
 // Control transaccional para numeración de documentos (cotizaciones y ventas).

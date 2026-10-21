@@ -1,4 +1,12 @@
 /**
+ * NEXORA — MAPA PARA DESARROLLADORES
+ * Propósito: Convierte una reserva activa en una venta real con histórico congelado. REGLAS CRÍTICAS:
+ * Datos/efectos detectados: InventoryUnits.get, InventoryUnits.update, Reservations.get, Reservations.update, SaleItems.create, SaleItems.filter, Sales.create
+ * Dependencias: Revisar imports y consumidores; sin invoke literal detectado.
+ * Límites: Preservar contratos; ver docs/NEXORA-REGRESSION-MATRIX.md. Runtime no certificado. También existe venta directa en QuoteDetail; exclusividad y atomicidad antiguas no certificadas.
+ * Referencia: docs/NEXORA-INVENTORY.md (base 54e8532).
+ */
+/**
  * convertReservationToSale
  *
  * Convierte una reserva activa en una venta real con histórico congelado.

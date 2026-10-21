@@ -1,4 +1,12 @@
 /**
+ * NEXORA — MAPA PARA DESARROLLADORES
+ * Propósito: Registra un pago real en el ledger financiero. REGLAS CRÍTICAS:
+ * Datos/efectos detectados: Payments.create, Reservations.get, Sales.get
+ * Dependencias: Revisar imports y consumidores; sin invoke literal detectado.
+ * Límites: Preservar contratos; ver docs/NEXORA-REGRESSION-MATRIX.md. Runtime no certificado.
+ * Referencia: docs/NEXORA-INVENTORY.md (base 54e8532).
+ */
+/**
  * createPayment
  *
  * Registra un pago real en el ledger financiero.

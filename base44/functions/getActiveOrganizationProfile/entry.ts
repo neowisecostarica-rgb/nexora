@@ -1,3 +1,11 @@
+/**
+ * NEXORA — MAPA PARA DESARROLLADORES
+ * Propósito: Entrada HTTP del perfil empresarial. El cambio MG01 exige membresía owner y aún requiere Super Admin y migración.
+ * Datos/efectos detectados: Sin acceso directo SDK a entidades detectado.
+ * Dependencias: Revisar imports y consumidores; sin invoke literal detectado.
+ * Límites: Preservar contratos; ver docs/NEXORA-REGRESSION-MATRIX.md. Runtime no certificado. Gustavo es Super Admin; owner-only requiere corrección y migración.
+ * Referencia: docs/NEXORA-INVENTORY.md (base 54e8532).
+ */
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 import { getOrganizationProfile } from './handler.mjs';
 

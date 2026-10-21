@@ -1,4 +1,12 @@
 /**
+ * NEXORA — MAPA PARA DESARROLLADORES
+ * Propósito: Configuración de plantillas y claves de agrupación por categoría; buildDisplayName construye nombres desde atributos.
+ * Datos/efectos detectados: Sin acceso directo SDK a entidades detectado.
+ * Dependencias: Revisar imports y consumidores; sin invoke literal detectado.
+ * Límites: Preservar contratos; ver docs/NEXORA-REGRESSION-MATRIX.md. Runtime no certificado.
+ * Referencia: docs/NEXORA-INVENTORY.md (base 54e8532).
+ */
+/**
  * CATEGORY CONFIG — Fuente única de verdad para configuración de categorías.
  * Para agregar una categoría nueva: solo agregar una entrada aquí.
  * NO duplicar esta lógica en ningún otro lugar.

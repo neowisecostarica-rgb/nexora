@@ -1,3 +1,11 @@
+/**
+ * NEXORA — MAPA PARA DESARROLLADORES
+ * Propósito: Partidas de cotización, impresión y conversión directa en venta desde UI. Este camino también debe protegerse.
+ * Datos/efectos detectados: InventoryUnits.filter, InventoryUnits.update, OrganizationProfile.filter, QuoteItems.create, QuoteItems.filter, Quotes.filter, Quotes.update, SaleItems.create, Sales.create
+ * Dependencias: generateDocumentNumber
+ * Límites: Preservar contratos; ver docs/NEXORA-REGRESSION-MATRIX.md. Runtime no certificado.
+ * Referencia: docs/NEXORA-INVENTORY.md (base 54e8532).
+ */
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";

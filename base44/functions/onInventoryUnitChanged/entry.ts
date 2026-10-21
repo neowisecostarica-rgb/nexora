@@ -1,3 +1,11 @@
+/**
+ * NEXORA — MAPA PARA DESARROLLADORES
+ * Propósito: Traduce cambios de unidad en solicitudes de recálculo.
+ * Datos/efectos detectados: Sin acceso directo SDK a entidades detectado.
+ * Dependencias: enqueueRecalculation
+ * Límites: Preservar contratos; ver docs/NEXORA-REGRESSION-MATRIX.md. Runtime no certificado.
+ * Referencia: docs/NEXORA-INVENTORY.md (base 54e8532).
+ */
 // ============================================================
 // NEXORA — onInventoryUnitChanged
 // Bloque P0.4 — Automation handler: InventoryUnits create/update

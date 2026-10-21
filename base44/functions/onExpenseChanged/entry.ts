@@ -1,3 +1,11 @@
+/**
+ * NEXORA — MAPA PARA DESARROLLADORES
+ * Propósito: Traduce cambios de gastos en solicitudes de recálculo para unidades afectadas.
+ * Datos/efectos detectados: Expenses.get, InventoryUnits.filter
+ * Dependencias: enqueueRecalculation
+ * Límites: Preservar contratos; ver docs/NEXORA-REGRESSION-MATRIX.md. Runtime no certificado.
+ * Referencia: docs/NEXORA-INVENTORY.md (base 54e8532).
+ */
 // ============================================================
 // NEXORA — onExpenseChanged
 // Bloque P0.4 — Automation handler: Expenses create/update

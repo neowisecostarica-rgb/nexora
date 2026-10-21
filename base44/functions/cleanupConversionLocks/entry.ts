@@ -1,4 +1,12 @@
 /**
+ * NEXORA — MAPA PARA DESARROLLADORES
+ * Propósito: Limpia locks de conversión huérfanos (conversion_in_progress = true por más de 10 min). Invocado por automatización programada cada 15 minutos.
+ * Datos/efectos detectados: PurchaseItems.filter, PurchaseItems.update
+ * Dependencias: Revisar imports y consumidores; sin invoke literal detectado.
+ * Límites: Preservar contratos; ver docs/NEXORA-REGRESSION-MATRIX.md. Runtime no certificado.
+ * Referencia: docs/NEXORA-INVENTORY.md (base 54e8532).
+ */
+/**
  * cleanupConversionLocks
  *
  * Limpia locks de conversión huérfanos (conversion_in_progress = true por más de 10 min).

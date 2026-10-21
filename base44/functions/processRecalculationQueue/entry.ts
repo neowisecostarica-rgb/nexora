@@ -1,3 +1,11 @@
+/**
+ * NEXORA — MAPA PARA DESARROLLADORES
+ * Propósito: Procesa cola de recálculo y contiene cálculo de costos interno. Comparar ambos motores antes de consolidarlos.
+ * Datos/efectos detectados: Expenses.filter, ImportBatches.get, InventoryUnitCostComponents.create, InventoryUnitCostComponents.delete, InventoryUnitCostComponents.filter, InventoryUnits.filter, InventoryUnits.get, InventoryUnits.update, RecalculationQueue.filter, RecalculationQueue.update
+ * Dependencias: Revisar imports y consumidores; sin invoke literal detectado.
+ * Límites: Preservar contratos; ver docs/NEXORA-REGRESSION-MATRIX.md. Runtime no certificado.
+ * Referencia: docs/NEXORA-INVENTORY.md (base 54e8532).
+ */
 // ============================================================
 // NEXORA — processRecalculationQueue
 // Bloque P0.4 — Orquestación Cost Engine

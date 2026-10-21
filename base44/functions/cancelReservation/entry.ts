@@ -1,4 +1,12 @@
 /**
+ * NEXORA — MAPA PARA DESARROLLADORES
+ * Propósito: Cancela una reserva activa y libera la unidad de inventario. INPUT: { reservation_id }
+ * Datos/efectos detectados: InventoryUnits.update, Reservations.get, Reservations.update
+ * Dependencias: Revisar imports y consumidores; sin invoke literal detectado.
+ * Límites: Preservar contratos; ver docs/NEXORA-REGRESSION-MATRIX.md. Runtime no certificado.
+ * Referencia: docs/NEXORA-INVENTORY.md (base 54e8532).
+ */
+/**
  * cancelReservation
  *
  * Cancela una reserva activa y libera la unidad de inventario.

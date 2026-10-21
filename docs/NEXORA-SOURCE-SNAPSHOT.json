@@ -1,0 +1,765 @@
+{
+  "commit": "54e8532a72a9bd7f51f56cbc993b4b17ac43a93c",
+  "files": [
+    {
+      "path": "base44/config.jsonc",
+      "sha256": "5f542b401de6457d14535cfdf717574a5150c2bfa9245fff00517c5a08190394",
+      "bytes": 180
+    },
+    {
+      "path": "base44/entities/CostComponentDefinitions.jsonc",
+      "sha256": "17b90c1b4457c40401bd34eb462a6f835eeb5c7079339dd40ed7a0bcb04dc62f",
+      "bytes": 981
+    },
+    {
+      "path": "base44/entities/Customers.jsonc",
+      "sha256": "25377798a7a79e1a59ae6fcfa33558353af85cc402c99385a9889fae00fd2fe5",
+      "bytes": 780
+    },
+    {
+      "path": "base44/entities/Expenses.jsonc",
+      "sha256": "25f0f63efc8430e652d7e9c1a57e3f366237b76b0fd43f03e4c3d1a583e3e54f",
+      "bytes": 902
+    },
+    {
+      "path": "base44/entities/ImportBatches.jsonc",
+      "sha256": "c10b6657f0d8002c0a76f435040a560553fc6b1df78ff971c886cd0a5f261c3b",
+      "bytes": 1220
+    },
+    {
+      "path": "base44/entities/InventoryUnitCostComponents.jsonc",
+      "sha256": "1a1f3c5045398a5bc835b32efb2d1c30c3d739892e2c9a4103fad46abfd5443e",
+      "bytes": 1611
+    },
+    {
+      "path": "base44/entities/InventoryUnits.jsonc",
+      "sha256": "b4d126a62735b9dc8995df9d842bd1fa1c9894555e5c4903054789d9c53232c6",
+      "bytes": 4308
+    },
+    {
+      "path": "base44/entities/OrganizationMembership.jsonc",
+      "sha256": "4b6cdc689cbc5336ce5f1bdfe1d940d839b1a67506fd6edbe74bf90a1317d9f3",
+      "bytes": 887
+    },
+    {
+      "path": "base44/entities/OrganizationProfile.jsonc",
+      "sha256": "253700d6c55e8b76d637f032a52805a0b95c9b68fb7bc1c08f6b3fdd8a5f0f3b",
+      "bytes": 1933
+    },
+    {
+      "path": "base44/entities/PartnerAccessGrant.jsonc",
+      "sha256": "aa1a90863f63faa9cd39452c88ab1dab998b3836e0d57a639e3947ddd0272472",
+      "bytes": 1263
+    },
+    {
+      "path": "base44/entities/Payments.jsonc",
+      "sha256": "6bb48a5eca7573024cb062850c15db0c1e0c04ee11b2551177035118de1f0027",
+      "bytes": 1812
+    },
+    {
+      "path": "base44/entities/PricingProfiles.jsonc",
+      "sha256": "92864aa636a5752968aae8d541d689b5ee1955944e8ae67c3db94210916cdd62",
+      "bytes": 1786
+    },
+    {
+      "path": "base44/entities/ProductDefinition.jsonc",
+      "sha256": "816fd161de10f44239dc25e43aaa8f8fc8d33b22f1db157dd212896899030e5f",
+      "bytes": 1219
+    },
+    {
+      "path": "base44/entities/ProductVariant.jsonc",
+      "sha256": "2377d25610fb24f7b6a6b7d006fea8265843097d02a636865f37e099476c681e",
+      "bytes": 1276
+    },
+    {
+      "path": "base44/entities/PurchaseItems.jsonc",
+      "sha256": "0ca69b9761668874b05f57863cf2bac27c98068f44a79e451ae41d4f3ebbfd33",
+      "bytes": 2156
+    },
+    {
+      "path": "base44/entities/PurchaseOrders.jsonc",
+      "sha256": "07cbdeeb5a5310536f226518bcab4ef6bc4f5c5f9ab53cb087fa0491d379e33b",
+      "bytes": 1547
+    },
+    {
+      "path": "base44/entities/QuoteItems.jsonc",
+      "sha256": "d39cfc942acfe4b25d46ed2faedceff6eb320de367d9942b6068e134786e95f6",
+      "bytes": 589
+    },
+    {
+      "path": "base44/entities/Quotes.jsonc",
+      "sha256": "ddf8dfe2e822cfd86e96f2bae85a8f9971faedae163d3911e4dab8d2ab737787",
+      "bytes": 2103
+    },
+    {
+      "path": "base44/entities/RecalculationQueue.jsonc",
+      "sha256": "a5f0bc218ea78aafc0556ee01658794fa5b078603c1062c054cd294ea20a0777",
+      "bytes": 2204
+    },
+    {
+      "path": "base44/entities/Reservations.jsonc",
+      "sha256": "c399f2fcb4e51081a1a50ba2712cc2b757d9ab9d909dfef4bdd5efa3e9a1c4fe",
+      "bytes": 1509
+    },
+    {
+      "path": "base44/entities/SaleItems.jsonc",
+      "sha256": "ee7586d55129d0c51cee47773f35fad4093116c024286a9087db3a73fc1e7432",
+      "bytes": 1265
+    },
+    {
+      "path": "base44/entities/Sales.jsonc",
+      "sha256": "d6329766a7f75be1cd421a459e89797ca0a6e636b42b38e5c8f6c491733f49c8",
+      "bytes": 1265
+    },
+    {
+      "path": "base44/entities/Suppliers.jsonc",
+      "sha256": "bcaa6853cd81f684f1dade30f6588fa4740455c26b5d060632602ce737a52e04",
+      "bytes": 700
+    },
+    {
+      "path": "base44/entities/User.jsonc",
+      "sha256": "4de38108e89f3bb0c1c7411eabdd47f8899238f1580428a167de47b10c5b3a31",
+      "bytes": 251
+    },
+    {
+      "path": "base44/functions/calculateAndCachePricing/entry.ts",
+      "sha256": "346d66beb5f128bf2f6bcb61ff27fd3ee9363f30cbd35fdabc43d045fca70ac6",
+      "bytes": 6423
+    },
+    {
+      "path": "base44/functions/calculateRealUnitCost/entry.ts",
+      "sha256": "90195f72e652250ebaa71aeda9fc4fe32b291afa961bbacf8d498cdcb474fb97",
+      "bytes": 15104
+    },
+    {
+      "path": "base44/functions/cancelReservation/entry.ts",
+      "sha256": "209c772da02cf6ef3c357522911c54caff24447f3bd8c94ee1690272a44faf9c",
+      "bytes": 1479
+    },
+    {
+      "path": "base44/functions/cleanupConversionLocks/entry.ts",
+      "sha256": "71773a5ab42f28d42d8eeb37bfae9e8c006d14e5468d81883d0f06f1190a365c",
+      "bytes": 1141
+    },
+    {
+      "path": "base44/functions/convertReservationToSale/entry.ts",
+      "sha256": "f59f1126915aebfe1c92df44b9064d0b1935abc0642a7fdb8c82929571a6a39b",
+      "bytes": 4923
+    },
+    {
+      "path": "base44/functions/createInventoryFromPurchaseItem/entry.ts",
+      "sha256": "d63166c69e9fdd8903ddc889007908b33a3aeab58ffd9eb9f15e2eea6e9882db",
+      "bytes": 6635
+    },
+    {
+      "path": "base44/functions/createPayment/entry.ts",
+      "sha256": "0b825d7bf6ba8db39e116e4f280a79bd30d6571832460e5559737462295200d8",
+      "bytes": 3414
+    },
+    {
+      "path": "base44/functions/createReservation/entry.ts",
+      "sha256": "0b059ac0584e8bd7921a78443079a6f0ba22d6fdf49e22039c6073d337ebdd22",
+      "bytes": 2129
+    },
+    {
+      "path": "base44/functions/distributeImportCosts/entry.ts",
+      "sha256": "6431f5533b0afc5802d9e8effa37dfc532bbce6927205fbe1e8c45ad8e1d9798",
+      "bytes": 3689
+    },
+    {
+      "path": "base44/functions/enqueueRecalculation/entry.ts",
+      "sha256": "5a56ba71402c0df42bf3b9d8ea5e6ebb530d2e457323a333a8d24dbf8835871d",
+      "bytes": 8193
+    },
+    {
+      "path": "base44/functions/expireReservations/entry.ts",
+      "sha256": "db0e53509c607366889cd61fdfe695034af903b6c2c63220862b4281e120ebfa",
+      "bytes": 1529
+    },
+    {
+      "path": "base44/functions/finalizeSaleWithCostFreeze/entry.ts",
+      "sha256": "94c57181a6161d6737655b051f78b926de8dab89331c6bbd4434e0343e9a3e3c",
+      "bytes": 588
+    },
+    {
+      "path": "base44/functions/generateDocumentNumber/entry.ts",
+      "sha256": "a38c62403c0af68354365530d3998f2c59b437d05c8bc6e9e25da91ccb19261d",
+      "bytes": 1728
+    },
+    {
+      "path": "base44/functions/getActiveOrganizationProfile/entry.ts",
+      "sha256": "3345cde2753a8bda7f1bb4e5924980f673abe2324084f2e52000f8769e749a0a",
+      "bytes": 992
+    },
+    {
+      "path": "base44/functions/getActiveOrganizationProfile/handler.mjs",
+      "sha256": "44fe04d50f44723df14ce53e213d60e6eb18078bdb236b6ad32210262e02d46a",
+      "bytes": 2126
+    },
+    {
+      "path": "base44/functions/getGroupedCatalogItems/entry.ts",
+      "sha256": "0cbc294504a57e5374622e7b8ff23f5c3de5a86b0390e9376fca84a3d7d1ae28",
+      "bytes": 5642
+    },
+    {
+      "path": "base44/functions/manageInventoryImages/entry.ts",
+      "sha256": "cd7558632f7bff9193a29c56a02cfdd5b12c81e6613efbda591b75e8fcb01478",
+      "bytes": 1444
+    },
+    {
+      "path": "base44/functions/normalizeCatalog/entry.ts",
+      "sha256": "8a51da3ccaa6492b055751f58bc69b31824bfdaed95efa0442a6b3cf56e14ff2",
+      "bytes": 10715
+    },
+    {
+      "path": "base44/functions/normalizeInventoryUnit/entry.ts",
+      "sha256": "2799d129cc7cd1f32742defef6a62526d3cb861fcd0e6aafe2b17f51686aec74",
+      "bytes": 2969
+    },
+    {
+      "path": "base44/functions/onExpenseChanged/entry.ts",
+      "sha256": "b47f2f83b44ca6abfc671fc59de00b08bcce94583bd2bc4b449156ceaa059b21",
+      "bytes": 7004
+    },
+    {
+      "path": "base44/functions/onImportBatchChanged/entry.ts",
+      "sha256": "e5d2e19396236aead88cafb9da75f75d6f1c05431c45a6df064f841b23d87fdc",
+      "bytes": 3151
+    },
+    {
+      "path": "base44/functions/onInventoryUnitChanged/entry.ts",
+      "sha256": "7a12b13b4a54c91acac7ab296c3a30f934d40106e71e185df489a617f63ef8e6",
+      "bytes": 1785
+    },
+    {
+      "path": "base44/functions/processRecalculationQueue/entry.ts",
+      "sha256": "c23a1ff9e1fc9a8a75b6ab1d1516eb584385ff84a3e4fe9ba60a5917d117eda1",
+      "bytes": 15283
+    },
+    {
+      "path": "base44/functions/recalculatePricesForProfile/entry.ts",
+      "sha256": "6701c34a97331aff44d3cd2f928b24f9a239680aef74283039b21c4973a302a9",
+      "bytes": 2694
+    },
+    {
+      "path": "base44/functions/recalculatePricingOnCostChange/entry.ts",
+      "sha256": "f2e9f686bf1da15813aa209d9cc1981436dfdbf5f201895f6dcacf1e7305996a",
+      "bytes": 935
+    },
+    {
+      "path": "base44/policies/organization-access.mjs",
+      "sha256": "b8307de492b007af2084e5035c35e3f640a770f226748074ca9839b89df67791",
+      "bytes": 2157
+    },
+    {
+      "path": "base44/workflows/Cost Engine — Enqueue on Expense Change.jsonc",
+      "sha256": "0000fbe95e4497eaa5e18526dc8f60e0d71c71ebcd0d1bcfb85fc74776928539",
+      "bytes": 978
+    },
+    {
+      "path": "base44/workflows/Cost Engine — Enqueue on ImportBatch Change.jsonc",
+      "sha256": "1590a92d00c1d95270d7bcd7e77aa3311d9db87435cfd6513115351384d9d1dd",
+      "bytes": 993
+    },
+    {
+      "path": "base44/workflows/Cost Engine — Enqueue on InventoryUnit Change.jsonc",
+      "sha256": "4e20b93c954b92b7e7befec60fd50a922327f43261eca57b83075e815a1bb885",
+      "bytes": 964
+    },
+    {
+      "path": "base44/workflows/Cost Engine — Worker processRecalculationQueue.jsonc",
+      "sha256": "6197e02a861434860eafd634664cefe4c8301e4f0e6b876dd3ff4d06e9d76738",
+      "bytes": 1227
+    },
+    {
+      "path": "base44/workflows/Expire Reservations CRON.jsonc",
+      "sha256": "a20c7f1f28e9dd353e50d928b1cd373a88e66cd86ff31ad04596b32bdfb22d87",
+      "bytes": 1142
+    },
+    {
+      "path": "base44/workflows/ImportBatch: Distribuir costos al actualizar.jsonc",
+      "sha256": "5cae56998f340738f24f0675fcf8ae6091040def87e0421ed8fb0a8b392372b0",
+      "bytes": 1060
+    },
+    {
+      "path": "base44/workflows/Inventario: Validar imágenes al actualizar.jsonc",
+      "sha256": "feff23e8a0f3b2664f0a23c2723d77ace4a5b2149da29219b105be96773b9b4a",
+      "bytes": 913
+    },
+    {
+      "path": "base44/workflows/Limpiar locks de conversión huérfanos.jsonc",
+      "sha256": "a6675deb483c752f236a60b80ab4e2a6f48db712cd540594cdfbf0a916c860a3",
+      "bytes": 1057
+    },
+    {
+      "path": "base44/workflows/Normalize InventoryUnit Display Name.jsonc",
+      "sha256": "717d6fa51777cf6b135302285063f6c9b1dc15d5c169f0d553f0ac747c618565",
+      "bytes": 1014
+    },
+    {
+      "path": "base44/workflows/Pricing: Recalcular masivo al actualizar perfil.jsonc",
+      "sha256": "fc436483b0cd4e7a8f23e86bdb31355032fff12d5788c8b591fa6ccc3eeb2d27",
+      "bytes": 812
+    },
+    {
+      "path": "base44/workflows/Recalcular Pricing al Cambiar Costo Real.jsonc",
+      "sha256": "887cbe88b72bbc6414fa8fa162aa2c9119ac1fdff09b1c858ec9d8eb7408471f",
+      "bytes": 1125
+    },
+    {
+      "path": "src/App.jsx",
+      "sha256": "5138f8e10134412836f0df8c945eb1c2baf8797265b7324e5b63fa31d6ed2d39",
+      "bytes": 2975
+    },
+    {
+      "path": "src/api/base44Client.js",
+      "sha256": "35647ef13677f2b23399843531e82cb49521bcd6cd09f00e23888b0d7973cf2e",
+      "bytes": 337
+    },
+    {
+      "path": "src/components/AuthLayout.jsx",
+      "sha256": "27191e5279ab7a6d30609f7954c64edf586ce11817ca50ca63ed03bd432629ce",
+      "bytes": 955
+    },
+    {
+      "path": "src/components/ProtectedRoute.jsx",
+      "sha256": "f1121449bc7f8f31b2ed2d4a6e0211c8d300319efd58919efdd313dc7b586068",
+      "bytes": 1069
+    },
+    {
+      "path": "src/components/UserNotRegisteredError.jsx",
+      "sha256": "5cecb11fe2fb3a03a73e5845b5ee9d26c9255e80feda689b3dfc70822ba288f1",
+      "bytes": 1592
+    },
+    {
+      "path": "src/components/inventory/ImageManager.jsx",
+      "sha256": "d98ac3bdce992dbc65d492fd83db7bf788d731cadbae1ebbd4ef366513fa3d0e",
+      "bytes": 3668
+    },
+    {
+      "path": "src/components/layout/AppLayout.jsx",
+      "sha256": "c88da93ce07303b6ea4afe4db268cba37eca6fa710f1186e02542606005e0d73",
+      "bytes": 383
+    },
+    {
+      "path": "src/components/layout/Sidebar.jsx",
+      "sha256": "3eb7a260a1b7535c2e41b5e830de5e6b6559fbad4ac7f788e42ebcb82619a5bd",
+      "bytes": 3456
+    },
+    {
+      "path": "src/components/settings/OrgProfileAlert.jsx",
+      "sha256": "cebf45d5b51d61ae0306621ef834db1ffdd6f0962056b3084e75744ff23e3673",
+      "bytes": 966
+    },
+    {
+      "path": "src/components/shared/EmptyState.jsx",
+      "sha256": "2f689a1ed55627e7556eb6dc8338eae2303295e4de17fe5cca4580dc3c7c4c92",
+      "bytes": 741
+    },
+    {
+      "path": "src/components/shared/PageHeader.jsx",
+      "sha256": "bfddcc835b1d2af531d39dcbb329648db354aedf4529c2b45e383ab3ae44d7b5",
+      "bytes": 495
+    },
+    {
+      "path": "src/components/shared/StatCard.jsx",
+      "sha256": "725792504c313ece90f2de659951af72ecb137c9b2fa32b80f941e275ea9480b",
+      "bytes": 1011
+    },
+    {
+      "path": "src/components/shared/StatusBadge.jsx",
+      "sha256": "623df606f5cf894fa9351ba642993858852c85225e12d1d946da7190bdbb9ac6",
+      "bytes": 2291
+    },
+    {
+      "path": "src/components/ui/accordion.jsx",
+      "sha256": "b47533b3783b8149550b8481e4ae93d54bdcbc51d434793c176b0aec5558ee1c",
+      "bytes": 1615
+    },
+    {
+      "path": "src/components/ui/alert-dialog.jsx",
+      "sha256": "a20098cdc2eb2b5915575d3f0fb7a3e8e6c1035c7eef77144f3fc389e0fdbda0",
+      "bytes": 3461
+    },
+    {
+      "path": "src/components/ui/alert.jsx",
+      "sha256": "c5baf27fb6a4bf130236fa0f336c21084fee192e8215bb6b20c87436c27f3b38",
+      "bytes": 1335
+    },
+    {
+      "path": "src/components/ui/aspect-ratio.jsx",
+      "sha256": "08b0aa0b05efc573c7d63363c03e83d4b101bfeb54140764e96ddea30659cfcc",
+      "bytes": 140
+    },
+    {
+      "path": "src/components/ui/avatar.jsx",
+      "sha256": "703fb6852952bd039b68dc494c004eee1d835fa12647b851722ab9b6b3058b32",
+      "bytes": 1043
+    },
+    {
+      "path": "src/components/ui/badge.jsx",
+      "sha256": "380dcda78ff8fdd80c82b89cb7dd38ffd84c355735fc8f16300ff647e15988aa",
+      "bytes": 990
+    },
+    {
+      "path": "src/components/ui/breadcrumb.jsx",
+      "sha256": "4c0972765dc0212c5101446cb931db44b7db68a21ef9d7bc8a75c46f9bb96e42",
+      "bytes": 2271
+    },
+    {
+      "path": "src/components/ui/button.jsx",
+      "sha256": "6c28699c64ff8c36ec5a2baf835d6bfa141cedeaf472b97d64671dac6cf7cbf8",
+      "bytes": 1679
+    },
+    {
+      "path": "src/components/ui/calendar.jsx",
+      "sha256": "06e0c81497bda70ac24855b54fddd385557cbc3be8d8066a345bedbec551b3ee",
+      "bytes": 2851
+    },
+    {
+      "path": "src/components/ui/card.jsx",
+      "sha256": "8ab6f42e722e9c51752ce2f14aabb2696bddc0b6818041fb8f313f670955c2c4",
+      "bytes": 1440
+    },
+    {
+      "path": "src/components/ui/carousel.jsx",
+      "sha256": "55eb9456609f96f5c28c1fa35fe79554fc0ffab12883e3aceb041ff10e347e83",
+      "bytes": 4821
+    },
+    {
+      "path": "src/components/ui/chart.jsx",
+      "sha256": "c4684b470cae53b857a08e5fe006d4406450a442a103858beb179ec810aba2b3",
+      "bytes": 8639
+    },
+    {
+      "path": "src/components/ui/checkbox.jsx",
+      "sha256": "b0260cb7767493d8273f5def1b7d32e844d068db5f5760258d333ae6ad88f0d8",
+      "bytes": 880
+    },
+    {
+      "path": "src/components/ui/collapsible.jsx",
+      "sha256": "f4cdd104de29928bfcd40b865c7d08eed9157a537fbb8b5e6d0921f02b63cc04",
+      "bytes": 329
+    },
+    {
+      "path": "src/components/ui/command.jsx",
+      "sha256": "e7cea37aff49e211ffea1bf3ed67add6ce1ab29862e902aff739fcd11014f06f",
+      "bytes": 3897
+    },
+    {
+      "path": "src/components/ui/context-menu.jsx",
+      "sha256": "5fe320cad9ee1833e9528f86e340f83f419f77790549f4cff083fad329e8dc4c",
+      "bytes": 5995
+    },
+    {
+      "path": "src/components/ui/dialog.jsx",
+      "sha256": "50a7cc4ae5ce0f2527662ed9742d35b8c4933d1629a2740b26890793aee00742",
+      "bytes": 3228
+    },
+    {
+      "path": "src/components/ui/drawer.jsx",
+      "sha256": "3d2dce97d3f6bc5dfa887e87c6688228298526bfdc29a28f2edbd6c1dc2eb47a",
+      "bytes": 2359
+    },
+    {
+      "path": "src/components/ui/dropdown-menu.jsx",
+      "sha256": "d36cd67e71781bbb03059b057b6f686445477a4275120359178729574398c465",
+      "bytes": 6157
+    },
+    {
+      "path": "src/components/ui/form.jsx",
+      "sha256": "d899b071230c321acdb2996cbe02d84a46dd9825f81af1015f7e54c6b9ee211c",
+      "bytes": 3141
+    },
+    {
+      "path": "src/components/ui/hover-card.jsx",
+      "sha256": "3b49e533ad60995767a3419351642037438e8f27b62132115fc71115cf1fd0ad",
+      "bytes": 1070
+    },
+    {
+      "path": "src/components/ui/input-otp.jsx",
+      "sha256": "78a437a82203c1d9d22d47db830bdc67d49d6473c5c28ad77634eeb8c399a649",
+      "bytes": 1811
+    },
+    {
+      "path": "src/components/ui/input.jsx",
+      "sha256": "4455aea152904f128df0ecd82047bbceb23e06ffcc9ccc7cbb3bcc87df5bcc4f",
+      "bytes": 690
+    },
+    {
+      "path": "src/components/ui/label.jsx",
+      "sha256": "37c6425d2a5c798ade4e60f89f86054d703433a8977e12d796de2b5bb4e3d0b7",
+      "bytes": 525
+    },
+    {
+      "path": "src/components/ui/menubar.jsx",
+      "sha256": "5411f1b8221d9a34fc9b58f830642cfa3a33c776d0072014690e2f024515391d",
+      "bytes": 6790
+    },
+    {
+      "path": "src/components/ui/navigation-menu.jsx",
+      "sha256": "a1f789747cb750329a33ee04c54209b044239a15ba200fb9d7da1f2ce6b73403",
+      "bytes": 4217
+    },
+    {
+      "path": "src/components/ui/pagination.jsx",
+      "sha256": "1d519fc3ba1c8c6cf7f2d30c98739ecba2fa7af35cbc024d6793785e7a6d65c8",
+      "bytes": 2322
+    },
+    {
+      "path": "src/components/ui/popover.jsx",
+      "sha256": "199cc7b3d810013867ae91305f0966b8a66526a1c13d10248c38ee1797d169db",
+      "bytes": 1166
+    },
+    {
+      "path": "src/components/ui/progress.jsx",
+      "sha256": "1ad2808d51c365f04f23a4e985b03274dcc30735d74db68e1f78332a6533859c",
+      "bytes": 667
+    },
+    {
+      "path": "src/components/ui/radio-group.jsx",
+      "sha256": "10ced1e6932e4fe53d6c18201f50b8bb4b334b4372f01ce5f0993aa2a6bb9110",
+      "bytes": 1135
+    },
+    {
+      "path": "src/components/ui/resizable.jsx",
+      "sha256": "4e74fb31b8321012570554dc8c55a58aacf1adcced2fdc43085c67ff96ce9773",
+      "bytes": 1570
+    },
+    {
+      "path": "src/components/ui/scroll-area.jsx",
+      "sha256": "3de4bed34be51a940243b0fbf8c6d9324ecb416a91a919d65ca18d15a7ba32a1",
+      "bytes": 1362
+    },
+    {
+      "path": "src/components/ui/select.jsx",
+      "sha256": "15c7a0e4c45b655ffa8d3f3be8bdaab727a19fd6baa95b34056bf02c7254243e",
+      "bytes": 4677
+    },
+    {
+      "path": "src/components/ui/separator.jsx",
+      "sha256": "2c82247abd573d0f4a93eb259166e3b778365b58c0d18921b4739d5ba4b29e7e",
+      "bytes": 600
+    },
+    {
+      "path": "src/components/ui/sheet.jsx",
+      "sha256": "33f27d1b55925dbc354d0a61b0cbc6f977352da13f4df519f06e5b5bd9ed2d5c",
+      "bytes": 3549
+    },
+    {
+      "path": "src/components/ui/sidebar.jsx",
+      "sha256": "828bec5ac1ec715fe50deebae08a7da23f01e9b0dcb221b110e37de63eb22d3c",
+      "bytes": 20643
+    },
+    {
+      "path": "src/components/ui/skeleton.jsx",
+      "sha256": "c5f32316d9f8feeba529bac6321766424067185afee5f29a15bb18145adaf1bc",
+      "bytes": 227
+    },
+    {
+      "path": "src/components/ui/slider.jsx",
+      "sha256": "1761bfaa0a06480b76b31511e4a5c24903b407732e027fc11ad615dd3d93a562",
+      "bytes": 914
+    },
+    {
+      "path": "src/components/ui/sonner.jsx",
+      "sha256": "f1309f953467d583202225d08414161fc3183758ac38c997249eb63686a27ba8",
+      "bytes": 799
+    },
+    {
+      "path": "src/components/ui/switch.jsx",
+      "sha256": "880e95637cc1d90ef4476f79114afd2fa7b5f6e5da1f49a70e0efc1f84aa0c8a",
+      "bytes": 1025
+    },
+    {
+      "path": "src/components/ui/table.jsx",
+      "sha256": "301509bb8337184f1b299cb15b8d4f8ec8f0d3bbc17a2ffdf33ff58f7eaa444e",
+      "bytes": 2231
+    },
+    {
+      "path": "src/components/ui/tabs.jsx",
+      "sha256": "57591bdfb3fa931b06edcf4168b6881a79785c674ad0618003d12cd656072350",
+      "bytes": 1529
+    },
+    {
+      "path": "src/components/ui/textarea.jsx",
+      "sha256": "b64a8fabf495dd59dbfd23914334ffbdfa695f506a133370603a49eca1243f62",
+      "bytes": 587
+    },
+    {
+      "path": "src/components/ui/toast.jsx",
+      "sha256": "8a98ef70908fd33627d09f6a5c715417b243502836539acda857843dd4817070",
+      "bytes": 3804
+    },
+    {
+      "path": "src/components/ui/toaster.jsx",
+      "sha256": "fc1bce32d9a45f5be28c67b486962b90eed76742f3c0995f5fb908ffc6bde3cd",
+      "bytes": 785
+    },
+    {
+      "path": "src/components/ui/toggle-group.jsx",
+      "sha256": "1c7566b9f2aa00f0afdf161527be90588a11386158dca55425ea0d8c0e3883e4",
+      "bytes": 1284
+    },
+    {
+      "path": "src/components/ui/toggle.jsx",
+      "sha256": "e8fe6de52ef73d6fa868229ae7a21e681fb3088975847d6ee65a8387731c1c79",
+      "bytes": 1310
+    },
+    {
+      "path": "src/components/ui/tooltip.jsx",
+      "sha256": "73e47a5dde6c55aca2e32e429ba95d8746ce2cca02cc718613f337b5bc9f5f19",
+      "bytes": 1091
+    },
+    {
+      "path": "src/components/ui/use-toast.jsx",
+      "sha256": "40f2839736597a3f7d54e4359a375c5991ce58eb341d8abb944874ac0dce9bbc",
+      "bytes": 3379
+    },
+    {
+      "path": "src/hooks/use-mobile.jsx",
+      "sha256": "a136217739e79f9d02440e711b9bd1abb6adf60f1a83b45a39a009a09568ad1c",
+      "bytes": 545
+    },
+    {
+      "path": "src/index.css",
+      "sha256": "a721546eac5e4c8c27b8580227e9f78920d319ba79bcf4a225ca7fba6efb7211",
+      "bytes": 2744
+    },
+    {
+      "path": "src/lib/AuthContext.jsx",
+      "sha256": "3783983e43151c9a1f42d4fe4a51fbb33e9b907db19ad82d493c7db8ad3d1843",
+      "bytes": 4717
+    },
+    {
+      "path": "src/lib/PageNotFound.jsx",
+      "sha256": "8536e2091188275762a6729ecd77a77b8c5f1187525ae4189df42c95ca42f196",
+      "bytes": 3930
+    },
+    {
+      "path": "src/lib/app-params.js",
+      "sha256": "d0c8c149528b705355dbc842096b6662df4610eba1f356285fee74211fc580d3",
+      "bytes": 1791
+    },
+    {
+      "path": "src/lib/categoryConfig.js",
+      "sha256": "c9f55f910a82fb442893819bf0be42e1c96161051dbdae8c88d263f41533045c",
+      "bytes": 1573
+    },
+    {
+      "path": "src/lib/formatters.js",
+      "sha256": "59dd30c8ce9c230bfacc5c48210c6776aaddce8e74d275f597bbc9147a99f6ff",
+      "bytes": 976
+    },
+    {
+      "path": "src/lib/orgProfileSnapshot.js",
+      "sha256": "d09549b0a1e4edf342b500d2b60757ee443ddf44b4c1a6a04b40da9425db05d4",
+      "bytes": 1626
+    },
+    {
+      "path": "src/lib/query-client.js",
+      "sha256": "0a080b6d9a1ed9f5f32150d9e3faa928f955d2b8d6206831e2b1658e84612c92",
+      "bytes": 197
+    },
+    {
+      "path": "src/lib/utils.js",
+      "sha256": "4f592359765d69c32c3617700fa111af9a6a9cac8f18cb1987c25503a343c203",
+      "bytes": 190
+    },
+    {
+      "path": "src/main.jsx",
+      "sha256": "caa3bab80b647fbb53fccd2e80d6e190d45a4b06c92bf85e3968d87e8d891cec",
+      "bytes": 189
+    },
+    {
+      "path": "src/pages/Catalog.jsx",
+      "sha256": "3ac91ef4fabeca38703d1baca04022794930bc08af4fb8a47488e3e67681b049",
+      "bytes": 12312
+    },
+    {
+      "path": "src/pages/Customers.jsx",
+      "sha256": "1abf96c398578a0f656437ab6e302b1e16e0ad03c569d6a218aa7d63bea659e2",
+      "bytes": 7661
+    },
+    {
+      "path": "src/pages/Dashboard.jsx",
+      "sha256": "9ffc771b5c9d560233e5bdcaa3f21d95efa487b8c5becc33caeb26e2d18b5212",
+      "bytes": 7690
+    },
+    {
+      "path": "src/pages/Expenses.jsx",
+      "sha256": "5246e36e9f0857b84ab0fc6b62edee2453ef756ed7a6e2d7f4b3539a7b2ebcaa",
+      "bytes": 5206
+    },
+    {
+      "path": "src/pages/ImportBatches.jsx",
+      "sha256": "e5dd1ea9e7ab83da8212656b5d131263a31c2d5f05a2ddfc378750da362cd83a",
+      "bytes": 8897
+    },
+    {
+      "path": "src/pages/Inventory.jsx",
+      "sha256": "85910e16b40e7bf31b15f29d63433ec819764d7de7a793d7aef13e1c7484bab6",
+      "bytes": 11936
+    },
+    {
+      "path": "src/pages/OAuthConsent.jsx",
+      "sha256": "010ab0d83bb6b84c371b7895c99b8ae6fa21b06253c4a705bf3edea4d18d030a",
+      "bytes": 9904
+    },
+    {
+      "path": "src/pages/PricingEngine.jsx",
+      "sha256": "86277304a80bde8c82c5c79dd196ead21f30cf6c275a82426af084c78fc0863b",
+      "bytes": 11516
+    },
+    {
+      "path": "src/pages/PurchaseDetail.jsx",
+      "sha256": "f06f06d695ebbd006c2d7abc5d962a3ba3189cee100442d8a0f385705fd7e18a",
+      "bytes": 11709
+    },
+    {
+      "path": "src/pages/Purchases.jsx",
+      "sha256": "37afe969cd627841aecfe37e094468be9c7b6463a1205ab7d055ac274ff7a3de",
+      "bytes": 9151
+    },
+    {
+      "path": "src/pages/QuoteDetail.jsx",
+      "sha256": "4a4f07e4658849a54f22c238ca882a1e12b290f6b1d8e98feee9a5af9113bfab",
+      "bytes": 16155
+    },
+    {
+      "path": "src/pages/Quotes.jsx",
+      "sha256": "293901678ad3c525599f19cb90ea3f8e67c83d9cce73eb0eb13d0120280837ef",
+      "bytes": 9064
+    },
+    {
+      "path": "src/pages/Sales.jsx",
+      "sha256": "e4b7a0d45a2dffdb188705f376d560999b80c43e845d606ee4b4963947e10434",
+      "bytes": 8617
+    },
+    {
+      "path": "src/pages/Settings.jsx",
+      "sha256": "ea0e144c57e9f8d68720809787e8caf35aafa1c01810f1c1be7c920202650c8e",
+      "bytes": 17784
+    },
+    {
+      "path": "src/pages/Suppliers.jsx",
+      "sha256": "51a3047b84fee0d5fb15808c03b208cc6182be8c93c8b37ddf598fe43c3fa727",
+      "bytes": 7567
+    },
+    {
+      "path": "src/utils/index.ts",
+      "sha256": "1bd31d3e8630b19dcb1d92878a2501d5e29fc935eab48ec5d90e66c410cf7e1a",
+      "bytes": 97
+    },
+    {
+      "path": "tests/organization-access.test.mjs",
+      "sha256": "4ed707391aed5781e98e3ed699998bbd37086f64f513864ab681e8c43f575a3b",
+      "bytes": 3239
+    },
+    {
+      "path": "tests/organization-profile.test.mjs",
+      "sha256": "65dd61f3c6e114c8110737a35045d816af27223f5a0c337d6a4899032a9f4f9e",
+      "bytes": 2040
+    }
+  ]
+}
