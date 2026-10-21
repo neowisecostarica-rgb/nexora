@@ -4,20 +4,20 @@
   "properties": {
     "product_definition_id": {
       "type": "string",
-      "description": "Referencia l\u00f3gica a ProductDefinition.id. Identifica el producto padre."
+      "description": "Referencia lógica a ProductDefinition.id. Identifica el producto padre."
     },
     "sku": {
       "type": "string",
-      "description": "SKU \u00fanico comercial de esta variante (ej. LNV-X1C-G11-I7-16-512)"
+      "description": "SKU único comercial de esta variante (ej. LNV-X1C-G11-I7-16-512)"
     },
     "variant_hash": {
       "type": "string",
-      "description": "Hash \u00fanico de variante: base64(product_definition_id|attributes_json_sorted). NO modificar manualmente."
+      "description": "Hash único de variante: base64(product_definition_id|attributes_json_sorted). NO modificar manualmente."
     },
     "attributes": {
       "type": "object",
       "additionalProperties": true,
-      "description": "Atributos t\u00e9cnicos diferenciales de la variante (ej. { ram: '16GB', cpu: 'i7-1365U', storage: '512GB NVMe' })"
+      "description": "Atributos técnicos diferenciales de la variante (ej. { ram: '16GB', cpu: 'i7-1365U', storage: '512GB NVMe' })"
     },
     "base_cost_override": {
       "type": "number",
@@ -26,16 +26,42 @@
     "is_active": {
       "type": "boolean",
       "default": true,
-      "description": "Si false, esta variante es ignorada por el cat\u00e1logo."
+      "description": "Si false, esta variante es ignorada por el catálogo."
     },
     "notes": {
       "type": "string",
       "description": "Notas internas sobre esta variante."
+    },
+    "organization_id": {
+      "type": "string",
+      "description": "ID de OrganizationProfile propietaria. Campo opcional durante transición; registros sin asignación requieren revisión, no inferir dueño."
     }
   },
   "required": [
     "product_definition_id",
     "sku",
     "variant_hash"
-  ]
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "__server_only__"
+      }
+    },
+    "create": {
+      "user_condition": {
+        "role": "__server_only__"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "__server_only__"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "__server_only__"
+      }
+    }
+  }
 }

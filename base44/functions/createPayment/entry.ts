@@ -25,12 +25,19 @@
  */
 
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+import {clientForRequest} from './tenant-access.mjs';
 
 const VALID_METHODS = ['cash', 'transfer', 'card', 'sinpe', 'other'];
 const VALID_TYPES   = ['deposit', 'partial', 'full', 'refund', 'adjustment'];
 
 Deno.serve(async (req) => {
-  const base44 = createClientFromRequest(req);
+  // MG01: authenticate and scope every SDK entity operation before legacy logic runs.
+    const rawClient = createClientFromRequest(req);
+    let base44;
+    try { base44 = await clientForRequest(rawClient, req); }
+    catch (error) {
+      return Response.json({error: error.code || 'TENANT_ACCESS_DENIED'}, {status: error.status || 403});
+    }
   const user = await base44.auth.me();
   if (!user) {
     return Response.json({ error: 'Unauthorized' }, { status: 401 });

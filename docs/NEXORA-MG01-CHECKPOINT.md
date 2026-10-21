@@ -48,3 +48,8 @@ Esta rama no migra datos ni cambia los endpoints existentes. No merge/publish re
 getActiveOrganizationProfile ahora deriva acceso de membresías owner autenticadas y consulta el perfil por ID. Consultas globales eliminadas de esta función. Perfil completo reservado al dueño por contener datos bancarios. Se mantienen filtros de revocación/vencimiento y selección explícita si hay varias empresas.
 31 pruebas locales aprobadas (24 política + 7 handler con cliente simulado). No son pruebas API reales. Workflow GitHub agregado para ejecutar la suite; resultado remoto aún por verificar.
 BLOQUEO DE MERGE: los usuarios legacy no tienen membresías migradas; integrar ahora bloquearía su consulta de perfil. Migración, frontend, otras funciones, RLS operativo y compatibilidad de despliegue del handler.mjs siguen pendientes. main y publicación no modificados.
+
+## Megabloque administrativo posterior
+Ver NEXORA-MG01-PLATFORM-DELIVERY.md. Super Admin separado de ownership, panel /platform, auditoría, usuarios/aliados e informe de transición preparados. 65 pruebas locales y build pasan; sin certificación RLS/API ni migración real. MG01 sigue abierto.
+
+Actualización posterior: NEXORA-MG01-ISOLATION.md registra gateway, 22 guardas, RLS en 20 entidades y 91 pruebas locales; runtime/archivos/migración/QA siguen pendientes.

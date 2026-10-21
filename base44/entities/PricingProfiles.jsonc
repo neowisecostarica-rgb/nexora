@@ -14,11 +14,11 @@
         "unit_override"
       ],
       "default": "global",
-      "description": "Alcance del perfil: global (todos), category (una categor\u00eda), unit_override (una unidad espec\u00edfica)"
+      "description": "Alcance del perfil: global (todos), category (una categoría), unit_override (una unidad específica)"
     },
     "category_key": {
       "type": "string",
-      "description": "Clave de categor\u00eda a la que aplica. Solo relevante si scope_type = category."
+      "description": "Clave de categoría a la que aplica. Solo relevante si scope_type = category."
     },
     "margin_retail": {
       "type": "number",
@@ -33,7 +33,7 @@
     "margin_minimum": {
       "type": "number",
       "default": 5,
-      "description": "Margen % m\u00ednimo aceptable"
+      "description": "Margen % mínimo aceptable"
     },
     "rounding_rule": {
       "type": "string",
@@ -50,12 +50,16 @@
     "is_default": {
       "type": "boolean",
       "default": false,
-      "description": "Si true, es el perfil global por defecto cuando no aplica ning\u00fan otro"
+      "description": "Si true, es el perfil global por defecto cuando no aplica ningún otro"
     },
     "is_active": {
       "type": "boolean",
       "default": true,
       "description": "Si false, el perfil es ignorado por el PricingEngine"
+    },
+    "organization_id": {
+      "type": "string",
+      "description": "ID de OrganizationProfile propietaria. Campo opcional durante transición; registros sin asignación requieren revisión, no inferir dueño."
     }
   },
   "required": [
@@ -66,5 +70,27 @@
     "margin_minimum",
     "is_default",
     "is_active"
-  ]
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "__server_only__"
+      }
+    },
+    "create": {
+      "user_condition": {
+        "role": "__server_only__"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "__server_only__"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "__server_only__"
+      }
+    }
+  }
 }

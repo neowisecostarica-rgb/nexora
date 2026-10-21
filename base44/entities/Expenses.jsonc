@@ -24,7 +24,7 @@
         "local",
         "other"
       ],
-      "description": "Categor\u00eda de asignaci\u00f3n de costo. Solo 'repair' y 'local' afectan el costo real de unidades."
+      "description": "Categoría de asignación de costo. Solo 'repair' y 'local' afectan el costo real de unidades."
     },
     "linked_entity_type": {
       "type": "string"
@@ -38,6 +38,10 @@
     },
     "notes": {
       "type": "string"
+    },
+    "organization_id": {
+      "type": "string",
+      "description": "ID de OrganizationProfile propietaria. Campo opcional durante transición; registros sin asignación requieren revisión, no inferir dueño."
     }
   },
   "required": [
@@ -45,5 +49,27 @@
     "category",
     "allocation_category",
     "amount"
-  ]
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "__server_only__"
+      }
+    },
+    "create": {
+      "user_condition": {
+        "role": "__server_only__"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "__server_only__"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "__server_only__"
+      }
+    }
+  }
 }

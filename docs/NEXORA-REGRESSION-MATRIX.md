@@ -24,3 +24,8 @@ Estado inicial: pendiente de QA runtime. Las 31 pruebas MG01 son unitarias/mocks
 | Móvil/escritorio | navegación, formularios, retornos e impresión | QA humano |
 
 En cada cambio registrar: base/commit, caso, esperado, observado, prueba, pendientes y responsable. Marcar solo lo ejecutado. No sustituir un fallo real por una prueba que copie el código.
+
+## Evidencia MG01 administrativa
+65 pruebas locales con cliente simulado y build aprobados en rama. Alta/revocación/grants/perfil Super Admin cubiertos por contratos simulados. Las filas API/QA humano de esta matriz permanecen pendientes.
+
+Actualización posterior: NEXORA-MG01-ISOLATION.md registra gateway, 22 guardas, RLS en 20 entidades y 91 pruebas locales; runtime/archivos/migración/QA siguen pendientes.

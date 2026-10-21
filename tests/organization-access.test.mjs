@@ -33,3 +33,8 @@ const checks=[
 ['grant without membership',{memberships:[],grants:[grant],action:'tracking.write'},false]
 ];
 for (const [name,changes,expected] of checks) test(name,()=>assert.equal(canAccess({...base,...changes}),expected));
+
+test('prototype names deny access without throwing',()=>{
+ for(const role of ['constructor','toString','__proto__'])assert.equal(canAccess({...base,memberships:[{...owner,role}]}),false);
+ for(const kind of ['constructor','toString','__proto__'])assert.equal(canAccess({...base,resource:{...resource,kind}}),false);
+});

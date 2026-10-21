@@ -45,3 +45,6 @@ No es una certificación de todas las funciones ni prueba visual/API completa. E
 
 ## Orden siguiente
 Corregir contrato Super Admin; inventariar migración de accesos/datos; proteger ambos caminos de ventas y CRUD directo; después extender Consulting/tracking, multicategoría, idiomas/monedas. Antes de publicar, cerrar pruebas API y QA humano.
+
+## Actualización en rama de MG01
+El panel /platform y el acceso auditado de Super Admin están implementados en la rama de esta entrega. Los puntos anteriores describen la base auditada. No inferir certificación multiempresa: consultar NEXORA-MG01-PLATFORM-DELIVERY.md para pruebas y bloqueos actuales.

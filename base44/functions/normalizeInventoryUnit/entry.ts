@@ -22,6 +22,7 @@
  */
 
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+import {clientForRequest} from './tenant-access.mjs';
 
 // CategoryConfig inline (NO importar desde lib/ — backend es independiente)
 const CategoryConfig = {
@@ -55,7 +56,13 @@ function buildDisplayName(template, attributes) {
 }
 
 Deno.serve(async (req) => {
-  const base44 = createClientFromRequest(req);
+  // MG01: scope SDK entity operations before legacy logic runs.
+    const rawClient = createClientFromRequest(req);
+    let base44;
+    try { base44 = await clientForRequest(rawClient, req); }
+    catch (error) {
+      return Response.json({error: error.code || 'TENANT_ACCESS_DENIED'}, {status: error.status || 403});
+    }
   const user = await base44.auth.me();
   if (!user) {
     return Response.json({ error: 'Unauthorized' }, { status: 401 });

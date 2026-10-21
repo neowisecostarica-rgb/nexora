@@ -8,7 +8,7 @@
     },
     "customer_phone": {
       "type": "string",
-      "description": "Tel\u00e9fono del cliente"
+      "description": "Teléfono del cliente"
     },
     "customer_email": {
       "type": "string",
@@ -47,6 +47,10 @@
     "notes": {
       "type": "string",
       "description": "Notas adicionales sobre la venta"
+    },
+    "organization_id": {
+      "type": "string",
+      "description": "ID de OrganizationProfile propietaria. Campo opcional durante transición; registros sin asignación requieren revisión, no inferir dueño."
     }
   },
   "required": [
@@ -54,5 +58,27 @@
     "customer_phone",
     "channel",
     "total"
-  ]
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "__server_only__"
+      }
+    },
+    "create": {
+      "user_condition": {
+        "role": "__server_only__"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "__server_only__"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "__server_only__"
+      }
+    }
+  }
 }

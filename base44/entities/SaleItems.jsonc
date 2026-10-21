@@ -18,22 +18,26 @@
     "unit_price_sold": {
       "type": "number",
       "default": 0,
-      "description": "Precio al que se vendi\u00f3 la unidad. Congelado al momento de la venta."
+      "description": "Precio al que se vendió la unidad. Congelado al momento de la venta."
     },
     "unit_cost_frozen": {
       "type": "number",
       "default": 0,
-      "description": "Costo real congelado desde InventoryUnits.real_unit_cost al momento de la venta. SOT hist\u00f3rico."
+      "description": "Costo real congelado desde InventoryUnits.real_unit_cost al momento de la venta. SOT histórico."
     },
     "line_total": {
       "type": "number",
       "default": 0,
-      "description": "Total de la l\u00ednea (unit_price_sold \u00d7 quantity)"
+      "description": "Total de la línea (unit_price_sold × quantity)"
     },
     "profit_amount": {
       "type": "number",
       "default": 0,
-      "description": "Utilidad real = line_total - (unit_cost_frozen \u00d7 quantity). Congelado."
+      "description": "Utilidad real = line_total - (unit_cost_frozen × quantity). Congelado."
+    },
+    "organization_id": {
+      "type": "string",
+      "description": "ID de OrganizationProfile propietaria. Campo opcional durante transición; registros sin asignación requieren revisión, no inferir dueño."
     }
   },
   "required": [
@@ -42,5 +46,27 @@
     "quantity",
     "unit_price_sold",
     "unit_cost_frozen"
-  ]
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "__server_only__"
+      }
+    },
+    "create": {
+      "user_condition": {
+        "role": "__server_only__"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "__server_only__"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "__server_only__"
+      }
+    }
+  }
 }

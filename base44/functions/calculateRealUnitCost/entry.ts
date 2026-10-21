@@ -30,6 +30,7 @@
 // ============================================================
 
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+import {clientForRequest} from './tenant-access.mjs';
 
 // ────────────────────────────────────────────────────────────
 // UTILIDADES
@@ -60,7 +61,13 @@ Deno.serve(async (req) => {
     // Usar asServiceRole para TODAS las operaciones de datos.
     // Esto funciona tanto cuando es invocado por el worker (asServiceRole.functions.invoke)
     // como cuando se llama directamente desde tests.
-    const base44 = createClientFromRequest(req);
+    // MG01: authenticate and scope every SDK entity operation before legacy logic runs.
+    const rawClient = createClientFromRequest(req);
+    let base44;
+    try { base44 = await clientForRequest(rawClient, req); }
+    catch (error) {
+      return Response.json({error: error.code || 'TENANT_ACCESS_DENIED'}, {status: error.status || 403});
+    }
     const db = base44.asServiceRole;
 
     const body = await req.json();
