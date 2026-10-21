@@ -43,3 +43,8 @@ Compras solo USD/MXN; ImportBatches usa USA/Mexico por defecto.
 CRON existe en código; estado activo y consumo runtime sin verificar.
 
 Esta rama no migra datos ni cambia los endpoints existentes. No merge/publish realizado.
+
+## Avance posterior — perfil por empresa
+getActiveOrganizationProfile ahora deriva acceso de membresías owner autenticadas y consulta el perfil por ID. Consultas globales eliminadas de esta función. Perfil completo reservado al dueño por contener datos bancarios. Se mantienen filtros de revocación/vencimiento y selección explícita si hay varias empresas.
+31 pruebas locales aprobadas (24 política + 7 handler con cliente simulado). No son pruebas API reales. Workflow GitHub agregado para ejecutar la suite; resultado remoto aún por verificar.
+BLOQUEO DE MERGE: los usuarios legacy no tienen membresías migradas; integrar ahora bloquearía su consulta de perfil. Migración, frontend, otras funciones, RLS operativo y compatibilidad de despliegue del handler.mjs siguen pendientes. main y publicación no modificados.
