@@ -33,10 +33,17 @@
 // ============================================================
 
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+import {clientForRequest} from './tenant-access.mjs';
 
 Deno.serve(async (req) => {
   try {
-    const base44 = createClientFromRequest(req);
+    // MG01: scope SDK entity operations before legacy logic runs.
+    const rawClient = createClientFromRequest(req);
+    let base44;
+    try { base44 = await clientForRequest(rawClient, req); }
+    catch (error) {
+      return Response.json({error: error.code || 'TENANT_ACCESS_DENIED'}, {status: error.status || 403});
+    }
     const body = await req.json();
 
     const eventType = body?.event?.type || 'unknown';

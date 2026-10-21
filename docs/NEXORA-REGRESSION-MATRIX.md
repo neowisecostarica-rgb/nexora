@@ -27,3 +27,5 @@ En cada cambio registrar: base/commit, caso, esperado, observado, prueba, pendie
 
 ## Evidencia MG01 administrativa
 65 pruebas locales con cliente simulado y build aprobados en rama. Alta/revocación/grants/perfil Super Admin cubiertos por contratos simulados. Las filas API/QA humano de esta matriz permanecen pendientes.
+
+Actualización posterior: NEXORA-MG01-ISOLATION.md registra gateway, 22 guardas, RLS en 20 entidades y 90 pruebas locales; runtime/archivos/migración/QA siguen pendientes.

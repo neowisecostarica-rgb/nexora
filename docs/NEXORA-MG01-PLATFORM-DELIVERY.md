@@ -33,7 +33,7 @@ OrganizationMembership: organization_id (perfil empresarial), user_id (User regi
 PartnerAccessGrant: partner_organization_id/client_organization_id, permisos limitados, operation_ids de ImportBatches en esta fase, status/expires_at.
 buyer es etiqueta técnica conservada del PR1: visor del cliente importador. No representa comprador final de mercadería.
 
-## Riesgos y límites que bloquean cierre del MG01
+## Riesgos de la primera entrega (actualizados en NEXORA-MG01-ISOLATION.md)
 1. CRUD directo y funciones operativas antiguas aún requieren aislamiento completo. El panel NO vuelve seguro automáticamente el SaaS entero.
 2. Crear una membresía/grant no conecta todas las pantallas antiguas ni constituye autorización para abrir el producto a clientes.
 3. Suspender una empresa no revoca por sí solo accesos a endpoints antiguos aún sin proteger. Validar empresa activa en esos endpoints.
@@ -58,3 +58,6 @@ No merge/publish realizado por el agente.
 MG01: administración implementada en rama; aislamiento integral y QA runtime pendientes (bloque abierto).
 MG02: importaciones/Consulting/tracking/documentos/recepción/multicategoría/idiomas/monedas pendientes.
 MG03: reconciliación de operación existente, métricas, QA integral y piloto pendientes.
+
+## Actualización de aislamiento
+La capa de datos, RLS y guardas operativas ya están implementadas en el mismo PR. Ver NEXORA-MG01-ISOLATION.md: 90 pruebas locales y build aprobados. Las advertencias anteriores describen la etapa administrativa; el estado actual sigue sin certificar API/RLS/archivos ni QA humano.

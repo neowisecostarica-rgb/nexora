@@ -4,23 +4,23 @@
   "properties": {
     "organization_id": {
       "type": "string",
-      "description": "ID de la organizaci\u00f3n propietaria. Requerido para multi-tenancy."
+      "description": "ID de la organización propietaria. Requerido para multi-tenancy."
     },
     "inventory_unit_id": {
       "type": "string",
-      "description": "ID de la InventoryUnit pendiente de rec\u00e1lculo."
+      "description": "ID de la InventoryUnit pendiente de recálculo."
     },
     "trigger_source": {
       "type": "string",
-      "description": "Nombre de la funci\u00f3n o sistema que origin\u00f3 el encolado (ej. onInventoryUnitChanged, onImportBatchChanged)."
+      "description": "Nombre de la función o sistema que originó el encolado (ej. onInventoryUnitChanged, onImportBatchChanged)."
     },
     "trigger_entity_type": {
       "type": "string",
-      "description": "Tipo de entidad que dispar\u00f3 el evento (ej. InventoryUnits, ImportBatches, Expenses). Opcional."
+      "description": "Tipo de entidad que disparó el evento (ej. InventoryUnits, ImportBatches, Expenses). Opcional."
     },
     "trigger_entity_id": {
       "type": "string",
-      "description": "ID de la entidad que dispar\u00f3 el evento. Opcional."
+      "description": "ID de la entidad que disparó el evento. Opcional."
     },
     "status": {
       "type": "string",
@@ -31,11 +31,11 @@
         "failed"
       ],
       "default": "pending",
-      "description": "Estado del registro en la cola. pending = esperando ejecuci\u00f3n, processing = en proceso, done = completado, failed = error."
+      "description": "Estado del registro en la cola. pending = esperando ejecución, processing = en proceso, done = completado, failed = error."
     },
     "dedupe_key": {
       "type": "string",
-      "description": "Clave de deduplicaci\u00f3n. Formato: inventory_unit:{inventory_unit_id}. Garantiza una sola entrada activa por unidad."
+      "description": "Clave de deduplicación. Formato: inventory_unit:{inventory_unit_id}. Garantiza una sola entrada activa por unidad."
     },
     "scheduled_for": {
       "type": "string",
@@ -54,7 +54,7 @@
     "metadata": {
       "type": "object",
       "additionalProperties": true,
-      "description": "Contexto adicional del encolado. Puede incluir resumen de resultado, notas de distribuci\u00f3n, etc."
+      "description": "Contexto adicional del encolado. Puede incluir resumen de resultado, notas de distribución, etc."
     }
   },
   "required": [
@@ -64,5 +64,27 @@
     "status",
     "dedupe_key",
     "scheduled_for"
-  ]
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "__server_only__"
+      }
+    },
+    "create": {
+      "user_condition": {
+        "role": "__server_only__"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "__server_only__"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "__server_only__"
+      }
+    }
+  }
 }

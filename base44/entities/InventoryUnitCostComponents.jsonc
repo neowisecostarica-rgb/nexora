@@ -4,15 +4,15 @@
   "properties": {
     "organization_id": {
       "type": "string",
-      "description": "ID de la organizaci\u00f3n propietaria. Requerido para multi-tenancy."
+      "description": "ID de la organización propietaria. Requerido para multi-tenancy."
     },
     "inventory_unit_id": {
       "type": "string",
-      "description": "Referencia l\u00f3gica a InventoryUnits.id. Convenci\u00f3n Base44, sin FK estricta."
+      "description": "Referencia lógica a InventoryUnits.id. Convención Base44, sin FK estricta."
     },
     "cost_component_key": {
       "type": "string",
-      "description": "Referencia l\u00f3gica a CostComponentDefinitions.key. Identifica el tipo de costo de este componente."
+      "description": "Referencia lógica a CostComponentDefinitions.key. Identifica el tipo de costo de este componente."
     },
     "amount": {
       "type": "number",
@@ -22,7 +22,7 @@
     "metadata": {
       "type": "object",
       "additionalProperties": true,
-      "description": "Contexto adicional del componente. Puede incluir source_type (purchase, import, expense), source_id (ID de la entidad origen), y notas de c\u00e1lculo.",
+      "description": "Contexto adicional del componente. Puede incluir source_type (purchase, import, expense), source_id (ID de la entidad origen), y notas de cálculo.",
       "properties": {
         "source_type": {
           "type": "string",
@@ -30,11 +30,11 @@
         },
         "source_id": {
           "type": "string",
-          "description": "ID de la entidad origen espec\u00edfica."
+          "description": "ID de la entidad origen específica."
         },
         "notes": {
           "type": "string",
-          "description": "Notas adicionales sobre el c\u00e1lculo o asignaci\u00f3n de este componente."
+          "description": "Notas adicionales sobre el cálculo o asignación de este componente."
         }
       }
     }
@@ -44,5 +44,27 @@
     "inventory_unit_id",
     "cost_component_key",
     "amount"
-  ]
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "__server_only__"
+      }
+    },
+    "create": {
+      "user_condition": {
+        "role": "__server_only__"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "__server_only__"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "__server_only__"
+      }
+    }
+  }
 }

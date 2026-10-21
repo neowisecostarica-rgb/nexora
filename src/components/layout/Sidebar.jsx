@@ -7,6 +7,7 @@
  * Referencia: docs/NEXORA-INVENTORY.md (base 54e8532).
  */
 import React, { useState } from "react";
+import OrganizationSwitcher from './OrganizationSwitcher';
 import {useQuery} from "@tanstack/react-query";
 import {base44} from "@/api/base44Client";
 import {useAuth} from "@/lib/AuthContext";
@@ -64,6 +65,7 @@ export default function Sidebar() {
         </button>
       </div>
 
+      {!collapsed && <OrganizationSwitcher />}
       <nav className="flex-1 py-3 px-2 space-y-0.5 overflow-y-auto">
         {navigation.map((item) => {
           const isActive = location.pathname === item.path ||
