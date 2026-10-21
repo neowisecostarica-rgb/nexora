@@ -1,3 +1,11 @@
+/**
+ * NEXORA — MAPA PARA DESARROLLADORES
+ * Propósito: Listado y alta de cotizaciones con numeración y datos históricos de empresa.
+ * Datos/efectos detectados: Customers.list, OrganizationProfile.filter, Quotes.create, Quotes.list
+ * Dependencias: generateDocumentNumber
+ * Límites: Preservar contratos; ver docs/NEXORA-REGRESSION-MATRIX.md. Runtime no certificado.
+ * Referencia: docs/NEXORA-INVENTORY.md (base 54e8532).
+ */
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";

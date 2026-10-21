@@ -1,3 +1,11 @@
+/**
+ * NEXORA — MAPA PARA DESARROLLADORES
+ * Propósito: Construye snapshot versionado de empresa para documentos y valida campos necesarios para operar.
+ * Datos/efectos detectados: Sin acceso directo SDK a entidades detectado.
+ * Dependencias: Revisar imports y consumidores; sin invoke literal detectado.
+ * Límites: Preservar contratos; ver docs/NEXORA-REGRESSION-MATRIX.md. Runtime no certificado.
+ * Referencia: docs/NEXORA-INVENTORY.md (base 54e8532).
+ */
 // SOT: Construye el organization_profile_snapshot versionado y controlado.
 // Solo incluye campos necesarios para documentos comerciales.
 // NUNCA guardar el objeto completo de OrganizationProfile.

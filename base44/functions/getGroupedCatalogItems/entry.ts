@@ -1,4 +1,12 @@
 /**
+ * NEXORA — MAPA PARA DESARROLLADORES
+ * Propósito: Vista comercial del catálogo — derivada EXCLUSIVAMENTE de InventoryUnits. REGLAS CRÍTICAS:
+ * Datos/efectos detectados: InventoryUnits.filter
+ * Dependencias: Revisar imports y consumidores; sin invoke literal detectado.
+ * Límites: Preservar contratos; ver docs/NEXORA-REGRESSION-MATRIX.md. Runtime no certificado.
+ * Referencia: docs/NEXORA-INVENTORY.md (base 54e8532).
+ */
+/**
  * getGroupedCatalogItems
  *
  * Vista comercial del catálogo — derivada EXCLUSIVAMENTE de InventoryUnits.

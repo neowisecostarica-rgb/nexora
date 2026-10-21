@@ -1,3 +1,11 @@
+/**
+ * NEXORA — MAPA PARA DESARROLLADORES
+ * Propósito: Traduce cambios del lote de importación en solicitudes de recálculo.
+ * Datos/efectos detectados: InventoryUnits.filter
+ * Dependencias: enqueueRecalculation
+ * Límites: Preservar contratos; ver docs/NEXORA-REGRESSION-MATRIX.md. Runtime no certificado.
+ * Referencia: docs/NEXORA-INVENTORY.md (base 54e8532).
+ */
 // ============================================================
 // NEXORA — onImportBatchChanged
 // Bloque P0.4 — Automation handler: ImportBatches create/update

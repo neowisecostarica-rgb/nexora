@@ -1,4 +1,12 @@
 /**
+ * NEXORA — MAPA PARA DESARROLLADORES
+ * Propósito: CRON JOB: busca reservas activas cuyo expires_at < now y las expira, liberando las unidades de inventario correspondientes.
+ * Datos/efectos detectados: InventoryUnits.update, Reservations.filter, Reservations.update
+ * Dependencias: Revisar imports y consumidores; sin invoke literal detectado.
+ * Límites: Preservar contratos; ver docs/NEXORA-REGRESSION-MATRIX.md. Runtime no certificado.
+ * Referencia: docs/NEXORA-INVENTORY.md (base 54e8532).
+ */
+/**
  * expireReservations
  *
  * CRON JOB: busca reservas activas cuyo expires_at < now y las expira,

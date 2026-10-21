@@ -1,4 +1,12 @@
 /**
+ * NEXORA — MAPA PARA DESARROLLADORES
+ * Propósito: Genera InventoryUnits desde un PurchaseItem. Schema v1.0 — 100% compatible con CategoryConfig y PricingEngine.
+ * Datos/efectos detectados: InventoryUnits.create, PurchaseItems.get, PurchaseItems.update
+ * Dependencias: Revisar imports y consumidores; sin invoke literal detectado.
+ * Límites: Preservar contratos; ver docs/NEXORA-REGRESSION-MATRIX.md. Runtime no certificado.
+ * Referencia: docs/NEXORA-INVENTORY.md (base 54e8532).
+ */
+/**
  * createInventoryFromPurchaseItem
  *
  * Genera InventoryUnits desde un PurchaseItem.

@@ -1,4 +1,12 @@
 /**
+ * NEXORA — MAPA PARA DESARROLLADORES
+ * Propósito: Crea una reserva y bloquea el inventario. REGLA CRÍTICA: solo permite reservar si InventoryUnits.status === "available"
+ * Datos/efectos detectados: InventoryUnits.get, InventoryUnits.update, Reservations.create
+ * Dependencias: Revisar imports y consumidores; sin invoke literal detectado.
+ * Límites: Preservar contratos; ver docs/NEXORA-REGRESSION-MATRIX.md. Runtime no certificado.
+ * Referencia: docs/NEXORA-INVENTORY.md (base 54e8532).
+ */
+/**
  * createReservation
  *
  * Crea una reserva y bloquea el inventario.

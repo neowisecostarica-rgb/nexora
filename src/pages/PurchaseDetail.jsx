@@ -1,3 +1,11 @@
+/**
+ * NEXORA — MAPA PARA DESARROLLADORES
+ * Propósito: Detalle de compra, partidas y conversión de partidas en unidades de inventario.
+ * Datos/efectos detectados: PurchaseItems.create, PurchaseItems.filter, PurchaseOrders.filter, PurchaseOrders.update
+ * Dependencias: createInventoryFromPurchaseItem
+ * Límites: Preservar contratos; ver docs/NEXORA-REGRESSION-MATRIX.md. Runtime no certificado.
+ * Referencia: docs/NEXORA-INVENTORY.md (base 54e8532).
+ */
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";

@@ -1,4 +1,12 @@
 /**
+ * NEXORA — MAPA PARA DESARROLLADORES
+ * Propósito: ⚠️  LEGACY — DEPRECATED ════════════════════════════════════════════════════════════════════════════
+ * Datos/efectos detectados: ImportBatches.get, InventoryUnits.filter
+ * Dependencias: enqueueRecalculation
+ * Límites: Preservar contratos; ver docs/NEXORA-REGRESSION-MATRIX.md. Runtime no certificado.
+ * Referencia: docs/NEXORA-INVENTORY.md (base 54e8532).
+ */
+/**
  * distributeImportCosts
  *
  * ⚠️  LEGACY — DEPRECATED

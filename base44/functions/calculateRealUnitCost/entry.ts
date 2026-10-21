@@ -1,3 +1,11 @@
+/**
+ * NEXORA — MAPA PARA DESARROLLADORES
+ * Propósito: Calcula costo real y reconstruye componentes; escribe total_real_unit_cost.
+ * Datos/efectos detectados: Expenses.filter, ImportBatches.get, InventoryUnitCostComponents.create, InventoryUnitCostComponents.delete, InventoryUnitCostComponents.filter, InventoryUnits.filter, InventoryUnits.get, InventoryUnits.update
+ * Dependencias: Revisar imports y consumidores; sin invoke literal detectado.
+ * Límites: Preservar contratos; ver docs/NEXORA-REGRESSION-MATRIX.md. Runtime no certificado.
+ * Referencia: docs/NEXORA-INVENTORY.md (base 54e8532).
+ */
 // ============================================================
 // NEXORA — calculateRealUnitCost — Motor de Costos v3
 // SERVICE-ONLY: todas las operaciones via asServiceRole

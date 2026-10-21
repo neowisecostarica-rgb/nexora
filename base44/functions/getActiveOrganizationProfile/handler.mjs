@@ -1,4 +1,12 @@
 /**
+ * NEXORA — MAPA PARA DESARROLLADORES
+ * Propósito: Resolve company profile from authenticated identity and server memberships. Organization IDs are OrganizationProfile record IDs. No global active-profile fallback.
+ * Datos/efectos detectados: OrganizationMembership.filter, OrganizationProfile.filter
+ * Dependencias: Revisar imports y consumidores; sin invoke literal detectado.
+ * Límites: Preservar contratos; ver docs/NEXORA-REGRESSION-MATRIX.md. Runtime no certificado. Gustavo es Super Admin; owner-only requiere corrección y migración.
+ * Referencia: docs/NEXORA-INVENTORY.md (base 54e8532).
+ */
+/**
  * Resolve company profile from authenticated identity and server memberships.
  * Organization IDs are OrganizationProfile record IDs. No global active-profile fallback.
  * Legacy users without memberships fail closed until migration is completed.
