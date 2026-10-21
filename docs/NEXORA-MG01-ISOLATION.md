@@ -23,7 +23,7 @@ Numeración rechaza selección global ambigua si hay varias empresas: requiere s
 Los cron no se reactivan. Llamadas sin sesión autenticada fallan cerradas. Si algún scheduler está activo, necesita contrato de identidad de servicio validado antes del rollout.
 
 ## Evidencia local
-90 pruebas aprobadas: 65 previas + 25 de aislamiento/gateway/bridge/guardas.
+91 pruebas aprobadas: 65 previas + 26 de aislamiento/gateway/bridge/guardas.
 Build frontend aprobado y artefacto generado.
 ESLint dirigido a bridge/selector/política aprobado.
 Sintaxis TypeScript comprobada en 26 entry.ts mediante transpileModule; NO equivale a compilación Deno desplegada.

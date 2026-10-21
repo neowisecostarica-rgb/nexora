@@ -52,4 +52,4 @@ BLOQUEO DE MERGE: los usuarios legacy no tienen membresías migradas; integrar a
 ## Megabloque administrativo posterior
 Ver NEXORA-MG01-PLATFORM-DELIVERY.md. Super Admin separado de ownership, panel /platform, auditoría, usuarios/aliados e informe de transición preparados. 65 pruebas locales y build pasan; sin certificación RLS/API ni migración real. MG01 sigue abierto.
 
-Actualización posterior: NEXORA-MG01-ISOLATION.md registra gateway, 22 guardas, RLS en 20 entidades y 90 pruebas locales; runtime/archivos/migración/QA siguen pendientes.
+Actualización posterior: NEXORA-MG01-ISOLATION.md registra gateway, 22 guardas, RLS en 20 entidades y 91 pruebas locales; runtime/archivos/migración/QA siguen pendientes.

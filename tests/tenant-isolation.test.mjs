@@ -172,3 +172,9 @@ test('every legacy backend entry uses identical local scope guard',()=>{
  }
  assert.equal(readFileSync(new URL('tenantData/tenant-access.mjs',root),'utf8'),canonical);
 });
+
+test('owner cannot orphan a record by clearing company ownership',async()=>{
+ const f=fake(),c=await createTenantClient(f.client,'a');
+ await assert.rejects(c.entities.InventoryUnits.update('ia',{organization_id:null}),/OWNERSHIP_CHANGE_FORBIDDEN/);
+ assert.equal(f.tables.InventoryUnits[0].organization_id,'a');assert.equal(f.writes.length,0);
+});

@@ -103,7 +103,7 @@ export function scopedEntities(raw,context){
    update:async(recordId,data)=>{
     const current=await exists(name,recordId);
     if(name==='OrganizationProfile'&&!context.isSuperAdmin&&Object.keys(data).some(k=>['active','organization_type'].includes(k)))throw new AccessError('USE_PLATFORM_ADMIN');
-    if(data.organization_id!=null&&data.organization_id!==current.organization_id)throw new AccessError('OWNERSHIP_CHANGE_FORBIDDEN');
+    if(Object.hasOwn(data,'organization_id')&&data.organization_id!==current.organization_id)throw new AccessError('OWNERSHIP_CHANGE_FORBIDDEN');
     await validate(name,data,current);
     return raw[name].update(recordId,data);
    },

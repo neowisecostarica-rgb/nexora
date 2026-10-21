@@ -11,4 +11,4 @@ Alcance de esta entrega: documentación y comentarios; no cambia comportamiento,
 
 Entrega administrativa actual: NEXORA-MG01-PLATFORM-DELIVERY.md. El aislamiento integral sigue pendiente.
 
-Actualización posterior: NEXORA-MG01-ISOLATION.md registra gateway, 22 guardas, RLS en 20 entidades y 90 pruebas locales; runtime/archivos/migración/QA siguen pendientes.
+Actualización posterior: NEXORA-MG01-ISOLATION.md registra gateway, 22 guardas, RLS en 20 entidades y 91 pruebas locales; runtime/archivos/migración/QA siguen pendientes.
