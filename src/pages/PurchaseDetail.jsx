@@ -127,7 +127,7 @@ export default function PurchaseDetail() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <Card className="p-4">
           <p className="text-xs text-muted-foreground mb-1">Total Pagado</p>
-          <p className="text-xl font-bold">{formatCurrency(order.order_total_paid)}</p>
+          <p className="text-xl font-bold">{formatCurrency(order.order_total_paid, order.currency || "USD")}</p>
         </Card>
         <Card className="p-4">
           <p className="text-xs text-muted-foreground mb-1">Unidades</p>
@@ -135,7 +135,7 @@ export default function PurchaseDetail() {
         </Card>
         <Card className="p-4">
           <p className="text-xs text-muted-foreground mb-1">Costo/Unidad</p>
-          <p className="text-xl font-bold">{order.total_units > 0 ? formatCurrency(order.order_total_paid / order.total_units) : "—"}</p>
+          <p className="text-xl font-bold">{order.total_units > 0 ? formatCurrency(order.order_total_paid / order.total_units, order.currency || "USD") : "—"}</p>
         </Card>
         <Card className="p-4">
           <p className="text-xs text-muted-foreground mb-1">Plataforma</p>
@@ -184,7 +184,7 @@ export default function PurchaseDetail() {
                       <TableCell>{item.storage_gb}GB {item.storage_type}</TableCell>
                       <TableCell>{item.condition_grade}</TableCell>
                       <TableCell>{item.quantity}</TableCell>
-                      <TableCell className="font-semibold">{formatCurrency(allocatedCost)}</TableCell>
+                      <TableCell className="font-semibold">{formatCurrency(allocatedCost, order.currency || "USD")}</TableCell>
                       <TableCell>
                         {inProgress ? (
                           <span className="text-xs text-yellow-600 font-medium">En proceso…</span>
