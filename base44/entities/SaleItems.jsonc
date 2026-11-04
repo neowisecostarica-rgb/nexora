@@ -38,6 +38,9 @@
     "organization_id": {
       "type": "string",
       "description": "ID de OrganizationProfile propietaria. Campo opcional durante transición; registros sin asignación requieren revisión, no inferir dueño."
+    },
+    "description": {
+      "type": "string"
     }
   },
   "required": [
