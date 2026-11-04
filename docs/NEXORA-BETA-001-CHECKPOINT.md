@@ -98,3 +98,33 @@ A fecha 2026-11-02: **plan y documentación registrados; no se certifica ejecuci
 **Alternativa de menor riesgo:** Dirección General debe autorizar un runner Linux efímero, sin secrets productivos ni deploy, que haga checkout exacto del SHA y ejecute solo `node --test`, `npm run lint` y `npm run build`. Para runtime, debe crear o habilitar una rama/sandbox Base44 que contenga explícitamente el SHA del PR, sin publicar, y proporcionar datos controlados: empresas A/B, owner de cada una, Consulting con grant de una sola operación, Super Admin autenticado y un caso de grant revocado/vencido. La matriz API debe cubrir listas, GET por ID, create/update/delete, archivos, funciones, referencias cruzadas y ambos caminos de venta/pagos.
 
 **Estado:** NO-GO sin modificación funcional, merge, publicación, migración ni cron.
+
+
+## 9. Validación Linux del candidato — runner no disponible (2026-11-03)
+
+**SHA funcional solicitado:** `249c68755628b8c0a9e58aed71e92530a63c69f8`. No se ejecutó una sustitución sobre `main`.
+
+| Control de runner | Resultado | Evidencia |
+| --- | --- | --- |
+| WSL | NO DISPONIBLE | `wsl.exe -l -q` informa que Windows Subsystem for Linux no está instalado. |
+| Docker | NO DISPONIBLE | `docker` no está instalado. |
+| Podman | NO DISPONIBLE | `podman` no está instalado. |
+| GitHub Actions del SHA | NO VERIFICADO | El SHA no tiene runs asociados y el conector habilitado no ofrece despacho manual de workflow. |
+
+Por tanto, `npm ci`, `node --test`, `npm run lint` y `npm run build` **no se ejecutaron en Linux**. No hay evidencia nueva PASS/FAIL para el SHA funcional: el estado exacto es **NO VERIFICADO por falta de runner autorizado disponible**.
+
+**Procedimiento reproducible para un runner Linux efímero autorizado, sin secrets productivos:**
+
+```bash
+git clone https://github.com/neowisecostarica-rgb/nexora.git nexora
+cd nexora
+git checkout --detach 249c68755628b8c0a9e58aed71e92530a63c69f8
+node --version
+npm --version
+npm ci
+node --test
+npm run lint
+npm run build
+```
+
+Guardar stdout/stderr y códigos de salida por comando. Comparar cualquier fallo con la línea base documentada, sin corregir fallos ajenos al candidato dentro de este bloque. Aun con estos comandos PASS, se requerirán pruebas API reales antes de certificar seguridad.
