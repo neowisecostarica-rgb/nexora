@@ -338,6 +338,19 @@ Deno.serve(async (req) => {
 
     console.log(`[CREATED] ${createdComponents.length}/${validComponents.length} components created`);
 
+    // Integración MB02: no convertir un registro financiero incompleto en costo oficial.
+    // Persistencias parciales deben ser conciliadas; el último costo oficial queda intacto.
+    if (createdComponents.length !== validComponents.length || warnings.some(w => w.startsWith('component_creation_failed'))) {
+      return Response.json({
+        success: false,
+        inventory_unit_id: inventoryUnitId,
+        error: 'PARTIAL_COST_COMPONENTS',
+        components_created: createdComponents.length,
+        components_expected: validComponents.length,
+        warnings
+      }, { status: 422 });
+    }
+
     if (createdComponents.length === 0) {
       console.warn(`[ABORT] No valid cost components created for unit ${inventoryUnitId}`);
       return Response.json({
