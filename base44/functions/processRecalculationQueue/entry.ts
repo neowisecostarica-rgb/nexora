@@ -243,12 +243,12 @@ async function runCostEngine(db, inventoryUnitId, organizationId) {
   // marca el registro como failed para revisión. Los componentes ya recreados quedan como
   // evidencia parcial, no como costo oficial.
   const expectedComponents = validComponents.length;
-  const componentsFailed = createdComponents.length !== expectedComponents
+  const componentsFailed = createdComponents.length !== validComponents.length
     || warnings.some(w => w.startsWith('component_creation_failed'));
   if (componentsFailed) {
     return {
       success: false,
-      error: 'PARTIAL_COMPONENTS',
+      error: 'PARTIAL_COST_COMPONENTS',
       message: 'No se publica total_real_unit_cost: hay componentes de costo sin persistir',
       components_persisted: createdComponents.length,
       components_expected: expectedComponents,
