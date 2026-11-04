@@ -96,3 +96,11 @@
 - Conexión Base44/GitHub activa; falta resolver la limitación de backend de la rama.
 - Orden: terminar código, QA final una vez, integrar candidato con autorización, sincronizar Base44, publicar con GO, comprobar beta Consulting y solo después retirar ramas redundantes.
 - Bloqueos de aceptación: servicio de empresas, esquemas comerciales en runtime, aislamiento real de Consulting y circuito de cobro.
+
+## Integración a main y aceptación — 4 noviembre
+- PR #3 fusionado en GitHub main como commit f9a84d77177137316fe60197eff792a42402c8a8 (merge autorizado en esta conversación). Base44 main reporta exactamente el mismo SHA.
+- Checkpoint Base44 previo a merge: 6aeb7cd85bbae972b98f7d80 (SHA 88b18377). Checkpoint post-merge: 6aeb7e8d5c2b7a696b47ca4f (SHA f9a84d77).
+- Schemas revisados en Base44 main: Sales, Quotes, SaleItems y PartnerAccessGrant contienen los campos esperados, con RLS server-only.
+- PR #4: NO fusionar independientemente; sigue abierto como histórico hasta comprobar entrega beta. Las ramas no se eliminarán antes de resolver QA y publicación.
+- **Estado:** main consolidado, NO equivale a publicación. Una única ejecución final E2E sobre preview main fue solicitada: ID 6aeb7ea8050276b34325d043. Pendiente dictamen; NO declarar GO por adelantado.
+- Próximo gate: resultado E2E, verificación real de backend tenantData y acceso Consulting. Si falla, NO publicar. Si pasa, resolver permisos de una cuenta real Consulting y preparar GO de beta.
