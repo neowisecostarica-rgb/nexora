@@ -1,0 +1,120 @@
+{
+  "name": "ShipmentTrackings",
+  "type": "object",
+  "properties": {
+    "organization_id": {
+      "type": "string",
+      "description": "ID de OrganizationProfile propietaria. Inyectado por el gateway tenantData."
+    },
+    "tracking_number": {
+      "type": "string",
+      "description": "N\u00famero de gu\u00eda del courier."
+    },
+    "courier": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "label_created",
+        "in_transit",
+        "customs",
+        "out_for_delivery",
+        "delivered",
+        "exception",
+        "returned"
+      ],
+      "default": "label_created",
+      "description": "Estado resumido del env\u00edo. El historial completo vive en events."
+    },
+    "linked_entity_type": {
+      "type": "string",
+      "enum": [
+        "ImportBatches",
+        "PurchaseOrders",
+        "InventoryUnits"
+      ],
+      "description": "Tipo de operaci\u00f3n asociada. Opcional: un env\u00edo puede no estar vinculado a\u00fan."
+    },
+    "linked_entity_id": {
+      "type": "string",
+      "description": "ID de la operaci\u00f3n asociada. Validado dentro de la misma empresa por el gateway."
+    },
+    "warehouse_id": {
+      "type": "string",
+      "description": "Bodega o casillero de destino."
+    },
+    "origin": {
+      "type": "string"
+    },
+    "expected_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "last_event": {
+      "type": "string",
+      "description": "Descripci\u00f3n del \u00faltimo evento conocido."
+    },
+    "last_checked_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "\u00daltima actualizaci\u00f3n manual o de integraci\u00f3n. No implica consulta autom\u00e1tica al courier."
+    },
+    "events": {
+      "type": "array",
+      "description": "Historial de eventos en orden de registro. No se reordenan autom\u00e1ticamente.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "location": {
+            "type": "string"
+          },
+          "occurred_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      }
+    },
+    "notes": {
+      "type": "string"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "required": [
+    "organization_id",
+    "tracking_number",
+    "status"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "__server_only__"
+      }
+    },
+    "create": {
+      "user_condition": {
+        "role": "__server_only__"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "__server_only__"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "__server_only__"
+      }
+    }
+  }
+}

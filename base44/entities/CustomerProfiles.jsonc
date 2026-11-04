@@ -1,0 +1,83 @@
+{
+  "name": "CustomerProfiles",
+  "type": "object",
+  "properties": {
+    "organization_id": {
+      "type": "string",
+      "description": "ID de OrganizationProfile propietaria. Inyectado por el gateway tenantData."
+    },
+    "customer_id": {
+      "type": "string",
+      "description": "Referencia a Customers.id dentro de la misma empresa."
+    },
+    "lifecycle_status": {
+      "type": "string",
+      "enum": [
+        "prospect",
+        "active",
+        "inactive",
+        "blocked"
+      ],
+      "default": "prospect",
+      "description": "Etapa comercial del contacto. Registro sat\u00e9lite para no alterar el esquema Customers existente."
+    },
+    "source": {
+      "type": "string",
+      "description": "Origen del contacto (referido, marketplace, feria, redes, etc.)."
+    },
+    "next_follow_up_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Fecha comprometida para el pr\u00f3ximo seguimiento comercial."
+    },
+    "last_contact_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Fecha del \u00faltimo contacto registrado."
+    },
+    "priority": {
+      "type": "string",
+      "enum": [
+        "low",
+        "normal",
+        "high"
+      ],
+      "default": "normal",
+      "description": "Prioridad comercial para ordenar seguimientos. No altera precios ni ventas."
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Etiquetas libres para segmentar prospectos."
+    }
+  },
+  "required": [
+    "organization_id",
+    "customer_id",
+    "lifecycle_status"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "__server_only__"
+      }
+    },
+    "create": {
+      "user_condition": {
+        "role": "__server_only__"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "__server_only__"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "__server_only__"
+      }
+    }
+  }
+}
