@@ -49,6 +49,8 @@ export async function resolveTenantContext(client,requestedId,now=Date.now()){
  if(!ids.includes(chosen))throw new AccessError('NO_ORGANIZATION_ACCESS');
  const orgs=await raw.OrganizationProfile.filter({id:chosen,active:true},undefined,2);
  if(orgs.length!==1||orgs[0].id!==chosen||orgs[0].active!==true)throw new AccessError('ACTIVE_ORGANIZATION_REQUIRED');
+ // Aliados Consulting solo utilizan partnerOverview; nunca CRUD financiero/operativo genérico.
+ if(orgs[0].organization_type==='partner')throw new AccessError('PARTNER_PORTAL_ONLY',403);
  return {user,organizationId:chosen,isSuperAdmin:false};
 }
 export function scopedEntities(raw,context){
