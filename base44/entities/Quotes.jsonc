@@ -118,6 +118,14 @@
     "conversion_in_progress": {
       "type": "boolean",
       "default": false
+    },
+    "currency": {
+      "type": "string",
+      "enum": [
+        "USD",
+        "CRC"
+      ],
+      "description": "Moneda del documento. No implica conversión FX; requerido para conciliar pagos, opcional para datos legacy."
     }
   },
   "required": [
