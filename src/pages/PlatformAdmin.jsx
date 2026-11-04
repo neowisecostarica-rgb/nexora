@@ -37,7 +37,7 @@ async function overview(){
 export default function PlatformAdmin(){
  const {user}=useAuth();const qc=useQueryClient();
  const [tab,setTab]=useState('organizations'),[message,setMessage]=useState('');
- const [org,setOrg]=useState({commercial_name:'',legal_name:'',email_main:'',organization_type:'importer'});
+ const [org,setOrg]=useState({commercial_name:'',legal_name:'',legal_id:'',email_main:'',organization_type:'importer'});
  const [member,setMember]=useState({organization_id:'',user_id:'',role:'owner',expires_at:''});
  const [grant,setGrant]=useState({partner_organization_id:'',client_organization_id:'',permissions:['operations.read','tracking.read'],operation_ids:[],expires_at:''});
  const [report,setReport]=useState(null);
@@ -77,13 +77,14 @@ export default function PlatformAdmin(){
    <Card><CardHeader><CardTitle>Crear empresa</CardTitle></CardHeader><CardContent>
     <form className="grid sm:grid-cols-2 gap-3" onSubmit={e=>{e.preventDefault();run('create_organization',org);}}>
      <Field label="Nombre comercial"><Input required value={org.commercial_name} onChange={e=>setOrg({...org,commercial_name:e.target.value})}/></Field>
-     <Field label="Nombre legal"><Input required value={org.legal_name} onChange={e=>setOrg({...org,legal_name:e.target.value})}/></Field>
+     <Field label="Razón social (admite números)"><Input required value={org.legal_name} onChange={e=>setOrg({...org,legal_name:e.target.value})}/></Field>
+     <Field label="Cédula jurídica"><Input value={org.legal_id} onChange={e=>setOrg({...org,legal_id:e.target.value})} placeholder="3-101-903239"/></Field>
      <Field label="Correo de la empresa"><Input required type="email" value={org.email_main} onChange={e=>setOrg({...org,email_main:e.target.value})}/></Field>
      <Field label="Tipo"><Select value={org.organization_type} onChange={e=>setOrg({...org,organization_type:e.target.value})}><option value="importer">Importador</option><option value="partner">Aliado · Consulting</option></Select></Field>
      <Button disabled={mutation.isPending} type="submit">Crear empresa</Button>
     </form>
    </CardContent></Card>
-   <div className="grid md:grid-cols-2 gap-3">{data.organizations.map(x=><Card key={x.id}><CardContent className="p-4 space-y-2"><h2 className="font-semibold">{x.commercial_name}</h2><p>{x.organization_type==='partner'?'Aliado':x.organization_type==='importer'?'Importador':x.organization_type==='platform'?'Plataforma':'Tipo pendiente de clasificar'} · {x.active?'Activa':'Suspendida'}</p><p className="text-sm">{x.email_main}</p><Field label="Clasificación"><Select disabled={mutation.isPending} value={x.organization_type||''} onChange={e=>{if(window.confirm('¿Cambiar la clasificación de esta empresa?'))run('classify_organization',{organization_id:x.id,organization_type:e.target.value});}}><option value="" disabled>Pendiente</option><option value="importer">Importador</option><option value="partner">Aliado</option><option value="platform">Plataforma</option></Select></Field><Button variant="outline" disabled={mutation.isPending} onClick={()=>{if(window.confirm((x.active?'Suspender':'Activar')+' '+x.commercial_name+'?'))run('set_organization_status',{organization_id:x.id,active:!x.active});}}>{x.active?'Suspender':'Activar'}</Button></CardContent></Card>)}</div>
+   <div className="grid md:grid-cols-2 gap-3">{data.organizations.map(x=><Card key={x.id}><CardContent className="p-4 space-y-2"><h2 className="font-semibold">{x.commercial_name}</h2><p>{x.organization_type==='partner'?'Aliado':x.organization_type==='importer'?'Importador':x.organization_type==='platform'?'Plataforma':'Tipo pendiente de clasificar'} · {x.active?'Activa':'Suspendida'}</p><p className="text-sm">{x.email_main}</p><p className="text-xs text-muted-foreground">Razón social: {x.legal_name || '—'} · Cédula: {x.legal_id || 'No registrada'}</p><Field label="Clasificación"><Select disabled={mutation.isPending} value={x.organization_type||''} onChange={e=>{if(window.confirm('¿Cambiar la clasificación de esta empresa?'))run('classify_organization',{organization_id:x.id,organization_type:e.target.value});}}><option value="" disabled>Pendiente</option><option value="importer">Importador</option><option value="partner">Aliado</option><option value="platform">Plataforma</option></Select></Field><Button variant="outline" disabled={mutation.isPending} onClick={()=>{if(window.confirm((x.active?'Suspender':'Activar')+' '+x.commercial_name+'?'))run('set_organization_status',{organization_id:x.id,active:!x.active});}}>{x.active?'Suspender':'Activar'}</Button></CardContent></Card>)}</div>
    {!data.organizations.length&&<p>No hay empresas registradas.</p>}
   </>}
   {tab==='users'&&<>
