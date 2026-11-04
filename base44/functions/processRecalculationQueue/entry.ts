@@ -238,6 +238,24 @@ async function runCostEngine(db, inventoryUnitId, organizationId) {
     return { success: false, error: 'NO_VALID_COMPONENTS', message: 'No valid cost components generated', warnings };
   }
 
+  // Fail closed (corrección MB02): si algún componente no persistió, el total sería parcial.
+  // No se publica un total incompleto; la unidad conserva su último costo conocido y la cola
+  // marca el registro como failed para revisión. Los componentes ya recreados quedan como
+  // evidencia parcial, no como costo oficial.
+  const expectedComponents = validComponents.length;
+  const componentsFailed = createdComponents.length !== expectedComponents
+    || warnings.some(w => w.startsWith('component_creation_failed'));
+  if (componentsFailed) {
+    return {
+      success: false,
+      error: 'PARTIAL_COMPONENTS',
+      message: 'No se publica total_real_unit_cost: hay componentes de costo sin persistir',
+      components_persisted: createdComponents.length,
+      components_expected: expectedComponents,
+      warnings
+    };
+  }
+
   const totalRealUnitCost = round2(createdComponents.reduce((acc, c) => acc + c.amount, 0));
 
   await db.entities.InventoryUnits.update(inventoryUnitId, { total_real_unit_cost: totalRealUnitCost });

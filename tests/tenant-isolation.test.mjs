@@ -165,14 +165,18 @@ test('20 business entity schemas close raw CRUD for all user roles',()=>{
  }
 });
 test('every legacy backend entry uses identical local scope guard',()=>{
- const root=new URL('../base44/functions/',import.meta.url),canonical=readFileSync(new URL('../base44/policies/tenant-access.mjs',import.meta.url),'utf8');
+ const root=new URL('../base44/functions/',import.meta.url);
+ // Igualdad byte a byte salvo salto de línea final: el editor de la rama no lo preserva.
+ const norm=s=>s.replace(/\r\n/g,'\n').replace(/\n$/,'');
+ const canonical=norm(readFileSync(new URL('../base44/policies/tenant-access.mjs',import.meta.url),'utf8'));
  for(const name of readdirSync(root)){
-  if(['platformAdmin','getActiveOrganizationProfile','tenantData','finalizeSaleWithCostFreeze'].includes(name))continue;
+  // Gateways (tenantData, moduleData) y fronteras propias no usan el guard copiado: resuelven contexto por sí mismos.
+  if(['platformAdmin','getActiveOrganizationProfile','tenantData','moduleData','finalizeSaleWithCostFreeze'].includes(name))continue;
   const entry=new URL(name+'/entry.ts',root);if(!existsSync(entry))continue;
   const code=readFileSync(entry,'utf8');assert.ok(code.includes('await clientForRequest(rawClient, req)'),name);
-  assert.equal(readFileSync(new URL(name+'/tenant-access.mjs',root),'utf8'),canonical,name);
+  assert.equal(norm(readFileSync(new URL(name+'/tenant-access.mjs',root),'utf8')),canonical,name);
  }
- assert.equal(readFileSync(new URL('tenantData/tenant-access.mjs',root),'utf8'),canonical);
+ assert.equal(norm(readFileSync(new URL('tenantData/tenant-access.mjs',root),'utf8')),canonical);
 });
 
 test('owner cannot orphan a record by clearing company ownership',async()=>{
