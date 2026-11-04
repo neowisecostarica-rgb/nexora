@@ -108,3 +108,9 @@ Problema corregido: la conversión se hacía en el navegador con escrituras mult
 2. Sembrar un juego de datos de prueba (una empresa, un lote, una unidad, una cotización) y ejecutar el circuito compra→importación→costo→inventario→cotización→venta→pago con dos sesiones de empresas distintas.
 3. Resolver la consolidación de historia con PR #3 / PR #4 en GitHub, sin sobrescribir `moduleData`, CRM, bodegas ni tracking.
 4. Solo después: declarar seguridad y finanzas PASS. Hoy: **NO certificado**.
+---
+
+## Actualización de Dirección Técnica — contratos comerciales declarados (4-nov)
+Se agregaron en la misma rama GitHub campos **opcionales** que consumía convertQuoteToSale sin declaración de esquema: Sales (sale_number, sale_date, status, sale_type, quote_id, customer_id, cogs_total, gross_profit_total, gross_margin_percent, sale_notes_snapshot, organization_profile_snapshot, external_invoice_status, external_invoice_reference); SaleItems.description; Quotes (sale_id, converted_at, conversion_in_progress).
+Commits: Sales 7dc05a2, SaleItems 22c35da, Quotes 51ac02c. Se preservaron exactamente los objetos RLS y listas required de cada entidad; no se alteraron registros ni producción. Son cambios de código en GitHub; despliegue, aceptación de esquemas por Base44, índices únicos y comportamiento runtime **NO VERIFICADOS**.
+Los PR #3/#4 permanecen sin reconciliación de historia, con necesidad de comparar sus diferencias antes de cualquier merge. El riesgo de carreras en convertQuoteToSale no queda corregido por estos campos opcionales. Mantener NO-GO hasta pruebas API reales.
