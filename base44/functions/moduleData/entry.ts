@@ -64,6 +64,8 @@ Deno.serve(async (req) => {
       if (allowedIds.length !== 1) throw new AccessError(allowedIds.length ? 'ORGANIZATION_REQUIRED' : 'OWNER_ACCESS_REQUIRED');
       organizationId = allowedIds[0];
     }
+    // Una empresa aliada solo accede a operaciones autorizadas por partnerOverview.
+    if (organizationId && context.organizations.some(o => o.id === organizationId && o.organization_type === 'partner')) throw new AccessError('PARTNER_PORTAL_ONLY', 403);
     const global = !organizationId;
 
     const raw = client.asServiceRole.entities;
