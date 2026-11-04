@@ -112,3 +112,9 @@
 - Lectura directa de OrganizationProfile, OrganizationMembership y PartnerAccessGrant por conexión Base44 fue rechazada porque la app es privada (`auth_required`); no se forzaron credenciales ni se intentaron bypass. Validación de miembros y creación de empresa de prueba necesita sesión autorizada de Super Admin o owner y permisos explícitos.
 - Merge PR #3 en GitHub: f9a84d77. Base44 main reconoció ese SHA y schemas `Quotes`, `Sales`, `SaleItems`, `PartnerAccessGrant` con campos esperados y RLS server-only. Checkpoints Base44 6aeb7cd85bbae972b98f7d80 (previo), 6aeb7e8d5c2b7a696b47ca4f (post-merge).
 - **NO-GO** de publicación/entrega Consulting. Desbloquear empresa operativa y sesión de prueba autorizada, después retomar solo aceptación pendiente. PR #4 histórico y ramas quedan sin borrar hasta beta certificada. Ningún deploy ni invitación a Consulting efectuado.
+
+### Alta solicitada: Comp u Store (4-nov)
+- Solicitud del usuario: crear empresa cliente importadora **Compu Store** y asignar **gustavo@compustorecr.com** como propietario para compras e importaciones propias.
+- No asignar a la cuenta Super Admin de plataforma como owner por defecto. Mantener membresías y datos de empresa separados.
+- **Pendiente de alta autorizada en app**: API de registros y usuarios privados rechazó acceso `auth_required`; lista de solicitudes/invitaciones pendiente vacía. No se creó empresa ni membresía ni se mandó invitación.
+- Procedimiento tras acceso Super Admin: confirmar datos legales de empresa, comprobar si usuario existe y está registrado en Nexora, crear organización importer en panel /platform, vincular al User ID verificado con rol owner, comprobar selector de empresas como usuario cliente, sin alterar datos históricos.
