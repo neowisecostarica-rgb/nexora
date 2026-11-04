@@ -78,3 +78,10 @@ Se abrió PR #4 en borrador. La corrección cubre cierre prematuro de compras y 
 5. Solo con `main` consolidado continuar MB-03 (CRM, cotizaciones, proformas, ventas y pagos). No abrir ramas adicionales mientras permanezcan bloqueos de integración.
 
 **Regla del usuario:** máximo trabajo aislado imprescindible; no acumular merges; preferir avances reales, cerrar ciclos y trabajar siempre sobre el `main` más reciente. Si no se supera la barrera de seguridad, no forzar merges ni desactivar controles.
+
+## Sprint 48H · 2026-11-04 · construcción antes de QA integral
+- Decisión de Dirección: dedicar 4–5 de noviembre a construcción y reservar el QA integral para el cierre del viernes 6. No equivale a autorizar despliegue inseguro ni omitir comprobaciones mínimas de integridad.
+- PR #4 es descendiente del head del PR #3; comparación GitHub indicó 25 commits adelante y cero detrás de la rama de seguridad al inicio del sprint. No abrir rama adicional.
+- Commit 78cd322137dfda4a02437e441d8c20d0a07666b7: PurchaseDetail impide añadir partidas a órdenes ya recibidas mediante guardia visual y nueva consulta antes de crear; valida cantidad entera positiva y comunica errores. Solo protección del flujo UI; backend/RLS y solicitudes directas requieren validación separada.
+- No merge, publish, migraciones, activación de workflows ni escritura de registros reales. No se ejecutó QA final en este bloque.
+- Siguiente desarrollo prioritario: resolver atomicidad/idempotencia de generación de inventario en servidor sin confiar en conversion_in_progress como exclusión mutua; luego completar CRM, cotizaciones, ventas y pagos sobre el candidato consolidado. No declarar beta GO hasta validar aislamiento y costos reales.
