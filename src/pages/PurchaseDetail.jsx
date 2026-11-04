@@ -22,6 +22,7 @@ import PageHeader from "@/components/shared/PageHeader";
 import StatusBadge from "@/components/shared/StatusBadge";
 import { formatCurrency, formatDate } from "@/lib/formatters";
 import { useToast } from "@/components/ui/use-toast";
+import { pendingPurchaseItems, purchaseInventoryComplete } from "@/lib/purchaseConversion.mjs";
 
 const EMPTY_ITEM = {
   brand: "", model: "", cpu: "", ram_gb: 8, storage_type: "SSD", storage_gb: 256,
@@ -29,7 +30,6 @@ const EMPTY_ITEM = {
 };
 
 export default function PurchaseDetail() {
-  const urlParams = new URLSearchParams(window.location.search);
   const poId = window.location.pathname.split("/purchases/")[1];
   const [itemDialogOpen, setItemDialogOpen] = useState(false);
   const [itemForm, setItemForm] = useState(EMPTY_ITEM);
@@ -52,36 +52,64 @@ export default function PurchaseDetail() {
   });
 
   const createItemMutation = useMutation({
-    mutationFn: (data) => base44.entities.PurchaseItems.create(data),
+    mutationFn: async (data) => {
+      // Una orden recibida no debe admitir partidas nuevas desde este flujo.
+      const fresh = await base44.entities.PurchaseOrders.filter({ id: poId });
+      if (!fresh[0] || fresh[0].status === "received") {
+        throw new Error("La orden ya fue recibida o no está disponible. No se pueden agregar partidas.");
+      }
+      const quantity = Number(data.quantity);
+      if (!Number.isSafeInteger(quantity) || quantity <= 0) {
+        throw new Error("La cantidad debe ser un número entero mayor que cero.");
+      }
+      return base44.entities.PurchaseItems.create({ ...data, quantity });
+    },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["poItems", poId] }); setItemDialogOpen(false); setItemForm(EMPTY_ITEM); },
+    onError: (error) => toast({ title: "No se pudo agregar la partida", description: error?.message || "Intentá nuevamente.", variant: "destructive" }),
   });
 
   const generateUnitsMutation = useMutation({
     mutationFn: async () => {
-      if (!order) return;
-      // Cada item se convierte via función backend (con lock, idempotencia y trazabilidad)
-      const pendingItems = items.filter(item =>
-        (item.inventory_generated_count || 0) < (item.quantity || 1)
-      );
-      if (pendingItems.length === 0) {
-        toast({ title: "Sin pendientes", description: "Todos los items ya tienen sus unidades generadas." });
-        return;
-      }
+      if (!order || !poId) throw new Error("Orden de compra no disponible");
+      const pendingItems = pendingPurchaseItems(items);
+      if (pendingItems.length === 0) return { created: 0, complete: purchaseInventoryComplete(items) };
+
       let totalCreated = 0;
       for (const item of pendingItems) {
         const result = await base44.functions.invoke("createInventoryFromPurchaseItem", {
           purchaseItemId: item.id,
           importBatchId: order.import_batch_id || null,
         });
-        totalCreated += result.data?.created_count || 0;
+        const payload = result?.data;
+        if (!payload || (payload.success !== true && payload.code !== "ALREADY_COMPLETED")) {
+          throw new Error(payload?.error || "No se confirmó la conversión de un ítem");
+        }
+        totalCreated += Number(payload.created_count || 0);
       }
-      await base44.entities.PurchaseOrders.update(poId, { status: "received" });
-      toast({ title: "Inventario generado", description: `${totalCreated} unidades creadas con trazabilidad completa.` });
+
+      // Releer contadores del servidor: no usar el snapshot previo a la conversión.
+      const persistedItems = await base44.entities.PurchaseItems.filter({ purchase_order_id: poId });
+      const complete = purchaseInventoryComplete(persistedItems);
+      if (complete) {
+        await base44.entities.PurchaseOrders.update(poId, { status: "received" });
+      }
+      return { created: totalCreated, complete };
     },
-    onSuccess: () => {
+    onSuccess: ({ created, complete }) => {
       qc.invalidateQueries({ queryKey: ["po", poId] });
       qc.invalidateQueries({ queryKey: ["poItems", poId] });
       qc.invalidateQueries({ queryKey: ["inventory"] });
+      toast({
+        title: complete ? "Inventario verificado" : "Conversión parcial",
+        description: complete
+          ? `${created} unidades generadas; la orden quedó recibida.`
+          : `${created} unidades generadas. La orden no se marcó recibida porque aún hay pendientes.`,
+      });
+    },
+    onError: (error) => {
+      qc.invalidateQueries({ queryKey: ["poItems", poId] });
+      qc.invalidateQueries({ queryKey: ["inventory"] });
+      toast({ title: "Conversión no completada", description: error?.message || "Revisá el inventario antes de reintentar.", variant: "destructive" });
     },
   });
 
@@ -101,7 +129,7 @@ export default function PurchaseDetail() {
 
       <PageHeader title={`Orden ${order.purchase_code || order.order_number}`} subtitle={`Fecha: ${formatDate(order.purchase_date)}`}>
         <StatusBadge status={order.status} />
-        {items.length > 0 && items.some(i => (i.inventory_generated_count || 0) < (i.quantity || 1)) && (
+        {items.length > 0 && pendingPurchaseItems(items).length > 0 && (
           <Button onClick={() => generateUnitsMutation.mutate()} disabled={generateUnitsMutation.isPending}>
             <Package className="w-4 h-4 mr-2" />{generateUnitsMutation.isPending ? "Generando…" : "Generar Inventario"}
           </Button>
@@ -111,7 +139,7 @@ export default function PurchaseDetail() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <Card className="p-4">
           <p className="text-xs text-muted-foreground mb-1">Total Pagado</p>
-          <p className="text-xl font-bold">{formatCurrency(order.order_total_paid)}</p>
+          <p className="text-xl font-bold">{formatCurrency(order.order_total_paid, order.currency || "USD")}</p>
         </Card>
         <Card className="p-4">
           <p className="text-xs text-muted-foreground mb-1">Unidades</p>
@@ -119,7 +147,7 @@ export default function PurchaseDetail() {
         </Card>
         <Card className="p-4">
           <p className="text-xs text-muted-foreground mb-1">Costo/Unidad</p>
-          <p className="text-xl font-bold">{order.total_units > 0 ? formatCurrency(order.order_total_paid / order.total_units) : "—"}</p>
+          <p className="text-xl font-bold">{order.total_units > 0 ? formatCurrency(order.order_total_paid / order.total_units, order.currency || "USD") : "—"}</p>
         </Card>
         <Card className="p-4">
           <p className="text-xs text-muted-foreground mb-1">Plataforma</p>
@@ -130,7 +158,7 @@ export default function PurchaseDetail() {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between pb-2">
           <CardTitle className="text-sm font-semibold">Items de la Orden</CardTitle>
-          <Button size="sm" onClick={() => { setItemForm({ ...EMPTY_ITEM, purchase_order_id: poId }); setItemDialogOpen(true); }}>
+          <Button size="sm" disabled={order.status === "received"} onClick={() => { setItemForm({ ...EMPTY_ITEM, purchase_order_id: poId }); setItemDialogOpen(true); }}>
             <Plus className="w-3.5 h-3.5 mr-1" />Agregar Item
           </Button>
         </CardHeader>
@@ -168,7 +196,7 @@ export default function PurchaseDetail() {
                       <TableCell>{item.storage_gb}GB {item.storage_type}</TableCell>
                       <TableCell>{item.condition_grade}</TableCell>
                       <TableCell>{item.quantity}</TableCell>
-                      <TableCell className="font-semibold">{formatCurrency(allocatedCost)}</TableCell>
+                      <TableCell className="font-semibold">{formatCurrency(allocatedCost, order.currency || "USD")}</TableCell>
                       <TableCell>
                         {inProgress ? (
                           <span className="text-xs text-yellow-600 font-medium">En proceso…</span>
@@ -222,7 +250,7 @@ export default function PurchaseDetail() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setItemDialogOpen(false)}>Cancelar</Button>
-            <Button onClick={() => createItemMutation.mutate({ ...itemForm, purchase_order_id: poId })} disabled={!itemForm.brand || !itemForm.model || createItemMutation.isPending}>
+            <Button onClick={() => createItemMutation.mutate({ ...itemForm, purchase_order_id: poId })} disabled={!itemForm.brand || !itemForm.model || order.status === "received" || !Number.isSafeInteger(Number(itemForm.quantity)) || Number(itemForm.quantity) <= 0 || createItemMutation.isPending}>
               {createItemMutation.isPending ? "Guardando…" : "Agregar"}
             </Button>
           </DialogFooter>
