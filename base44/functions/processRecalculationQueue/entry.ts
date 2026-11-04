@@ -234,6 +234,11 @@ async function runCostEngine(db, inventoryUnitId, organizationId) {
     }
   }
 
+  // Conservar el costo oficial anterior si la escritura de componentes quedó parcial.
+  if (createdComponents.length !== validComponents.length) {
+    return { success: false, error: 'PARTIAL_COST_COMPONENTS', components_created: createdComponents.length, components_expected: validComponents.length, warnings };
+  }
+
   if (createdComponents.length === 0) {
     return { success: false, error: 'NO_VALID_COMPONENTS', message: 'No valid cost components generated', warnings };
   }
