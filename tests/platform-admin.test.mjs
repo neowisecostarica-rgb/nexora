@@ -148,3 +148,19 @@ test('audit viewer is paginated and restricted to platform authority',async()=>{
  assert.equal(result.status,200);assert.ok(result.body.events.some(x=>x.action==='platform.audit.read'));
  const outsider=fake({id:'client',role:'user'});assert.equal((await handlePlatformAdmin(outsider.client,{action:'audit_log'})).status,403);
 });
+
+test('numeric legal name and distinct legal ID are saved without assuming a textual company name',async()=>{
+ const f=fake();
+ const result=await handlePlatformAdmin(f.client,{action:'create_organization',commercial_name:'Compu Store',legal_name:'3101903239',legal_id:'3-101-903239',email_main:'gustavo@compustorecr.com',organization_type:'importer'});
+ assert.equal(result.status,200);
+ assert.equal(result.body.organization.legal_name,'3101903239');
+ assert.equal(result.body.organization.legal_id,'3-101-903239');
+ assert.equal(result.body.organization.commercial_name,'Compu Store');
+ assert.equal(f.tables.OrganizationMembership.length,0);
+});
+test('duplicate legal ID cannot silently create a second company',async()=>{
+ const f=fake(admin,{OrganizationProfile:[{...importer,legal_id:'3-101-903239'}]});
+ const result=await handlePlatformAdmin(f.client,{action:'create_organization',commercial_name:'Compu Store',legal_name:'3101903239',legal_id:'3-101-903239',email_main:'gustavo@compustorecr.com',organization_type:'importer'});
+ assert.equal(result.status,409);
+ assert.equal(f.writes.length,0);
+});
