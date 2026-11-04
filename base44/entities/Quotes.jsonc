@@ -108,6 +108,16 @@
     "organization_id": {
       "type": "string",
       "description": "ID de OrganizationProfile propietaria. Campo opcional durante transición; registros sin asignación requieren revisión, no inferir dueño."
+    },
+    "sale_id": {
+      "type": "string"
+    },
+    "converted_at": {
+      "type": "string"
+    },
+    "conversion_in_progress": {
+      "type": "boolean",
+      "default": false
     }
   },
   "required": [
