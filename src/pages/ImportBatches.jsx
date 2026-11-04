@@ -21,6 +21,7 @@ import PageHeader from "@/components/shared/PageHeader";
 import StatusBadge from "@/components/shared/StatusBadge";
 import EmptyState from "@/components/shared/EmptyState";
 import { formatCurrency, formatDate, generateCode } from "@/lib/formatters";
+import { prepareImportBatchPayload, hasLegacyFixedImportCost } from "@/lib/importBatchCosts.mjs";
 
 const EMPTY_BATCH = {
   batch_code: "", courier: "", origin_country: "USA", destination_country: "Mexico",
@@ -45,7 +46,7 @@ export default function ImportBatchesPage() {
       // El motor ya distribuye aduana, flete, transporte y extras proporcionalmente.
       // per_unit_import_default es un cargo fijo ADICIONAL, no una segunda prorrata.
       // Conservar valores legacy existentes; nunca recomputarlos silenciosamente.
-      const payload = { ...data };
+      const payload = prepareImportBatchPayload(data);
       return editing ? base44.entities.ImportBatches.update(editing.id, payload) : base44.entities.ImportBatches.create(payload);
     },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["importBatches"] }); setDialogOpen(false); setEditing(null); setForm(EMPTY_BATCH); },
@@ -134,7 +135,7 @@ export default function ImportBatchesPage() {
               <Label>Cargo fijo adicional por unidad</Label>
               <Input type="number" min="0" step="0.01" value={form.per_unit_import_default ?? 0} onChange={(e) => snf("per_unit_import_default", e.target.value)} />
               <p className="text-xs text-muted-foreground">Solo cargos adicionales: aduana, flete, transporte y extras ya se distribuyen desde sus totales. No duplicarlos aquí.</p>
-              {editing && Number(form.per_unit_import_default || 0) > 0 && (
+              {editing && hasLegacyFixedImportCost(form) && (
                 <p className="text-xs text-amber-700">Revisá este valor histórico antes de guardar: versiones anteriores lo calculaban automáticamente y podría duplicar costos. No se modificará sin tu intervención.</p>
               )}
             </div>
