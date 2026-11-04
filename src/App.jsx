@@ -32,6 +32,7 @@ import Catalog from '@/pages/Catalog';
 import PlatformAdmin from '@/pages/PlatformAdmin';
 import Warehouses from '@/pages/Warehouses';
 import Tracking from '@/pages/Tracking';
+import ConsultingPortal from '@/pages/ConsultingPortal';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -55,6 +56,8 @@ const AuthenticatedApp = () => {
 
   return (
     <Routes>
+      {/* La ruta Consulting NO utiliza el panel administrativo ni los menús operativos. */}
+      <Route path="/consulting" element={<ConsultingPortal />} />
       <Route element={<AppLayout />}>
         <Route path="/" element={<Dashboard />} />
         <Route path="/suppliers" element={<Suppliers />} />
