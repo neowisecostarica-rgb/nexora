@@ -97,6 +97,14 @@
     },
     "external_invoice_reference": {
       "type": "string"
+    },
+    "currency": {
+      "type": "string",
+      "enum": [
+        "USD",
+        "CRC"
+      ],
+      "description": "Moneda del documento. No implica conversión FX; requerido para conciliar pagos, opcional para datos legacy."
     }
   },
   "required": [
