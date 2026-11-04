@@ -95,7 +95,7 @@ export default function Purchases() {
                   <TableCell className="capitalize">{po.source_platform || "—"}</TableCell>
                   <TableCell>{formatDate(po.purchase_date)}</TableCell>
                   <TableCell>{po.total_units}</TableCell>
-                  <TableCell className="font-semibold">{formatCurrency(po.order_total_paid)}</TableCell>
+                  <TableCell className="font-semibold">{formatCurrency(po.order_total_paid, po.currency || "USD")}</TableCell>
                   <TableCell><StatusBadge status={po.status} /></TableCell>
                   <TableCell>
                     <Link to={`/purchases/${po.id}`}>
@@ -141,7 +141,7 @@ export default function Purchases() {
               <Input type="date" value={form.purchase_date} onChange={(e) => setField("purchase_date", e.target.value)} />
             </div>
             <div className="space-y-1.5">
-              <Label>Total Pagado (USD) *</Label>
+              <Label>Total Pagado ({form.currency || "USD"}) *</Label>
               <Input type="number" step="0.01" value={form.order_total_paid || ""} onChange={(e) => setNumField("order_total_paid", e.target.value)} />
             </div>
             <div className="space-y-1.5">
