@@ -68,11 +68,16 @@ export async function handlePlatformAdmin(client,input={},now=Date.now()) {
    next_skip:[organizations,users,memberships,grants,operations].some(x=>x.length>pageSize)?skip+pageSize:null});
  }
  if(input.action==='create_organization'){
-  const commercial_name=clean(input.commercial_name),legal_name=clean(input.legal_name),email_main=clean(input.email_main);
+  const commercial_name=clean(input.commercial_name),legal_name=clean(input.legal_name),email_main=clean(input.email_main),legal_id=clean(input.legal_id,64);
   const organization_type=input.organization_type;
   if(!commercial_name||!legal_name||!/^\S+@\S+\.\S+$/.test(email_main)||!['importer','partner'].includes(organization_type))return fail(400,'INVALID_ORGANIZATION');
+  // La razón social puede ser numérica; la cédula jurídica es un campo independiente.
+  if (legal_id) {
+   const existing=await db.OrganizationProfile.filter({legal_id},undefined,2);
+   if (existing.length>0) return fail(409,'LEGAL_ID_ALREADY_REGISTERED');
+  }
   await audit('organization.create.attempt','',{commercial_name,organization_type});
-  const org=await db.OrganizationProfile.create({commercial_name,legal_name,email_main,organization_type,active:true,
+  const org=await db.OrganizationProfile.create({commercial_name,legal_name,email_main,...(legal_id?{legal_id}:{}),organization_type,active:true,
    document_prefix_quote:'COT',document_prefix_sale:'VTA',quote_validity_days:7});
   await audit('organization.create.completed',org.id);
   return ok({organization:org});
