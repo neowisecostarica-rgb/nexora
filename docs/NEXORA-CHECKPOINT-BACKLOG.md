@@ -113,8 +113,8 @@
 - Merge PR #3 en GitHub: f9a84d77. Base44 main reconoció ese SHA y schemas `Quotes`, `Sales`, `SaleItems`, `PartnerAccessGrant` con campos esperados y RLS server-only. Checkpoints Base44 6aeb7cd85bbae972b98f7d80 (previo), 6aeb7e8d5c2b7a696b47ca4f (post-merge).
 - **NO-GO** de publicación/entrega Consulting. Desbloquear empresa operativa y sesión de prueba autorizada, después retomar solo aceptación pendiente. PR #4 histórico y ramas quedan sin borrar hasta beta certificada. Ningún deploy ni invitación a Consulting efectuado.
 
-### Alta solicitada: Comp u Store (4-nov)
-- Solicitud del usuario: crear empresa cliente importadora **Compu Store** y asignar **gustavo@compustorecr.com** como propietario para compras e importaciones propias.
+### Alta solicitada: Compu Store (4-nov)
+- Solicitud del usuario: crear empresa cliente importadora **Compu Store** y asignar **gustavo@compustorecr.com** como propietario para compras e importaciones propias. **Cédula jurídica informada: 3-101-903239**, pendiente de registro en el campo `legal_id` de `OrganizationProfile`. **Razón social (nombre legal) aún NO CONFIRMADA**; no sustituirla por la cédula jurídica.
 - No asignar a la cuenta Super Admin de plataforma como owner por defecto. Mantener membresías y datos de empresa separados.
 - **Pendiente de alta autorizada en app**: API de registros y usuarios privados rechazó acceso `auth_required`; lista de solicitudes/invitaciones pendiente vacía. No se creó empresa ni membresía ni se mandó invitación.
 - Procedimiento tras acceso Super Admin: confirmar datos legales de empresa, comprobar si usuario existe y está registrado en Nexora, crear organización importer en panel /platform, vincular al User ID verificado con rol owner, comprobar selector de empresas como usuario cliente, sin alterar datos históricos.
