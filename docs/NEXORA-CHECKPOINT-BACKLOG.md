@@ -89,3 +89,10 @@
 
 ### Frase para retomar
 «Retomemos Nexora desde docs/NEXORA-CHECKPOINT-BACKLOG.md. No más auditorías; resolver P0-01 (servicio de empresas/escritura), consolidar PR #3/#4 y cerrar beta del 6-nov con evidencia, sin publicar hasta autorización».
+
+## Release candidate — 4 noviembre
+- PR #3 es candidato único; PR #4 se conserva abierto como referencia sin merge directo.
+- GitHub Actions 41887989572 PASS en SHA 2d3cface; esto no certifica runtime.
+- Conexión Base44/GitHub activa; falta resolver la limitación de backend de la rama.
+- Orden: terminar código, QA final una vez, integrar candidato con autorización, sincronizar Base44, publicar con GO, comprobar beta Consulting y solo después retirar ramas redundantes.
+- Bloqueos de aceptación: servicio de empresas, esquemas comerciales en runtime, aislamiento real de Consulting y circuito de cobro.
