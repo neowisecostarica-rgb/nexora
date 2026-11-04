@@ -104,3 +104,11 @@
 - PR #4: NO fusionar independientemente; sigue abierto como histórico hasta comprobar entrega beta. Las ramas no se eliminarán antes de resolver QA y publicación.
 - **Estado:** main consolidado, NO equivale a publicación. Una única ejecución final E2E sobre preview main fue solicitada: ID 6aeb7ea8050276b34325d043. Pendiente dictamen; NO declarar GO por adelantado.
 - Próximo gate: resultado E2E, verificación real de backend tenantData y acceso Consulting. Si falla, NO publicar. Si pasa, resolver permisos de una cuenta real Consulting y preparar GO de beta.
+
+### Dictamen de ejecución final del 4-nov (main integrado)
+- E2E-001 replay único en preview principal: `6aeb7ea8050276b34325d043`; resultado FAIL/BLOQUEADO, `goal_accomplished=false`; Base44 registró 2,1 créditos de integraciones. No ejecutar otra corrida hasta resolver precondición.
+- El selector **Empresa de trabajo** mostró «Sin empresa operativa autorizada» y no permitió comenzar con compras. Se abrió y canceló el formulario de compra. No se crearon datos QA ni se modificaron datos de negocio, permisos o cron, según el agente.
+- **NO** demuestra que la empresa no exista: únicamente que la sesión empleada carece de empresa operativa seleccionable. No confundir este fallo con el anterior `tenantData 404`, cuya resolución real tampoco quedó certificada.
+- Lectura directa de OrganizationProfile, OrganizationMembership y PartnerAccessGrant por conexión Base44 fue rechazada porque la app es privada (`auth_required`); no se forzaron credenciales ni se intentaron bypass. Validación de miembros y creación de empresa de prueba necesita sesión autorizada de Super Admin o owner y permisos explícitos.
+- Merge PR #3 en GitHub: f9a84d77. Base44 main reconoció ese SHA y schemas `Quotes`, `Sales`, `SaleItems`, `PartnerAccessGrant` con campos esperados y RLS server-only. Checkpoints Base44 6aeb7cd85bbae972b98f7d80 (previo), 6aeb7e8d5c2b7a696b47ca4f (post-merge).
+- **NO-GO** de publicación/entrega Consulting. Desbloquear empresa operativa y sesión de prueba autorizada, después retomar solo aceptación pendiente. PR #4 histórico y ramas quedan sin borrar hasta beta certificada. Ningún deploy ni invitación a Consulting efectuado.
