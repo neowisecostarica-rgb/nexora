@@ -19,7 +19,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Building2, FileText, CreditCard, Calculator, Save, Upload, CheckCircle, AlertTriangle } from "lucide-react";
 import PageHeader from "@/components/shared/PageHeader";
 import { useToast } from "@/components/ui/use-toast";
-import { REQUIRED_FIELDS_FOR_OPERATION, validateProfileForOperation } from "@/lib/orgProfileSnapshot";
+import { validateProfileForOperation } from "@/lib/orgProfileSnapshot";
 
 const EMPTY_PROFILE = {
   legal_name: "", commercial_name: "", brand_name: "", legal_id: "",
