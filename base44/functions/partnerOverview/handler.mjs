@@ -50,7 +50,7 @@ export async function handlePartnerOverview(client, input = {}, now = Date.now()
         row.trackings=(ts||[]).filter(t=>t.organization_id===g.client_organization_id && t.linked_entity_type==='ImportBatches' && t.linked_entity_id===b.id).map(t=>({
           tracking_number:t.tracking_number||'',courier:t.courier||'',
           status:TRACKING_STATUS.has(t.status)?t.status:'unknown',
-          expected_date:t.expected_date||null,last_event:t.last_event||''
+          expected_date:t.expected_date||null
         }));
       }
       operations.push(row);
