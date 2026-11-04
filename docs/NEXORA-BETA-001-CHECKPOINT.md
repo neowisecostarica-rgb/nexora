@@ -66,3 +66,65 @@
 A fecha 2026-11-02: **plan y documentación registrados; no se certifica ejecución funcional ni beta lista**. Siguiente tarea: identificar repo GitHub auténtico y comparar HEAD con Base44; levantar matriz de brechas SEC-001 / LEG-001 / FIN-001 en solo lectura. Después proponer cambios acotados y pruebas antes de implementarlos.
 
 **Registro de cambios:** 2026-11-02: creación documental de plan maestro; sin cambios de lógica, entidades, permisos, datos, automatizaciones o publicación.
+
+
+## 7. MB-01B — reconciliación y cierre técnico (2026-11-03)
+
+**Base reconciliada:** `f07ff11f7800a1384df1a9ec2b0710e4963a055e` (GitHub y Base44 main al inicio de la tarea). Se incorporaron manualmente los dos cambios válidos de main a la rama del PR: actualización de `@base44/sdk`/`@base44/vite-plugin` y su lockfile, y este checkpoint maestro. No se ejecutó merge ni se sobrescribió Base44.
+
+**Código P0 revisado:** `createReservation`, `convertReservationToSale` y `createPayment` del PR construyen primero un cliente de tenant desde la identidad autenticada; el acceso a entidades mediante service role queda mediado por contexto de empresa, membresías y validación de referencias. El borrador también contiene RLS y una frontera de datos para CRUD directo. Esto es evidencia de código, no certificación runtime.
+
+**Calidad local disponible en main:** política/perfil 31/31 PASS; build PASS; lint inicialmente FAIL por nueve imports sin uso preexistentes. Se retiraron solamente esos imports en la rama del PR. La rama no está desplegada en Base44 ni tiene una ejecución CI confirmada para el SHA posterior a la reconciliación, por lo que lint/build/regresiones del head final son **NO VERIFICADO**.
+
+**LEG-001:** no se migraron datos. La transición sigue siendo un mapa reversible de ownership con evidencia y estados confirmado/ambiguo/omitido; no se asignan registros ambiguos ni se bloquean usuarios legacy por esta entrega.
+
+**API real:** NO VERIFICADO. Faltan sesiones autorizadas de dos empresas, Consulting y Super Admin para probar listas, lectura por ID, escrituras, archivos, funciones, grants, vencimiento y revocación.
+
+**Resultado:** **NO-GO**. Mantener PR #3 como borrador. Antes de integrar o publicar: reconciliar/validar el head final en un sandbox autorizado, completar el inventario legacy, ejecutar la matriz de regresión (compras, inventario, cotizaciones, ambos caminos de venta y pagos) y obtener evidencia API real. No activar cron ni ejecutar migraciones.
+
+
+## 8. MB-01D — desbloqueo de validación (2026-11-03)
+
+**SHA objetivo de validación:** `249c68755628b8c0a9e58aed71e92530a63c69f8`.
+
+| Verificación | Resultado | Evidencia |
+| --- | --- | --- |
+| Checkout íntegro Windows | BLOQUEADO | Git for Windows rechaza el árbol por el workflow histórico `base44/workflows/ImportBatch: Distribuir costos al actualizar.jsonc`; no se renombró ni alteró. |
+| WSL/Linux local | BLOQUEADO | `wsl.exe --status` informa que el subsistema/distribución no está instalado; instalarlo crearía un entorno, por lo que no se hizo. |
+| GitHub Actions del SHA objetivo | NO VERIFICADO | La consulta de runs del commit devolvió cero ejecuciones; el conector disponible no expone despacho de workflow. |
+| Base44 contra rama GitHub | NO DISPONIBLE | La documentación/capacidades Base44 disponibles separan ramas Base44 de ramas GitHub. `list_branches` del app muestra solo `main`; el sandbox se inicia desde su último commit Base44 y no puede seleccionar una rama GitHub externa. |
+| Lint/build/node --test del SHA objetivo | NO VERIFICADO | Dependen de un checkout íntegro Linux o runner CI. No se usó `main` como sustituto. |
+
+**Alternativa de menor riesgo:** Dirección General debe autorizar un runner Linux efímero, sin secrets productivos ni deploy, que haga checkout exacto del SHA y ejecute solo `node --test`, `npm run lint` y `npm run build`. Para runtime, debe crear o habilitar una rama/sandbox Base44 que contenga explícitamente el SHA del PR, sin publicar, y proporcionar datos controlados: empresas A/B, owner de cada una, Consulting con grant de una sola operación, Super Admin autenticado y un caso de grant revocado/vencido. La matriz API debe cubrir listas, GET por ID, create/update/delete, archivos, funciones, referencias cruzadas y ambos caminos de venta/pagos.
+
+**Estado:** NO-GO sin modificación funcional, merge, publicación, migración ni cron.
+
+
+## 9. Validación Linux del candidato — runner no disponible (2026-11-03)
+
+**SHA funcional solicitado:** `249c68755628b8c0a9e58aed71e92530a63c69f8`. No se ejecutó una sustitución sobre `main`.
+
+| Control de runner | Resultado | Evidencia |
+| --- | --- | --- |
+| WSL | NO DISPONIBLE | `wsl.exe -l -q` informa que Windows Subsystem for Linux no está instalado. |
+| Docker | NO DISPONIBLE | `docker` no está instalado. |
+| Podman | NO DISPONIBLE | `podman` no está instalado. |
+| GitHub Actions del SHA | NO VERIFICADO | El SHA no tiene runs asociados y el conector habilitado no ofrece despacho manual de workflow. |
+
+Por tanto, `npm ci`, `node --test`, `npm run lint` y `npm run build` **no se ejecutaron en Linux**. No hay evidencia nueva PASS/FAIL para el SHA funcional: el estado exacto es **NO VERIFICADO por falta de runner autorizado disponible**.
+
+**Procedimiento reproducible para un runner Linux efímero autorizado, sin secrets productivos:**
+
+```bash
+git clone https://github.com/neowisecostarica-rgb/nexora.git nexora
+cd nexora
+git checkout --detach 249c68755628b8c0a9e58aed71e92530a63c69f8
+node --version
+npm --version
+npm ci
+node --test
+npm run lint
+npm run build
+```
+
+Guardar stdout/stderr y códigos de salida por comando. Comparar cualquier fallo con la línea base documentada, sin corregir fallos ajenos al candidato dentro de este bloque. Aun con estos comandos PASS, se requerirán pruebas API reales antes de certificar seguridad.

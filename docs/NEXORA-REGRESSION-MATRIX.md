@@ -24,3 +24,10 @@ Estado inicial: pendiente de QA runtime. Las 31 pruebas MG01 son unitarias/mocks
 | Móvil/escritorio | navegación, formularios, retornos e impresión | QA humano |
 
 En cada cambio registrar: base/commit, caso, esperado, observado, prueba, pendientes y responsable. Marcar solo lo ejecutado. No sustituir un fallo real por una prueba que copie el código.
+
+## Evidencia MG01 administrativa
+65 pruebas locales con cliente simulado y build aprobados en rama. Alta/revocación/grants/perfil Super Admin cubiertos por contratos simulados. Las filas API/QA humano de esta matriz permanecen pendientes.
+
+Actualización posterior: NEXORA-MG01-ISOLATION.md registra gateway, 22 guardas, RLS en 20 entidades y 91 pruebas locales; runtime/archivos/migración/QA siguen pendientes.
+
+Actualización MB-49H (2026-11-04): 93 pruebas locales y build aprobados. Cotización→venta pasa a servidor (`convertQuoteToSale`) con costo congelado e idempotencia por `Sales.quote_id`; compra se cierra por recuentos persistidos y bloquea partidas en orden recibida; el worker de costos falla cerrado si faltan componentes. Filas de esta matriz que siguen **pendientes de ejecución real**: ambos caminos de venta en paralelo, conciliación numérica de los dos motores, pagos/saldos, dos sesiones de empresas distintas, Consulting y QA humano. Ver docs/NEXORA-MB-49H-CHECKPOINT-2026-11-04.md.

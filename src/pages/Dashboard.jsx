@@ -11,13 +11,13 @@ import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-  Monitor, ShoppingCart, HandCoins, TrendingUp, Package, AlertTriangle, DollarSign, Truck
+  Monitor, HandCoins, TrendingUp, Package, UserPlus, CalendarClock, Warehouse, Navigation
 } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import PageHeader from "@/components/shared/PageHeader";
 import StatCard from "@/components/shared/StatCard";
 import StatusBadge from "@/components/shared/StatusBadge";
-import { formatCurrency, formatNumber, formatPercent } from "@/lib/formatters";
+import { formatCurrency, formatNumber } from "@/lib/formatters";
 
 const COLORS = ["hsl(217,91%,60%)", "hsl(162,72%,45%)", "hsl(262,83%,58%)", "hsl(43,96%,56%)", "hsl(0,84%,60%)"];
 
@@ -34,6 +34,18 @@ export default function Dashboard() {
     queryKey: ["purchases"],
     queryFn: () => base44.entities.PurchaseOrders.list("-purchase_date", 100),
   });
+  const { data: customerProfiles = [] } = useQuery({
+    queryKey: ["customerProfiles"],
+    queryFn: () => base44.entities.CustomerProfiles.list("-created_date", 200),
+  });
+  const { data: warehouses = [] } = useQuery({
+    queryKey: ["warehouses"],
+    queryFn: () => base44.entities.Warehouses.list("-created_date", 100),
+  });
+  const { data: trackings = [] } = useQuery({
+    queryKey: ["shipmentTrackings"],
+    queryFn: () => base44.entities.ShipmentTrackings.list("-updated_date", 200),
+  });
 
   const available = inventory.filter((u) => u.status === "available");
   const totalInventoryValue = available.reduce((s, u) => s + (u.total_real_unit_cost || 0), 0);
@@ -42,7 +54,15 @@ export default function Dashboard() {
 
   const readyToQuote = available.filter(u => u.wholesale_price > 0 && u.pricing_profile_id);
 
-  const completedSales = sales.filter((s) => s.status === "completed");
+  // Ventas históricas no guardan status (campo fuera del esquema vigente): se cuentan como completadas.
+  const completedSales = sales.filter((s) => !s.status || s.status === "completed");
+  const prospectCount = customerProfiles.filter((p) => p.lifecycle_status === "prospect").length;
+  const weekAhead = new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 10);
+  const todayStr = new Date().toISOString().slice(0, 10);
+  const followUps = customerProfiles.filter((p) => p.next_follow_up_date && p.next_follow_up_date <= weekAhead);
+  const overdueFollowUps = followUps.filter((p) => p.next_follow_up_date < todayStr).length;
+  const activeWarehouses = warehouses.filter((w) => w.is_active !== false).length;
+  const trackingsInTransit = trackings.filter((t) => ["label_created", "in_transit", "customs", "out_for_delivery"].includes(t.status)).length;
   const totalRevenue = completedSales.reduce((s, v) => s + (v.total || 0), 0);
   const totalProfit = completedSales.reduce((s, v) => s + (v.gross_profit_total || 0), 0);
 
@@ -70,6 +90,13 @@ export default function Dashboard() {
         <StatCard title="Valor en Inventario" value={formatCurrency(totalInventoryValue)} subtitle="costo real total" icon={Package} />
         <StatCard title="Utilidad Potencial Mayoreo" value={formatCurrency(potentialProfit)} subtitle="precio mayoreo − costo real" icon={TrendingUp} />
         <StatCard title="Ventas Completadas" value={formatCurrency(totalRevenue)} subtitle={`${completedSales.length} ventas`} icon={HandCoins} />
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <StatCard title="Prospectos" value={formatNumber(prospectCount)} subtitle="sin compra registrada" icon={UserPlus} />
+        <StatCard title="Seguimientos" value={formatNumber(followUps.length)} subtitle={`${overdueFollowUps} vencidos`} icon={CalendarClock} />
+        <StatCard title="Bodegas Activas" value={formatNumber(activeWarehouses)} subtitle="casilleros y direcciones" icon={Warehouse} />
+        <StatCard title="Envíos en Curso" value={formatNumber(trackingsInTransit)} subtitle="guías sin entregar" icon={Navigation} />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">

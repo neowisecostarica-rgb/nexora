@@ -3,7 +3,7 @@
  * Propósito: Resolve company profile from authenticated identity and server memberships. Organization IDs are OrganizationProfile record IDs. No global active-profile fallback.
  * Datos/efectos detectados: OrganizationMembership.filter, OrganizationProfile.filter
  * Dependencias: Revisar imports y consumidores; sin invoke literal detectado.
- * Límites: Preservar contratos; ver docs/NEXORA-REGRESSION-MATRIX.md. Runtime no certificado. Gustavo es Super Admin; owner-only requiere corrección y migración.
+ * Límites: Preservar contratos; ver docs/NEXORA-REGRESSION-MATRIX.md. Runtime no certificado. Super Admin verificado en servidor y auditado; ownership legacy aún requiere migración.
  * Referencia: docs/NEXORA-INVENTORY.md (base 54e8532).
  */
 /**
@@ -11,10 +11,27 @@
  * Organization IDs are OrganizationProfile record IDs. No global active-profile fallback.
  * Legacy users without memberships fail closed until migration is completed.
  */
+import {isPlatformSuperAdmin} from './authority.mjs';
 export async function getOrganizationProfile(client, requestedId, now = Date.now()) {
  const user = await client.auth.me();
  if (!user?.id) return {status:401,body:{error:'Unauthorized'}};
  if (requestedId != null && (typeof requestedId !== 'string' || !requestedId.trim())) return {status:400,body:{error:'INVALID_ORGANIZATION'}};
+ // Super Admin is separate from tenant ownership and audited before profile reads.
+ if(isPlatformSuperAdmin(user)){
+  await client.asServiceRole.entities.PlatformAuditEvent.create({
+   actor_user_id:user.id,action:'organization.profile.read',target_id:requestedId||'',
+   occurred_at:new Date(now).toISOString(),detail:{selection:requestedId?'explicit':'single_active'}
+  });
+  const profiles=await client.asServiceRole.entities.OrganizationProfile.filter(
+   requestedId?{id:requestedId,active:true}:{active:true},undefined,2);
+  if(!profiles?.length)return {status:404,body:{error:'NO_PROFILE'}};
+  if(profiles.length>1)return {status:409,body:{error:'ORGANIZATION_REQUIRED'}};
+  const profile=profiles[0];
+  if(profile.active!==true||(requestedId&&profile.id!==requestedId))return {status:409,body:{error:'INVALID_PROFILE'}};
+  const required=['legal_name','commercial_name','email_main','document_prefix_quote','document_prefix_sale','quote_validity_days'];
+  const missing_fields=required.filter(k=>!profile[k]);
+  return {status:200,body:{profile,is_complete:missing_fields.length===0,missing_fields}};
+ }
  // Only owners may read the full profile, which contains banking details.
  const rows = await client.asServiceRole.entities.OrganizationMembership.filter({user_id:user.id,status:'active',role:'owner'},undefined,500);
  const owners = (rows || []).filter(m => m.user_id === user.id && m.status === 'active' && m.role === 'owner' && typeof m.organization_id === 'string' && m.organization_id &&

@@ -1,0 +1,52 @@
+{
+  "name": "PlatformAuditEvent",
+  "type": "object",
+  "properties": {
+    "actor_user_id": {
+      "type": "string",
+      "description": "ID obtenido de auth.me en servidor."
+    },
+    "action": {
+      "type": "string",
+      "description": "Acci\u00f3n de lectura o intento/resultado de escritura."
+    },
+    "target_id": {
+      "type": "string"
+    },
+    "occurred_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "detail": {
+      "type": "object",
+      "additionalProperties": true
+    }
+  },
+  "required": [
+    "actor_user_id",
+    "action",
+    "occurred_at"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "__server_only__"
+      }
+    },
+    "create": {
+      "user_condition": {
+        "role": "__server_only__"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "__server_only__"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "__server_only__"
+      }
+    }
+  }
+}

@@ -1,0 +1,109 @@
+{
+  "name": "Warehouses",
+  "type": "object",
+  "properties": {
+    "organization_id": {
+      "type": "string",
+      "description": "ID de OrganizationProfile propietaria. Inyectado por el gateway tenantData; no confiar en el navegador."
+    },
+    "name": {
+      "type": "string",
+      "description": "Nombre recordable de la bodega, casillero o direcci\u00f3n virtual (ej. Casillero Miami 01)."
+    },
+    "code": {
+      "type": "string",
+      "description": "C\u00f3digo corto interno para referencias verbales o etiquetas (ej. MIA-01)."
+    },
+    "warehouse_type": {
+      "type": "string",
+      "enum": [
+        "warehouse",
+        "locker",
+        "virtual_address",
+        "consolidation"
+      ],
+      "default": "warehouse",
+      "description": "warehouse = bodega f\u00edsica; locker = casillero; virtual_address = direcci\u00f3n de recepci\u00f3n; consolidation = centro de consolidaci\u00f3n."
+    },
+    "carrier": {
+      "type": "string",
+      "description": "Transportista o courier asociado a esta direcci\u00f3n."
+    },
+    "contact_name": {
+      "type": "string"
+    },
+    "phone": {
+      "type": "string"
+    },
+    "email": {
+      "type": "string"
+    },
+    "address_line1": {
+      "type": "string"
+    },
+    "address_line2": {
+      "type": "string"
+    },
+    "city": {
+      "type": "string"
+    },
+    "state": {
+      "type": "string"
+    },
+    "postal_code": {
+      "type": "string"
+    },
+    "country": {
+      "type": "string"
+    },
+    "locker_number": {
+      "type": "string",
+      "description": "N\u00famero o identificador de casillero asignado por el proveedor."
+    },
+    "hours": {
+      "type": "string",
+      "description": "Horario de recepci\u00f3n o atenci\u00f3n."
+    },
+    "notes": {
+      "type": "string",
+      "description": "Instrucciones operativas (documentos requeridos, restricciones, etc.)."
+    },
+    "is_default": {
+      "type": "boolean",
+      "default": false,
+      "description": "Direcci\u00f3n sugerida por defecto al registrar compras o importaciones."
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "required": [
+    "organization_id",
+    "name",
+    "warehouse_type",
+    "is_active"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "__server_only__"
+      }
+    },
+    "create": {
+      "user_condition": {
+        "role": "__server_only__"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "__server_only__"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "__server_only__"
+      }
+    }
+  }
+}

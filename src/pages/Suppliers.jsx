@@ -21,6 +21,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Plus, Search, Pencil } from "lucide-react";
 import PageHeader from "@/components/shared/PageHeader";
 import EmptyState from "@/components/shared/EmptyState";
+import { useToast } from "@/components/ui/use-toast";
 
 const SOURCE_LABELS = { ebay: "eBay", local_supplier: "Local", distributor: "Distribuidor", other: "Otro" };
 
@@ -34,6 +35,7 @@ export default function Suppliers() {
   const [form, setForm] = useState(EMPTY_SUPPLIER);
   const [search, setSearch] = useState("");
   const qc = useQueryClient();
+  const { toast } = useToast();
 
   const { data: suppliers = [], isLoading } = useQuery({
     queryKey: ["suppliers"],
@@ -43,7 +45,8 @@ export default function Suppliers() {
   const saveMutation = useMutation({
     mutationFn: (data) =>
       editing ? base44.entities.Suppliers.update(editing.id, data) : base44.entities.Suppliers.create(data),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["suppliers"] }); closeDialog(); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["suppliers"] }); closeDialog(); toast({ title: "Proveedor guardado" }); },
+    onError: (error) => toast({ title: "No se pudo guardar el proveedor", description: error?.message || "Verificá la empresa activa y el servicio de empresas.", variant: "destructive" }),
   });
 
   const closeDialog = () => { setDialogOpen(false); setEditing(null); setForm(EMPTY_SUPPLIER); };

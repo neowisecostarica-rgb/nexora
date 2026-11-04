@@ -30,6 +30,7 @@
 // ============================================================
 
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+import {clientForRequest} from './tenant-access.mjs';
 
 // ────────────────────────────────────────────────────────────
 // UTILIDADES
@@ -60,7 +61,13 @@ Deno.serve(async (req) => {
     // Usar asServiceRole para TODAS las operaciones de datos.
     // Esto funciona tanto cuando es invocado por el worker (asServiceRole.functions.invoke)
     // como cuando se llama directamente desde tests.
-    const base44 = createClientFromRequest(req);
+    // MG01: authenticate and scope every SDK entity operation before legacy logic runs.
+    const rawClient = createClientFromRequest(req);
+    let base44;
+    try { base44 = await clientForRequest(rawClient, req); }
+    catch (error) {
+      return Response.json({error: error.code || 'TENANT_ACCESS_DENIED'}, {status: error.status || 403});
+    }
     const db = base44.asServiceRole;
 
     const body = await req.json();
@@ -330,6 +337,19 @@ Deno.serve(async (req) => {
     }
 
     console.log(`[CREATED] ${createdComponents.length}/${validComponents.length} components created`);
+
+    // Integración MB02: no convertir un registro financiero incompleto en costo oficial.
+    // Persistencias parciales deben ser conciliadas; el último costo oficial queda intacto.
+    if (createdComponents.length !== validComponents.length || warnings.some(w => w.startsWith('component_creation_failed'))) {
+      return Response.json({
+        success: false,
+        inventory_unit_id: inventoryUnitId,
+        error: 'PARTIAL_COST_COMPONENTS',
+        components_created: createdComponents.length,
+        components_expected: validComponents.length,
+        warnings
+      }, { status: 422 });
+    }
 
     if (createdComponents.length === 0) {
       console.warn(`[ABORT] No valid cost components created for unit ${inventoryUnitId}`);

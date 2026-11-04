@@ -70,9 +70,8 @@ export default function QuoteDetail() {
       const newItems = [...items, data];
       const subtotal = newItems.reduce((s, i) => s + (i.line_total || 0), 0);
       await base44.entities.Quotes.update(quoteId, { subtotal, total: subtotal });
-      if (data.inventory_unit_id) {
-        await base44.entities.InventoryUnits.update(data.inventory_unit_id, { status: "quoted" });
-      }
+      // No se cambia el estado de la unidad aquí: "quoted" no existe en el enum de InventoryUnits
+      // y una cotización no reserva stock. La unidad se marca vendida solo al convertir en venta.
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["quoteItems", quoteId] });
@@ -82,75 +81,28 @@ export default function QuoteDetail() {
     },
   });
 
+  // La conversión vive en servidor (convertQuoteToSale): congela costo SOT, evita doble venta
+  // por cotización y no deja que el navegador escriba finanzas directamente.
   const convertToSaleMutation = useMutation({
     mutationFn: async () => {
-      // 1. Generar número de venta transaccional
-      const numRes = await base44.functions.invoke("generateDocumentNumber", { type: "sale" });
-      const saleNumber = numRes?.data?.document_number;
-      if (!saleNumber) throw new Error("No se pudo generar el número de venta");
-
-      // 2. Snapshot de organización
-      const orgSnapshot = orgProfile ? buildOrgSnapshot(orgProfile) : null;
-
-      const saleItems = [];
-      let cogsTotal = 0;
-      for (const item of items) {
-        let unitCost = 0;
-        if (item.inventory_unit_id) {
-          const unitList = await base44.entities.InventoryUnits.filter({ id: item.inventory_unit_id });
-          if (unitList[0]) {
-            unitCost = unitList[0].total_real_unit_cost || 0;
-            await base44.entities.InventoryUnits.update(item.inventory_unit_id, {
-              status: "sold",
-              cost_frozen_at_sale: unitCost
-            });
-          }
-        }
-        cogsTotal += unitCost * (item.quantity || 1);
-        const profit = item.unit_price - unitCost;
-        const marginPct = item.unit_price > 0 ? ((profit / item.unit_price) * 100) : 0;
-        saleItems.push({
-          inventory_unit_id: item.inventory_unit_id,
-          description: item.description,
-          quantity: item.quantity,
-          unit_sale_price: item.unit_price,
-          unit_cost: unitCost,
-          unit_profit: profit,
-          margin_percent_at_sale: Math.round(marginPct * 100) / 100,
-          line_total: item.line_total,
-        });
-      }
-
-      const grossProfit = (quote?.total || 0) - cogsTotal;
-      const marginPercent = (quote?.total || 0) > 0 ? ((grossProfit / quote.total) * 100) : 0;
-
-      const sale = await base44.entities.Sales.create({
-        sale_number: saleNumber,
-        customer_id: quote?.customer_id,
-        customer_name: quote?.customer_name,
-        quote_id: quoteId,
-        sale_date: new Date().toISOString().split("T")[0],
-        channel: quote?.sales_channel || "wholesale",
-        sale_type: quote?.sales_channel === "wholesale" ? "wholesale" : "retail",
-        subtotal: quote?.subtotal || 0,
-        total: quote?.total || 0,
-        cogs_total: cogsTotal,
-        gross_profit_total: grossProfit,
-        gross_margin_percent: Math.round(marginPercent * 100) / 100,
-        status: "completed",
-        sale_notes_snapshot: orgProfile?.default_sale_notes || "",
-        organization_profile_snapshot: orgSnapshot,
-        external_invoice_status: "none",
+      const res = await base44.functions.invoke("convertQuoteToSale", { quoteId });
+      const data = res?.data || {};
+      if (data.error) throw new Error(data.error);
+      return data;
+    },
+    onSuccess: (data) => {
+      qc.invalidateQueries({ queryKey: ["quote", quoteId] });
+      qc.invalidateQueries({ queryKey: ["availableInventory"] });
+      qc.invalidateQueries({ queryKey: ["inventory"] });
+      qc.invalidateQueries({ queryKey: ["sales"] });
+      toast({
+        title: data.code === "ALREADY_CONVERTED" ? "Venta ya existente" : "Venta creada",
+        description: `Venta ${data.sale_number || data.sale_id} registrada con costo congelado.`,
       });
-
-      for (const si of saleItems) {
-        await base44.entities.SaleItems.create({ ...si, sale_id: sale.id });
-      }
-
-      await base44.entities.Quotes.update(quoteId, { status: "approved" });
-      qc.invalidateQueries({ queryKey: ["orgProfile"] });
-      toast({ title: "Venta creada", description: `Venta ${saleNumber} generada exitosamente.` });
       navigate("/sales");
+    },
+    onError: (error) => {
+      toast({ variant: "destructive", title: "No se pudo convertir", description: error.message });
     },
   });
 

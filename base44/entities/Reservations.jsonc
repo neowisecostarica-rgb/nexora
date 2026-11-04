@@ -12,7 +12,7 @@
     },
     "customer_phone": {
       "type": "string",
-      "description": "Tel\u00e9fono del cliente"
+      "description": "Teléfono del cliente"
     },
     "customer_email": {
       "type": "string",
@@ -33,16 +33,16 @@
     "reserved_at": {
       "type": "string",
       "format": "date-time",
-      "description": "Fecha y hora en que se activ\u00f3 la reserva"
+      "description": "Fecha y hora en que se activó la reserva"
     },
     "expires_at": {
       "type": "string",
       "format": "date-time",
-      "description": "Fecha y hora de expiraci\u00f3n de la reserva"
+      "description": "Fecha y hora de expiración de la reserva"
     },
     "required_deposit": {
       "type": "number",
-      "description": "Monto de dep\u00f3sito requerido para activar la reserva"
+      "description": "Monto de depósito requerido para activar la reserva"
     },
     "notes": {
       "type": "string",
@@ -51,6 +51,10 @@
     "sale_id": {
       "type": "string",
       "description": "ID de la venta resultante si fue convertida"
+    },
+    "organization_id": {
+      "type": "string",
+      "description": "ID de OrganizationProfile propietaria. Campo opcional durante transición; registros sin asignación requieren revisión, no inferir dueño."
     }
   },
   "required": [
@@ -58,5 +62,27 @@
     "customer_name",
     "customer_phone",
     "status"
-  ]
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "__server_only__"
+      }
+    },
+    "create": {
+      "user_condition": {
+        "role": "__server_only__"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "__server_only__"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "__server_only__"
+      }
+    }
+  }
 }

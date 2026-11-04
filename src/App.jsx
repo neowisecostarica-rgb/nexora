@@ -29,6 +29,10 @@ import Sales from '@/pages/Sales.jsx';
 import Expenses from '@/pages/Expenses';
 import Settings from '@/pages/Settings.jsx';
 import Catalog from '@/pages/Catalog';
+import PlatformAdmin from '@/pages/PlatformAdmin';
+import Warehouses from '@/pages/Warehouses';
+import Tracking from '@/pages/Tracking';
+import ConsultingPortal from '@/pages/ConsultingPortal';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -52,12 +56,16 @@ const AuthenticatedApp = () => {
 
   return (
     <Routes>
+      {/* La ruta Consulting NO utiliza el panel administrativo ni los menús operativos. */}
+      <Route path="/consulting" element={<ConsultingPortal />} />
       <Route element={<AppLayout />}>
         <Route path="/" element={<Dashboard />} />
         <Route path="/suppliers" element={<Suppliers />} />
         <Route path="/purchases" element={<Purchases />} />
         <Route path="/purchases/:id" element={<PurchaseDetail />} />
         <Route path="/imports" element={<ImportBatches />} />
+        <Route path="/tracking" element={<Tracking />} />
+        <Route path="/warehouses" element={<Warehouses />} />
         <Route path="/inventory" element={<Inventory />} />
         <Route path="/pricing" element={<PricingEngine />} />
         <Route path="/catalog" element={<Catalog />} />
@@ -67,6 +75,7 @@ const AuthenticatedApp = () => {
         <Route path="/sales" element={<Sales />} />
         <Route path="/expenses" element={<Expenses />} />
         <Route path="/settings" element={<Settings />} />
+        <Route path="/platform" element={<PlatformAdmin />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>

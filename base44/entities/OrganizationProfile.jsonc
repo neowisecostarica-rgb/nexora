@@ -94,6 +94,15 @@
     "active": {
       "type": "boolean",
       "default": true
+    },
+    "organization_type": {
+      "type": "string",
+      "enum": [
+        "importer",
+        "partner",
+        "platform"
+      ],
+      "description": "Clasificación asignada explícitamente por Super Admin; legacy sin valor no se reclasifica automáticamente."
     }
   },
   "required": [
@@ -101,5 +110,27 @@
     "commercial_name",
     "email_main",
     "active"
-  ]
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "__server_only__"
+      }
+    },
+    "create": {
+      "user_condition": {
+        "role": "__server_only__"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "__server_only__"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "__server_only__"
+      }
+    }
+  }
 }

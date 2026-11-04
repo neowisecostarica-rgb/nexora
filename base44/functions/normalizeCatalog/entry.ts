@@ -26,6 +26,7 @@
  */
 
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
+import {clientForRequest} from './tenant-access.mjs';
 
 // ─── Hash de identidad exacto: Brand|Model|CategoryKey ───────────────────────
 // Determinista, reproducible, case-insensitive.
@@ -44,7 +45,13 @@ function buildVariantHash(productDefinitionId, attributes) {
 }
 
 Deno.serve(async (req) => {
-  const base44 = createClientFromRequest(req);
+  // MG01: scope SDK entity operations before legacy logic runs.
+    const rawClient = createClientFromRequest(req);
+    let base44;
+    try { base44 = await clientForRequest(rawClient, req); }
+    catch (error) {
+      return Response.json({error: error.code || 'TENANT_ACCESS_DENIED'}, {status: error.status || 403});
+    }
 
   const user = await base44.auth.me();
   if (!user) {

@@ -51,14 +51,27 @@ export default function PurchaseDetail() {
     enabled: !!poId,
   });
 
+  const LOCKED_STATUSES = ["received", "closed"];
+  const orderLocked = LOCKED_STATUSES.includes(order?.status);
+
   const createItemMutation = useMutation({
-    mutationFn: (data) => base44.entities.PurchaseItems.create(data),
+    mutationFn: async (data) => {
+      // Una orden recibida/cerrada ya generó inventario: agregar partidas descuadraría costos.
+      const latest = await base44.entities.PurchaseOrders.filter({ id: poId });
+      if (!latest[0] || LOCKED_STATUSES.includes(latest[0].status)) throw new Error("La orden ya fue recibida, cerrada o no está disponible.");
+      const quantity = Number(data.quantity);
+      if (!Number.isSafeInteger(quantity) || quantity < 1) throw new Error("La cantidad debe ser un entero mayor o igual a 1.");
+      const itemSubtotal = Number(data.item_subtotal);
+      if (data.item_subtotal !== undefined && (!Number.isFinite(itemSubtotal) || itemSubtotal < 0)) throw new Error("El subtotal de la partida no puede ser negativo.");
+      return base44.entities.PurchaseItems.create({ ...data, quantity });
+    },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["poItems", poId] }); setItemDialogOpen(false); setItemForm(EMPTY_ITEM); },
+    onError: (error) => toast({ variant: "destructive", title: "No se pudo agregar", description: error.message }),
   });
 
   const generateUnitsMutation = useMutation({
     mutationFn: async () => {
-      if (!order) return;
+      if (!order || !poId) throw new Error("La orden de compra no está disponible.");
       // Cada item se convierte via función backend (con lock, idempotencia y trazabilidad)
       const pendingItems = items.filter(item =>
         (item.inventory_generated_count || 0) < (item.quantity || 1)
@@ -73,7 +86,17 @@ export default function PurchaseDetail() {
           purchaseItemId: item.id,
           importBatchId: order.import_batch_id || null,
         });
+        if (result.data?.error) throw new Error(result.data.error);
         totalCreated += result.data?.created_count || 0;
+      }
+
+      // Cierre por recuentos persistidos: la orden solo pasa a "received" si el servidor
+      // confirma que cada partida alcanzó su cantidad. Un contador local no basta.
+      const persisted = await base44.entities.PurchaseItems.filter({ purchase_order_id: poId });
+      const pendingAfter = persisted.filter(i => (i.inventory_generated_count || 0) < (i.quantity || 1));
+      qc.invalidateQueries({ queryKey: ["poItems", poId] });
+      if (persisted.length === 0 || pendingAfter.length > 0) {
+        throw new Error(`Quedaron ${pendingAfter.length} partida(s) sin completar o no hay partidas persistidas; la orden no se marca como recibida.`);
       }
       await base44.entities.PurchaseOrders.update(poId, { status: "received" });
       toast({ title: "Inventario generado", description: `${totalCreated} unidades creadas con trazabilidad completa.` });
@@ -83,6 +106,7 @@ export default function PurchaseDetail() {
       qc.invalidateQueries({ queryKey: ["poItems", poId] });
       qc.invalidateQueries({ queryKey: ["inventory"] });
     },
+    onError: (error) => toast({ variant: "destructive", title: "Generación incompleta", description: error.message }),
   });
 
   const setItemField = (k, v) => setItemForm((f) => ({ ...f, [k]: v }));
@@ -111,7 +135,7 @@ export default function PurchaseDetail() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <Card className="p-4">
           <p className="text-xs text-muted-foreground mb-1">Total Pagado</p>
-          <p className="text-xl font-bold">{formatCurrency(order.order_total_paid)}</p>
+          <p className="text-xl font-bold">{formatCurrency(order.order_total_paid, order.currency || "USD")}</p>
         </Card>
         <Card className="p-4">
           <p className="text-xs text-muted-foreground mb-1">Unidades</p>
@@ -130,9 +154,11 @@ export default function PurchaseDetail() {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between pb-2">
           <CardTitle className="text-sm font-semibold">Items de la Orden</CardTitle>
-          <Button size="sm" onClick={() => { setItemForm({ ...EMPTY_ITEM, purchase_order_id: poId }); setItemDialogOpen(true); }}>
-            <Plus className="w-3.5 h-3.5 mr-1" />Agregar Item
-          </Button>
+          {!orderLocked && (
+            <Button size="sm" onClick={() => { setItemForm({ ...EMPTY_ITEM, purchase_order_id: poId }); setItemDialogOpen(true); }}>
+              <Plus className="w-3.5 h-3.5 mr-1" />Agregar Item
+            </Button>
+          )}
         </CardHeader>
         <CardContent>
           {items.length === 0 ? (
@@ -168,7 +194,7 @@ export default function PurchaseDetail() {
                       <TableCell>{item.storage_gb}GB {item.storage_type}</TableCell>
                       <TableCell>{item.condition_grade}</TableCell>
                       <TableCell>{item.quantity}</TableCell>
-                      <TableCell className="font-semibold">{formatCurrency(allocatedCost)}</TableCell>
+                      <TableCell className="font-semibold">{formatCurrency(allocatedCost, order.currency || "USD")}</TableCell>
                       <TableCell>
                         {inProgress ? (
                           <span className="text-xs text-yellow-600 font-medium">En proceso…</span>

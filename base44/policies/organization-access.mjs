@@ -20,10 +20,10 @@ const kinds = {organization:['organization.read','organization.manage'],finance:
 const partnerPermissions = new Set(roles.staff);
 export function canAccess({userId,organizationId,action,resource,memberships=[],grants=[],now=Date.now()}) {
  if (!userId || !organizationId || !resource || resource.organization_id !== organizationId || !Number.isFinite(now)) return false;
- if (!kinds[resource.kind]?.includes(action)) return false;
+ if (!Object.hasOwn(kinds,resource.kind) || !kinds[resource.kind].includes(action)) return false;
  const active = r => r.status === 'active' && (r.expires_at == null || (Number.isFinite(Date.parse(r.expires_at)) && Date.parse(r.expires_at) > now));
  const mine = memberships.filter(m => m.user_id === userId && active(m));
- if (mine.some(m => m.organization_id === organizationId && roles[m.role]?.includes(action) &&
+ if (mine.some(m => m.organization_id === organizationId && (Object.hasOwn(roles,m.role) && roles[m.role].includes(action)) &&
    (m.role !== 'buyer' || (resource.visibility === 'buyer' && Array.isArray(resource.buyer_user_ids) && resource.buyer_user_ids.includes(userId))))) return true;
  if (!partnerPermissions.has(action) || resource.visibility !== 'partner') return false;
  return grants.some(g => active(g) && g.client_organization_id === organizationId &&

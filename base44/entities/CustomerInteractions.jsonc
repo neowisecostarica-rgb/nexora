@@ -1,0 +1,83 @@
+{
+  "name": "CustomerInteractions",
+  "type": "object",
+  "properties": {
+    "organization_id": {
+      "type": "string",
+      "description": "ID de OrganizationProfile propietaria. Inyectado por el gateway tenantData."
+    },
+    "customer_id": {
+      "type": "string",
+      "description": "Referencia a Customers.id dentro de la misma empresa."
+    },
+    "channel": {
+      "type": "string",
+      "enum": [
+        "call",
+        "whatsapp",
+        "email",
+        "meeting",
+        "note"
+      ],
+      "description": "Canal del contacto comercial."
+    },
+    "summary": {
+      "type": "string",
+      "description": "Resumen breve de lo conversado o acordado."
+    },
+    "occurred_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "outcome": {
+      "type": "string",
+      "enum": [
+        "no_response",
+        "interested",
+        "needs_follow_up",
+        "won",
+        "lost",
+        "info"
+      ],
+      "description": "Resultado del contacto. No cambia el estado de la venta por s\u00ed solo."
+    },
+    "next_follow_up_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Siguiente fecha de seguimiento sugerida al registrar el contacto."
+    },
+    "author_name": {
+      "type": "string",
+      "description": "Nombre del usuario que registr\u00f3 el contacto (snapshot del navegador, no autoridad)."
+    }
+  },
+  "required": [
+    "organization_id",
+    "customer_id",
+    "channel",
+    "summary",
+    "occurred_at"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "__server_only__"
+      }
+    },
+    "create": {
+      "user_condition": {
+        "role": "__server_only__"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "__server_only__"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "__server_only__"
+      }
+    }
+  }
+}

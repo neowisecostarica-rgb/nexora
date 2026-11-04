@@ -16,11 +16,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Truck } from "lucide-react";
+import { Plus, Truck, Navigation } from "lucide-react";
+import { Link } from "react-router-dom";
 import PageHeader from "@/components/shared/PageHeader";
 import StatusBadge from "@/components/shared/StatusBadge";
 import EmptyState from "@/components/shared/EmptyState";
 import { formatCurrency, formatDate, generateCode } from "@/lib/formatters";
+import { prepareImportBatchPayload, hasLegacyFixedImportCost } from "@/lib/importBatchCosts.mjs";
 
 const EMPTY_BATCH = {
   batch_code: "", courier: "", origin_country: "USA", destination_country: "Mexico",
@@ -42,9 +44,9 @@ export default function ImportBatchesPage() {
 
   const saveMutation = useMutation({
     mutationFn: (data) => {
-      const totalImport = (data.customs_total || 0) + (data.freight_total || 0) + (data.local_transport_total || 0) + (data.extra_cost_total || 0);
-      const perUnit = data.total_units > 0 ? totalImport / data.total_units : 0;
-      const payload = { ...data, per_unit_import_default: perUnit };
+      // El motor distribuye los totales proporcionales; este campo es solo un cargo fijo adicional.
+      // Preservar valores históricos, no recalcularlos silenciosamente.
+      const payload = prepareImportBatchPayload(data);
       return editing ? base44.entities.ImportBatches.update(editing.id, payload) : base44.entities.ImportBatches.create(payload);
     },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["importBatches"] }); setDialogOpen(false); setEditing(null); setForm(EMPTY_BATCH); },
@@ -79,6 +81,7 @@ export default function ImportBatchesPage() {
                 <TableHead>Costo Total</TableHead>
                 <TableHead>Costo/Unidad</TableHead>
                 <TableHead>Estado</TableHead>
+                <TableHead className="w-12"></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -94,6 +97,16 @@ export default function ImportBatchesPage() {
                     <TableCell className="font-semibold">{formatCurrency(total)}</TableCell>
                     <TableCell>{b.total_units > 0 ? formatCurrency(total / b.total_units) : "—"}</TableCell>
                     <TableCell><StatusBadge status={b.status} /></TableCell>
+                    <TableCell>
+                      <Link
+                        to={`/tracking?batch=${b.id}`}
+                        title="Seguimiento del lote"
+                        className="inline-flex p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <Navigation className="w-3.5 h-3.5" />
+                      </Link>
+                    </TableCell>
                   </TableRow>
                 );
               })}
@@ -129,6 +142,14 @@ export default function ImportBatchesPage() {
             <div className="space-y-1.5"><Label>Flete</Label><Input type="number" step="0.01" value={form.freight_total || ""} onChange={(e) => snf("freight_total", e.target.value)} /></div>
             <div className="space-y-1.5"><Label>Transporte Local</Label><Input type="number" step="0.01" value={form.local_transport_total || ""} onChange={(e) => snf("local_transport_total", e.target.value)} /></div>
             <div className="space-y-1.5"><Label>Costos Extra</Label><Input type="number" step="0.01" value={form.extra_cost_total || ""} onChange={(e) => snf("extra_cost_total", e.target.value)} /></div>
+            <div className="col-span-2 space-y-1.5">
+              <Label>Cargo fijo adicional por unidad</Label>
+              <Input type="number" min="0" step="0.01" value={form.per_unit_import_default ?? 0} onChange={(e) => snf("per_unit_import_default", e.target.value)} />
+              <p className="text-xs text-muted-foreground">Solo cargos adicionales. Aduana, flete, transporte y extras ya se distribuyen desde sus totales; no duplicarlos aquí.</p>
+              {editing && hasLegacyFixedImportCost(form) && (
+                <p className="text-xs text-amber-700">Revisá este valor histórico antes de guardar: pudo calcularse automáticamente y duplicar costos. No se modifica sin intervención.</p>
+              )}
+            </div>
             <div className="col-span-2 p-3 bg-muted rounded-lg">
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Total Importación:</span>

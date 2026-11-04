@@ -7,11 +7,15 @@
  * Referencia: docs/NEXORA-INVENTORY.md (base 54e8532).
  */
 import React, { useState } from "react";
+import OrganizationSwitcher from './OrganizationSwitcher';
+import {useQuery} from "@tanstack/react-query";
+import {base44} from "@/api/base44Client";
+import {useAuth} from "@/lib/AuthContext";
 import { Link, useLocation } from "react-router-dom";
 import {
   LayoutDashboard, ShoppingCart, Package, Truck, Monitor,
   Calculator, FileText, HandCoins, Users, Settings,
-  ChevronLeft, ChevronRight, Receipt, Layers
+  ChevronLeft, ChevronRight, Receipt, Layers, Navigation, Warehouse
 } from "lucide-react";
 
 const NAV_ITEMS = [
@@ -19,6 +23,8 @@ const NAV_ITEMS = [
   { label: "Proveedores", icon: Users, path: "/suppliers" },
   { label: "Compras", icon: ShoppingCart, path: "/purchases" },
   { label: "Importaciones", icon: Truck, path: "/imports" },
+  { label: "Seguimiento", icon: Navigation, path: "/tracking" },
+  { label: "Bodegas", icon: Warehouse, path: "/warehouses" },
   { label: "Inventario", icon: Monitor, path: "/inventory" },
   { label: "Catálogo", icon: Layers, path: "/catalog" },
   { label: "Pricing", icon: Calculator, path: "/pricing" },
@@ -32,6 +38,12 @@ const NAV_ITEMS = [
 export default function Sidebar() {
   const [collapsed, setCollapsed] = useState(false);
   const location = useLocation();
+  const {user}=useAuth();
+  // Visibility is derived from server capability; the endpoint enforces access again.
+  const capability=useQuery({queryKey:['platform-capabilities',user?.id],queryFn:async()=>{
+    const r=await base44.functions.invoke('platformAdmin',{action:'capabilities'});return r.data;
+  },enabled:!!user?.id,staleTime:0});
+  const navigation=capability.data?.is_super_admin?[...NAV_ITEMS,{label:"Super Admin",icon:Settings,path:"/platform"}]:NAV_ITEMS;
 
   return (
     <aside
@@ -55,8 +67,9 @@ export default function Sidebar() {
         </button>
       </div>
 
+      {!collapsed && <OrganizationSwitcher />}
       <nav className="flex-1 py-3 px-2 space-y-0.5 overflow-y-auto">
-        {NAV_ITEMS.map((item) => {
+        {navigation.map((item) => {
           const isActive = location.pathname === item.path ||
             (item.path !== "/" && location.pathname.startsWith(item.path));
           return (

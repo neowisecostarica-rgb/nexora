@@ -4,7 +4,7 @@
   "properties": {
     "organization_id": {
       "type": "string",
-      "description": "ID de la organizaci\u00f3n propietaria. Requerido para multi-tenancy y para el motor de costos."
+      "description": "ID de la organización propietaria. Requerido para multi-tenancy y para el motor de costos."
     },
     "purchase_item_id": {
       "type": "string",
@@ -16,7 +16,7 @@
     },
     "category_key": {
       "type": "string",
-      "description": "Clave de categor\u00eda del producto (ej. laptops, sneakers, smartphones)"
+      "description": "Clave de categoría del producto (ej. laptops, sneakers, smartphones)"
     },
     "status": {
       "type": "string",
@@ -31,27 +31,27 @@
     },
     "condition": {
       "type": "string",
-      "description": "Condici\u00f3n/grado del producto (ej. A, B, C, A+)"
+      "description": "Condición/grado del producto (ej. A, B, C, A+)"
     },
     "location": {
       "type": "string",
-      "description": "Ubicaci\u00f3n f\u00edsica en almac\u00e9n"
+      "description": "Ubicación física en almacén"
     },
     "attributes": {
       "type": "object",
       "additionalProperties": true,
-      "description": "Atributos espec\u00edficos por categor\u00eda en formato JSON"
+      "description": "Atributos específicos por categoría en formato JSON"
     },
     "normalized_display_name": {
       "type": "string",
-      "description": "Nombre generado autom\u00e1ticamente por buildDisplayName. NO editar manualmente."
+      "description": "Nombre generado automáticamente por buildDisplayName. NO editar manualmente."
     },
     "images": {
       "type": "array",
       "items": {
         "type": "string"
       },
-      "description": "URLs de im\u00e1genes del producto"
+      "description": "URLs de imágenes del producto"
     },
     "main_image": {
       "type": "string",
@@ -60,7 +60,7 @@
     "legacy_real_unit_cost": {
       "type": "number",
       "default": 0,
-      "description": "Campo original real_unit_cost \u2014 renombrado para compatibilidad. NO usar para nuevos c\u00e1lculos."
+      "description": "Campo original real_unit_cost — renombrado para compatibilidad. NO usar para nuevos cálculos."
     },
     "cost_purchase_unit": {
       "type": "number",
@@ -70,7 +70,7 @@
     "allocated_import_cost": {
       "type": "number",
       "default": 0,
-      "description": "Costo de importaci\u00f3n asignado proporcionalmente a esta unidad"
+      "description": "Costo de importación asignado proporcionalmente a esta unidad"
     },
     "allocated_tax_cost": {
       "type": "number",
@@ -85,7 +85,7 @@
     "allocated_repair_cost": {
       "type": "number",
       "default": 0,
-      "description": "Gastos de reparaci\u00f3n asignados directamente a esta unidad"
+      "description": "Gastos de reparación asignados directamente a esta unidad"
     },
     "allocated_other_cost": {
       "type": "number",
@@ -99,7 +99,7 @@
     },
     "assigned_pricing_profile_id": {
       "type": "string",
-      "description": "Override de perfil de precios espec\u00edfico para esta unidad"
+      "description": "Override de perfil de precios específico para esta unidad"
     },
     "retail_price": {
       "type": "number",
@@ -114,7 +114,7 @@
     "minimum_price": {
       "type": "number",
       "default": 0,
-      "description": "Precio m\u00ednimo calculado por PricingEngine. SOLO LECTURA."
+      "description": "Precio mínimo calculado por PricingEngine. SOLO LECTURA."
     },
     "margin_percent": {
       "type": "number",
@@ -123,16 +123,38 @@
     },
     "product_definition_id": {
       "type": "string",
-      "description": "[M1 Cat\u00e1logo Sat\u00e9lite] Referencia opcional a ProductDefinition. No afecta motor de costos ni pricing."
+      "description": "[M1 Catálogo Satélite] Referencia opcional a ProductDefinition. No afecta motor de costos ni pricing."
     },
     "product_variant_id": {
       "type": "string",
-      "description": "[M1 Cat\u00e1logo Sat\u00e9lite] Referencia opcional a ProductVariant. No afecta motor de costos ni pricing."
+      "description": "[M1 Catálogo Satélite] Referencia opcional a ProductVariant. No afecta motor de costos ni pricing."
     }
   },
   "required": [
     "category_key",
     "status",
     "total_real_unit_cost"
-  ]
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "__server_only__"
+      }
+    },
+    "create": {
+      "user_condition": {
+        "role": "__server_only__"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "__server_only__"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "__server_only__"
+      }
+    }
+  }
 }

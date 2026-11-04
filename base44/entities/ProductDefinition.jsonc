@@ -12,24 +12,28 @@
     },
     "category_key": {
       "type": "string",
-      "description": "Categor\u00eda ra\u00edz del producto (ej. laptops, sneakers, smartphones)"
+      "description": "Categoría raíz del producto (ej. laptops, sneakers, smartphones)"
     },
     "product_family_code": {
       "type": "string",
-      "description": "C\u00f3digo de familia/l\u00ednea opcional (ej. ThinkPad, Latitude, EliteBook)"
+      "description": "Código de familia/línea opcional (ej. ThinkPad, Latitude, EliteBook)"
     },
     "identity_hash": {
       "type": "string",
-      "description": "Hash \u00fanico de identidad: base64(BRAND|MODEL|CATEGORY). Garantiza unicidad y permite deduplicaci\u00f3n exacta. NO modificar manualmente."
+      "description": "Hash único de identidad: base64(BRAND|MODEL|CATEGORY). Garantiza unicidad y permite deduplicación exacta. NO modificar manualmente."
     },
     "is_active": {
       "type": "boolean",
       "default": true,
-      "description": "Si false, este producto maestro es ignorado por el cat\u00e1logo."
+      "description": "Si false, este producto maestro es ignorado por el catálogo."
     },
     "notes": {
       "type": "string",
-      "description": "Notas internas del administrador sobre esta definici\u00f3n."
+      "description": "Notas internas del administrador sobre esta definición."
+    },
+    "organization_id": {
+      "type": "string",
+      "description": "ID de OrganizationProfile propietaria. Campo opcional durante transición; registros sin asignación requieren revisión, no inferir dueño."
     }
   },
   "required": [
@@ -37,5 +41,27 @@
     "model",
     "category_key",
     "identity_hash"
-  ]
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "__server_only__"
+      }
+    },
+    "create": {
+      "user_condition": {
+        "role": "__server_only__"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "__server_only__"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "__server_only__"
+      }
+    }
+  }
 }
