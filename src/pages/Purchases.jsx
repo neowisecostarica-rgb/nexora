@@ -95,7 +95,7 @@ export default function Purchases() {
                   <TableCell className="capitalize">{po.source_platform || "—"}</TableCell>
                   <TableCell>{formatDate(po.purchase_date)}</TableCell>
                   <TableCell>{po.total_units}</TableCell>
-                  <TableCell className="font-semibold">{formatCurrency(po.order_total_paid)}</TableCell>
+                  <TableCell className="font-semibold">{formatCurrency(po.order_total_paid, po.currency || "USD")}</TableCell>
                   <TableCell><StatusBadge status={po.status} /></TableCell>
                   <TableCell>
                     <Link to={`/purchases/${po.id}`}>
