@@ -8,7 +8,6 @@
  */
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
-import { Button } from "@/components/ui/button";
 import { Upload, X, Star, StarOff, Loader2 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 
