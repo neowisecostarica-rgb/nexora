@@ -60,6 +60,12 @@
 - `tests/partner-overview-security.test.mjs`: cuatro pruebas estáticas/unitarias de control de identidad, autorización, ownership y redacción; resultado GitHub CI se verificará al finalizar el commit. No sustituye QA con dos identidades.
 - Limitaciones: falta habilitar funciones de backend en Base44 tras integrar rama, autenticar una cuenta real de Consulting, comprobar permisos y demostrar visualmente la beta. Documentos y edición de tracking permanecen fuera de esta vista de beta.
 
+## 3E. Cierre de barrera de seguridad para aliados (4 nov; QA runtime al final)
+- Se incorporó `PARTNER_PORTAL_ONLY` en la política canónica `base44/policies/tenant-access.mjs` y en sus 24 copias de funciones Deno (total 25 archivos, commit `76dc60ea`). Toda empresa `organization_type=partner` con owner no Super Admin queda fuera del CRUD `tenantData` y de los 22 endpoints legacy que reutilizan `clientForRequest`.
+- `moduleData/entry.ts` ahora deniega CRUD satélite a organizaciones partner (commit `dc705bdb`). El portal `partnerOverview` sigue siendo la única lectura prevista para Consulting, con membresías y grants activos validados en servidor.
+- `tests/tenant-isolation.test.mjs` incorpora contrato de denegación de CRUD general a partner (commit `21a1561d`). GitHub CI se verifica por separado; no declarar PASS runtime sin desplegar.
+- Esta protección **no entrega** por sí sola la beta: `partnerOverview` requiere deploy de rama integrada, backend del servicio de empresas operativo y un usuario partner real con grants autorizados. No hay invitaciones ni migraciones ejecutadas.
+
 ## 4. Última prueba única (registrada, no repetir por rutina)
 **NEXORA-E2E-001 (Base44 Testing Agent):** flujo `6aeb6c595b84480c188e65d2`; ejecución `6aeb6c5d81f0fc35f6420cb1`; preview de rama. Sesión y formulario proveedores accesibles; guardado ficticio FALLÓ, servicio de empresas no encontrado. El resto NO VERIFICADO. No se tocó producción ni registros históricos en esta prueba, según reporte del agente.
 **Checkpoint detallado:** `docs/NEXORA-E2E-001-CIERRE-2026-11-04.md`.
