@@ -62,6 +62,7 @@ export default function QuotesPage() {
       quote_date: format(today, "yyyy-MM-dd"),
       valid_until: format(validUntil, "yyyy-MM-dd"),
       sales_channel: "wholesale",
+      currency: "USD",
       status: "draft",
       notes: orgProfile?.default_quote_notes || "",
       terms_conditions_snapshot: orgProfile?.default_terms_conditions || "",
@@ -92,6 +93,7 @@ export default function QuotesPage() {
       qc.invalidateQueries({ queryKey: ["orgProfile"] });
       setDialogOpen(false);
     },
+    onError: (error) => toast({ title: "No se pudo crear la cotización", description: error?.message || "Revisá tu empresa activa y los campos requeridos.", variant: "destructive" }),
   });
 
   const sf = (k, v) => setForm((f) => ({ ...f, [k]: v }));
@@ -191,6 +193,13 @@ export default function QuotesPage() {
                   <SelectItem value="promo">Promo</SelectItem>
                   <SelectItem value="marketplace">Marketplace</SelectItem>
                 </SelectContent>
+              </Select>
+            </div>
+            <div className="col-span-2 space-y-1.5">
+              <Label>Moneda del documento</Label>
+              <Select value={form.currency || "USD"} onValueChange={(v) => sf("currency", v)}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent><SelectItem value="USD">USD</SelectItem><SelectItem value="CRC">CRC</SelectItem></SelectContent>
               </Select>
             </div>
             <div className="col-span-2 space-y-1.5">
