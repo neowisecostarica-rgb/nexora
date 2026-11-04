@@ -184,3 +184,9 @@ test('owner cannot orphan a record by clearing company ownership',async()=>{
  await assert.rejects(c.entities.InventoryUnits.update('ia',{organization_id:null}),/OWNERSHIP_CHANGE_FORBIDDEN/);
  assert.equal(f.tables.InventoryUnits[0].organization_id,'a');assert.equal(f.writes.length,0);
 });
+test('Consulting partner tenant cannot use generic CRUD gateway', async()=>{
+ const f=fake(owner,{OrganizationProfile:[{id:'a',active:true,commercial_name:'Aliado',organization_type:'partner'},{id:'b',active:true,commercial_name:'B',organization_type:'importer'}]});
+ await assert.rejects(createTenantClient(f.client,'a'),/PARTNER_PORTAL_ONLY/);
+ await assert.rejects(handleTenantData(f.client,{entity:'Sales',method:'list',args:[],organization_id:'a'}),/PARTNER_PORTAL_ONLY/);
+ assert.equal(f.writes.length,0);
+});
