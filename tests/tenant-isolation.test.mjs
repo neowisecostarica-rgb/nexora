@@ -170,8 +170,8 @@ test('every legacy backend entry uses identical local scope guard',()=>{
  const norm=s=>s.replace(/\r\n/g,'\n').replace(/\n$/,'');
  const canonical=norm(readFileSync(new URL('../base44/policies/tenant-access.mjs',import.meta.url),'utf8'));
  for(const name of readdirSync(root)){
-  // Gateways (tenantData, moduleData) y fronteras propias no usan el guard copiado: resuelven contexto por sí mismos.
-  if(['platformAdmin','getActiveOrganizationProfile','tenantData','moduleData','finalizeSaleWithCostFreeze'].includes(name))continue;
+  // Gateways (tenantData, moduleData), partnerOverview (membresías/grants de solo lectura) y fronteras propias no usan guard copiado: autorizan en servidor. partnerOverview cuenta con tests de aislamiento específicos.
+  if(['platformAdmin','getActiveOrganizationProfile','tenantData','moduleData','partnerOverview','finalizeSaleWithCostFreeze'].includes(name))continue;
   const entry=new URL(name+'/entry.ts',root);if(!existsSync(entry))continue;
   const code=readFileSync(entry,'utf8');assert.ok(code.includes('await clientForRequest(rawClient, req)'),name);
   assert.equal(norm(readFileSync(new URL(name+'/tenant-access.mjs',root),'utf8')),canonical,name);
