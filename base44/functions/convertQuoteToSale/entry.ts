@@ -102,6 +102,7 @@ Deno.serve(async (req) => {
       customer_phone: customer?.phone || '',
       customer_email: customer?.email || '',
       quote_id: quoteId,
+      ...(quote.currency ? { currency: quote.currency } : {}),
       channel: CHANNEL_MAP[quote.sales_channel] || 'direct',
       sale_type: CHANNEL_MAP[quote.sales_channel] || 'direct',
       subtotal: Number(quote.subtotal) || 0,
