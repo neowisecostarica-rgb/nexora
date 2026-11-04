@@ -11,13 +11,13 @@ import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-  Monitor, ShoppingCart, HandCoins, TrendingUp, Package, AlertTriangle, DollarSign, Truck
+  Monitor, HandCoins, TrendingUp, Package
 } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import PageHeader from "@/components/shared/PageHeader";
 import StatCard from "@/components/shared/StatCard";
 import StatusBadge from "@/components/shared/StatusBadge";
-import { formatCurrency, formatNumber, formatPercent } from "@/lib/formatters";
+import { formatCurrency, formatNumber } from "@/lib/formatters";
 
 const COLORS = ["hsl(217,91%,60%)", "hsl(162,72%,45%)", "hsl(262,83%,58%)", "hsl(43,96%,56%)", "hsl(0,84%,60%)"];
 
