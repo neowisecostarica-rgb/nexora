@@ -35,6 +35,10 @@
 - [ ] Revisión de ownership legacy, registros y backups antes de cualquier migración/limpieza.
 - [ ] Guía breve de beta y QA visual móvil/escritorio solo una vez resueltos P0.
 
+### 3B. Preparación de integración (sin merge)
+- Comparación GitHub posterior: la rama candidata y `main` siguen divergentes por **un commit en main**; la diferencia de contenido de ese commit aparece en `package.json` y `package-lock.json`, pero se verificó que **los blob SHA de ambos archivos son idénticos en main y la rama candidata** (`93e2595...` y `7a4ac18...`). Por tanto la discrepancia es de historia, no de esos dos archivos actualmente. Esto reduce el riesgo de conflicto de contenido al integrar PR #3, pero no prueba que el backend Base44 permita el cambio ni sustituye la revisión de release.
+- **Sin autorización explícita de merge no se actualizó main.** La plataforma Base44 exige integrar rama o editar directamente main para redesplegar `tenantData`; no se usó esa opción unilateralmente.
+
 ## 3A. Hallazgo técnico P0-01 — 4 nov, 12:15 CR
 - Revisión de archivos: `src/components/layout/OrganizationSwitcher.jsx` invoca `base44.functions.invoke('tenantData',{method:'context'})`; `src/lib/organizationContext.mjs` mapea 404 a mensaje de servicio no encontrado. `src/api/tenantBridge.mjs` envía CRUD empresarial a `tenantData` y no tiene fallback inseguro. Los archivos `tenantData/entry.ts` y `handler.mjs` están presentes en el sandbox de la rama.
 - Intento controlado: API de Base44 `coding/redeploy-function/tenantData`, con `branch_id` de la rama, rechazado por restricción de edición manual de funciones en ramas. **Ninguna función fue redesplegada, ni main ni producción modificados.**
