@@ -1,68 +1,60 @@
-# Nexora — checkpoint y backlog maestro
-Pausa: 21 de octubre de 2026 (UTC). Retomar en la próxima sesión.
-Repositorio: neowisecostarica-rgb/nexora. App: 69d69fc4304f277844249dd6.
-PR vigente: https://github.com/neowisecostarica-rgb/nexora/pull/3
-Rama: codex/nexora-mg01-platform-admin.
-Head previo a este checkpoint: 5ee3745e5f5924f2eb277aca67a076c5be0f6e12.
+# NEXORA — BACKLOG Y CHECKPOINT MAESTRO
+**Actualizado:** 4 de noviembre de 2026 (Costa Rica). **Objetivo:** beta privada viernes 6 de noviembre de 2026, condicionada a resolver P0.
+**Repositorio:** neowisecostarica-rgb/nexora. **Base44 app:** `69d69fc4304f277844249dd6`.
+**Candidato único:** `codex/nexora-mg01-platform-admin` (PR #3). **Rama MB02:** `codex/nexora-mb02-operaciones-20261103` (PR #4, abierta como borrador).
+**Fuente de verdad de código:** GitHub. **No hubo merge a main ni publicación**. `main` aún difiere del candidato (comparación 4-nov: candidato 49 commits adelante, 1 atrás).
+**Política de cierre:** no repetir auditorías ni series de pruebas; una prueba de aceptación E2E-001 se ejecutó y quedó bloqueada en proveedor. Corregir P0 y validar solo el paso afectado antes de continuar. No declarar PASS en runtime a partir de código o mocks.
 
-## Decisiones que se conservan
-- GitHub es fuente de verdad → PR → merge autorizado → publicación autorizada. No integrar ni publicar ahora.
-- Gustavo es Super Admin de plataforma; no dueño de una empresa por defecto.
-- Consulting administra información de clientes importadores y operaciones expresamente autorizadas; sin acceso financiero global.
-- Preservar módulos, datos, contratos, ambos caminos de ventas y comentarios para nuevos desarrolladores.
-- Multicategoría, idiomas y monedas requeridos; listas concretas por confirmar. Los valores legacy no equivalen a soporte internacional completo.
-- Registros probablemente de prueba según Gustavo; no se confirmó cada fila ni se autorizó limpieza. No borrar ni asignar ownership por suposición.
+## 1. Cerrado en CÓDIGO (NO equivale a certificado o publicado)
+| ID | Entregable | Estado comprobable | Evidencia |
+| --- | --- | --- | --- |
+| SEC-CODE-001 | Base multiempresa: Super Admin, membresías, permisos, tenantData, restricciones de entidades y guardas legacy | **CERRADO EN CÓDIGO / API real NO VERIFICADA** | PR #3; checkpoint MB49 |
+| OPS-CODE-001 | Proveedores, compras, bloqueos de orden recibida, cantidades válidas y cierre con recuentos persistidos | **CERRADO EN CÓDIGO / E2E BLOQUEADO** | `PurchaseDetail.jsx`, `Purchases.jsx`, reconciliación MB02 |
+| COST-CODE-001 | No duplicar prorrata de importación y cargo fijo por unidad | **CERRADO EN CÓDIGO / FINANZAS NO VERIFICADAS** | `importBatchCosts.mjs`, `ImportBatches.jsx` |
+| COST-CODE-002 | Ambos motores no publican `total_real_unit_cost` cuando persisten componentes parciales | **CERRADO EN CÓDIGO / CASO REAL PENDIENTE** | `calculateRealUnitCost`, `processRecalculationQueue`; CI corregida `06435d7` |
+| CRM-CODE-001 | Perfiles e interacciones de clientes y prospectos, seguimiento básico | **CERRADO EN CÓDIGO / FLUJO REAL PENDIENTE** | `CustomerProfiles`, `CustomerInteractions`, `Customers.jsx` |
+| LOG-CODE-001 | Bodegas y seguimiento de embarques: entidades, pantallas y gateway de acceso por empresa | **CERRADO EN CÓDIGO / USO REAL PENDIENTE** | `Warehouses`, `ShipmentTrackings`, `moduleData` |
+| SALES-CODE-001 | Conversión de cotización a venta en backend, congelamiento de costo y protección lógica contra doble clic | **IMPLEMENTADO EN CÓDIGO / CONCURRENCIA Y E2E NO CERTIFICADOS** | `convertQuoteToSale`, `QuoteDetail.jsx` |
+| SALES-CODE-002 | Campos opcionales declarados en GitHub: Sales, SaleItems, Quotes; sin modificar RLS/required | **CERRADO EN GITHUB / APLICACIÓN DE ESQUEMAS EN BASE44 PENDIENTE** | commits `7dc05a2`, `22c35da`, `51ac02c` |
+| UI-CODE-001 | Error visible al fallar guardar proveedores | **CERRADO EN CÓDIGO / NO REVALIDADO** | `Suppliers.jsx`, commit `573cfa2` |
+| QA-CI-001 | Suite automatizada de código y compilación en GitHub Actions | **PASS de CI (NO PASS API real)** | run `41879109344`, éxito para commit `b822430`; precedente `41876103436` PASS |
 
-## Estado verificado
-| Bloque | Estado y evidencia |
-| --- | --- |
-| PR #1 fundamento de permisos | Merge reportado y presente en base |
-| PR #2 inventario y preservación | Integrado en main 026740125a5d35a4af88a2190acd8449f00486f4 |
-| PR #3 MG01 | Abierto, borrador, sin merge ni publicación |
-| Super Admin y administración | Código en PR: empresas, membresías, grants, auditoría, informe legacy |
-| Aislamiento | Código en PR: tenantData/bridge, 22 funciones heredadas con contexto, 20 esquemas restringidos |
-| Validación local previa | 91 pruebas simuladas; build frontend, lint dirigido, sintaxis backend y diff check aprobados |
-| CI verificado | Commit ed8c78fb380bffd6b089b95d11ee248b3aef6e91: Tenant access tests, ejecución 39541331432, success. No afirmar CI del commit documental posterior sin consultarlo |
-| Entorno activo | 1 usuario admin (Gustavo), 1 empresa activa, solo rama main. Esquemas nuevos del PR aún no aplicados |
-| API/RLS reales | Pendientes; mocks no certifican aislamiento |
-| Limpieza/migración | No ejecutada |
-| Copia Nexora QA | Solicitada al usuario, todavía sin enlace ni creación confirmada |
+## 2. BLOQUEOS P0 — resolver antes de habilitar beta
+- [ ] **P0-01 — Servicio de empresas y escritura.** En E2E-001, sidebar: «No se encontró el servicio de empresas en esta versión». El proveedor `QA-NEXORA Proveedor` no se persistió y el diálogo quedó abierto. Causa raíz aún no confirmada. Diagnosticar versión/bridge `tenantData`, contexto de sesión, memberships, versión Base44 y respuesta de guardar proveedor. No quitar RLS, ni caer a CRUD directo. Corrección de notificación `573cfa2` no resuelve el servicio.
+- [ ] **P0-02 — Aplicación de esquemas y funciones en versión candidata oficial.** Base44 runtime todavía no tiene confirmación de todos los campos opcionales comerciales declarados en GitHub. Sin garantizar `Sales.quote_id`, no certificar idempotencia de venta.
+- [ ] **P0-03 — Integración histórica GitHub y publicación controlada.** Adoptados los cambios operativos de PR #4 en rama PR #3, preservados helpers/tests/registro MB02. Historia PR #3/#4 continúa divergente. Conciliar `main` (1 commit detrás) y cerrar PRs sin sobreescribir el candidato. Aún **no merge, no deploy**.
+- [ ] **P0-04 — Garantía de concurrencia y aislamiento.** Locks lógicos (`conversion_in_progress`) no son transacciones ni índices únicos. Comprobar seguridad backend entre 2 empresas antes de exponer datos o ventas. Preservar costos históricos y evitar doble stock/cobro.
+- [ ] **P0-05 — Aceptación del recorrido comercial completo.** E2E-001 se detuvo en proveedores. Compra→importación/gastos→costo final→inventario/precios→cotización→venta→pago, reserva→venta, saldos y stock **NO VERIFICADOS**. No repetir suite completa hasta resolver P0-01.
 
-## Backlog único, en orden
-### MG01 — cerrar seguridad y administración
-- [ ] Obtener enlace de Nexora QA o confirmar otro entorno con backend y recursos realmente separados. El conector expuesto no ofrece duplicación ni creación de ramas; crear una app desde prompt no equivale a clonar el candidato.
-- [ ] Verificar aislamiento del entorno antes de cargar código; una preview frontend puede compartir datos.
-- [ ] Preparar exactamente la versión candidata del PR y comprobar despliegue Deno/RLS. No aplicar el PR a la app original para suplir la falta de QA.
-- [ ] Preparar dos identidades de dueño independientes, dos empresas y una identidad de aliado. No falsificar auth.me ni enviar invitaciones sin autorización.
-- [ ] Validar CRUD propio/ajeno, acceso SDK directo, sesiones, llamadas backend anidadas y cambio de empresa/cachés.
-- [ ] Verificar revocación, vencimiento y suspensión en nuevas peticiones.
-- [ ] Verificar privacidad de archivos/URLs, no solo registros.
-- [ ] QA de compras, costos, inventario, cotizaciones, ambos caminos de ventas y numeración.
-- [ ] Clasificar registros persistidos y respaldar antes de proponer limpieza/migración.
-- [ ] Corregir hallazgos y registrar evidencia; solo entonces solicitar revisión para merge y publicación.
+## 3. Pendientes funcionales NO-P0 / alcance secundario
+- [ ] CRM oportunidades como entidad y transición completa a cotización (existen perfiles, interacciones y seguimiento básico).
+- [ ] Proformas con numeración separada y documentos consistentes.
+- [ ] Vista conciliada de pagos parciales, abonos y saldo por venta; cancelación/devolución verificadas.
+- [ ] Portal Consulting limitado por permisos, documentos publicados, tracking e hitos del importador; hoy existen grants y seguimiento parcial, no portal certificado.
+- [ ] Preferencias internacionales por empresa: países, moneda base, idioma/locale y categorías multicategoría; conservar moneda por documento sin inventar FX.
+- [ ] Revisión de ownership legacy, registros y backups antes de cualquier migración/limpieza.
+- [ ] Guía breve de beta y QA visual móvil/escritorio solo una vez resueltos P0.
 
-### MG02 — operación Consulting e importador
-- [ ] Panel de Consulting por cliente y carga autorizada.
-- [ ] Estados, hitos, fechas estimadas, tracking y documentos; lectura del importador.
-- [ ] Aplicar grants en estos flujos dedicados. Tener un grant no implica que el portal ya exista.
-- [ ] Configuración por empresa: países, moneda base y preferencias de idioma/locale.
-- [ ] Preservar moneda por documento y costos históricos; no sumar monedas distintas ni simular conversión FX.
-- [ ] Extender categorías/atributos para diferentes mercancías preservando claves históricas.
+## 4. Última prueba única (registrada, no repetir por rutina)
+**NEXORA-E2E-001 (Base44 Testing Agent):** flujo `6aeb6c595b84480c188e65d2`; ejecución `6aeb6c5d81f0fc35f6420cb1`; preview de rama. Sesión y formulario proveedores accesibles; guardado ficticio FALLÓ, servicio de empresas no encontrado. El resto NO VERIFICADO. No se tocó producción ni registros históricos en esta prueba, según reporte del agente.
+**Checkpoint detallado:** `docs/NEXORA-E2E-001-CIERRE-2026-11-04.md`.
 
-### MG03 — piloto y entrega
-- [ ] Demostración completa y coherente para Consulting y un importador.
-- [ ] QA móvil/escritorio, recorrido de alta y guía de uso.
-- [ ] Definir alcance comercial del piloto y pendientes; no prometer fecha cerrada sin certificar los bloqueos.
+## 5. Decisiones vigentes y criterio de entrega
+1. **Solo Nexora** en este backlog; no abrir otros proyectos.
+2. **Meta 6-nov condicionada a P0.** Reducir alcance secundario si es necesario; no llamar GO a una beta con empresas/escrituras bloqueadas.
+3. Prioridad: reparar servicio de empresas → confirmar escritura proveedor de forma puntual → aplicar/conciliar esquemas y backend → consolidar PR #3/#4 → aceptación mínima comercial y seguridad → decidir GO/NO-GO y publicar con autorización.
+4. No abrir otra rama, no crear sandbox adicional, no repetir Testing Agent indiscriminadamente ni activar cron. Reutilizar componentes, preservar historial.
+5. Gustavo es Super Admin de plataforma y no owner tenant por defecto. Consulting no tiene acceso financiero global.
+6. GitHub es fuente de verdad; sin merge/publish automático ni migraciones destructivas.
 
-## División del próximo paso
-Gustavo: compartir el enlace de la copia Nexora QA si la duplica desde Base44; preferir no copiar registros si existe esa opción. No hacer merge/publish.
-Especialista: verificar el backend separado, preparar candidato, ejecutar pruebas reales disponibles y documentar límites. No repetir inventario completo ni abrir frentes comerciales antes de resolver MG01.
+## 6. Referencias y continuidad
+- PR #3: https://github.com/neowisecostarica-rgb/nexora/pull/3
+- PR #4: https://github.com/neowisecostarica-rgb/nexora/pull/4
+- `docs/NEXORA-MASTER-001-CHECKPOINT-2026-11-02.md`
+- `docs/NEXORA-MB02-CHECKPOINT.md`
+- `docs/NEXORA-MB-49H-CHECKPOINT-2026-11-04.md`
+- `docs/NEXORA-E2E-001-CIERRE-2026-11-04.md`
+- `docs/NEXORA-REGRESSION-MATRIX.md`
 
-## Documentación a consultar
-AGENTS.md; docs/README.md; docs/NEXORA-BASELINE.md; docs/NEXORA-INVENTORY.md; docs/NEXORA-MG01-ISOLATION.md; docs/NEXORA-MG01-RUNTIME-VERIFICATION.md; docs/NEXORA-TEST-DATA-PLAN.md; docs/NEXORA-REGRESSION-MATRIX.md.
-Worktree temporal usado: /tmp/nexora-mg01-platform-admin dentro del sandbox; puede desaparecer. Recuperar desde GitHub, no depender de ese directorio.
-
-## Frase para retomar
-“Retomemos Nexora desde docs/NEXORA-CHECKPOINT-BACKLOG.md del PR #3. Prioridad MG01: confirmar Nexora QA con backend separado y probar permisos reales. Preservar lo existente; no hacer merge ni publish.”
-
-Este checkpoint es documental en GitHub. No es un restore point de Base44 ni implica cambios en el runtime. Cron permanece sin reactivar. Trabajo pausado por solicitud del usuario.
+### Frase para retomar
+«Retomemos Nexora desde docs/NEXORA-CHECKPOINT-BACKLOG.md. No más auditorías; resolver P0-01 (servicio de empresas/escritura), consolidar PR #3/#4 y cerrar beta del 6-nov con evidencia, sin publicar hasta autorización».
