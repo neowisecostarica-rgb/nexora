@@ -29,7 +29,8 @@
 ## 3. Pendientes funcionales NO-P0 / alcance secundario
 - [ ] CRM oportunidades como entidad y transición completa a cotización (existen perfiles, interacciones y seguimiento básico).
 - [ ] Proformas con numeración separada y documentos consistentes.
-- [ ] Vista conciliada de pagos parciales, abonos y saldo por venta; cancelación/devolución verificadas.
+- [x] **UI parcial de abonos y saldos por venta en pantalla existente, cerrada en código:** `Sales.jsx` consulta `Payments` por gateway tenant, usa helper conservador `saleBalances.mjs`; solo computa pagos confirmados en la moneda explícita de la venta y con consulta completa. Sin moneda / registros incompletos / ajuste ambiguo, muestra pendiente de conciliar. Nuevas cotizaciones permiten seleccionar USD/CRC y `convertQuoteToSale` conserva esa moneda; esquemas `Quotes` y `Sales` extienden campo `currency` opcional. **NO VERIFICADO runtime ni pago real; NO se creó un registro nuevo.**
+- [ ] Registrar abonos/cancelaciones/devoluciones y verificar conciliación operativa en backend; no declarar saldo exacto en documentos sin certificar.
 - [ ] Portal Consulting limitado por permisos, documentos publicados, tracking e hitos del importador; hoy existen grants y seguimiento parcial, no portal certificado.
 - [ ] Preferencias internacionales por empresa: países, moneda base, idioma/locale y categorías multicategoría; conservar moneda por documento sin inventar FX.
 - [ ] Revisión de ownership legacy, registros y backups antes de cualquier migración/limpieza.
@@ -43,6 +44,13 @@
 - Revisión de archivos: `src/components/layout/OrganizationSwitcher.jsx` invoca `base44.functions.invoke('tenantData',{method:'context'})`; `src/lib/organizationContext.mjs` mapea 404 a mensaje de servicio no encontrado. `src/api/tenantBridge.mjs` envía CRUD empresarial a `tenantData` y no tiene fallback inseguro. Los archivos `tenantData/entry.ts` y `handler.mjs` están presentes en el sandbox de la rama.
 - Intento controlado: API de Base44 `coding/redeploy-function/tenantData`, con `branch_id` de la rama, rechazado por restricción de edición manual de funciones en ramas. **Ninguna función fue redesplegada, ni main ni producción modificados.**
 - Decisión: **no ejecutar más QA/E2E** hasta resolver la restricción de despliegue. Integración en `main` requiere verificación y autorización; después comprobar `tenantData` una vez, sin desactivar RLS.
+
+## 3C. Cierre en código para beta Consulting (4 nov, sin QA funcional)
+- Ventas: se añadió lectura no destructiva de abonos y saldos sobre la misma pantalla `Sales.jsx`, en vez de crear vista nueva. Solo toma ledger de pagos confirmados; ignora pendientes, bloquea ajustes ambiguos, exige moneda explícita, no inventa cambio de divisas ni cifras sobre resultados truncados.
+- Cotizaciones: selector USD/CRC en nuevas cotizaciones; la conversión al crear Sales preserva moneda. Campos opcionales declarados en esquemas, sin cambiar RLS/required ni documentos históricos. El ledger legacy sin moneda permanece «Sin moneda conciliada» hasta regularización autorizada.
+- Consulting: ya existe configuración de empresas `partner`, grants por importador/carga y auditoría en `PlatformAdmin` (código), pero **NO hay todavía portal de aliado autenticado verificado**. Para mostrar beta a Consulting como usuario real, se requiere acceso por cuenta propia, grants limitados, navegación permitida y prueba de que no ve datos financieros ni otro cliente. La pantalla Super Admin NO se entregará como portal Consulting.
+- Release por instrucción de Dirección: **construcción restante → QA final una vez → resolución P0 → merge PR #3 a main → actualización de esquema/funciones en Base44 → publicación y verificación → cerrar PR #4 de forma segura → eliminar ramas solo después de comprobar código preservado y entrega beta**. Sin autorización para borrar ramas antes de verificar que no se pierdan commits históricos.
+- Pendiente técnico principal: `tenantData` no puede redeplegarse manualmente en rama Base44. Evitar pruebas repetidas y evitar bypass del gateway.
 
 ## 4. Última prueba única (registrada, no repetir por rutina)
 **NEXORA-E2E-001 (Base44 Testing Agent):** flujo `6aeb6c595b84480c188e65d2`; ejecución `6aeb6c5d81f0fc35f6420cb1`; preview de rama. Sesión y formulario proveedores accesibles; guardado ficticio FALLÓ, servicio de empresas no encontrado. El resto NO VERIFICADO. No se tocó producción ni registros históricos en esta prueba, según reporte del agente.
