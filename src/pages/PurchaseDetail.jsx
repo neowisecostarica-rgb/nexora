@@ -52,8 +52,20 @@ export default function PurchaseDetail() {
   });
 
   const createItemMutation = useMutation({
-    mutationFn: (data) => base44.entities.PurchaseItems.create(data),
+    mutationFn: async (data) => {
+      // Una orden recibida no debe admitir partidas nuevas desde este flujo.
+      const fresh = await base44.entities.PurchaseOrders.filter({ id: poId });
+      if (!fresh[0] || fresh[0].status === "received") {
+        throw new Error("La orden ya fue recibida o no está disponible. No se pueden agregar partidas.");
+      }
+      const quantity = Number(data.quantity);
+      if (!Number.isSafeInteger(quantity) || quantity <= 0) {
+        throw new Error("La cantidad debe ser un número entero mayor que cero.");
+      }
+      return base44.entities.PurchaseItems.create({ ...data, quantity });
+    },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["poItems", poId] }); setItemDialogOpen(false); setItemForm(EMPTY_ITEM); },
+    onError: (error) => toast({ title: "No se pudo agregar la partida", description: error?.message || "Intentá nuevamente.", variant: "destructive" }),
   });
 
   const generateUnitsMutation = useMutation({
@@ -146,7 +158,7 @@ export default function PurchaseDetail() {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between pb-2">
           <CardTitle className="text-sm font-semibold">Items de la Orden</CardTitle>
-          <Button size="sm" onClick={() => { setItemForm({ ...EMPTY_ITEM, purchase_order_id: poId }); setItemDialogOpen(true); }}>
+          <Button size="sm" disabled={order.status === "received"} onClick={() => { setItemForm({ ...EMPTY_ITEM, purchase_order_id: poId }); setItemDialogOpen(true); }}>
             <Plus className="w-3.5 h-3.5 mr-1" />Agregar Item
           </Button>
         </CardHeader>
@@ -238,7 +250,7 @@ export default function PurchaseDetail() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setItemDialogOpen(false)}>Cancelar</Button>
-            <Button onClick={() => createItemMutation.mutate({ ...itemForm, purchase_order_id: poId })} disabled={!itemForm.brand || !itemForm.model || createItemMutation.isPending}>
+            <Button onClick={() => createItemMutation.mutate({ ...itemForm, purchase_order_id: poId })} disabled={!itemForm.brand || !itemForm.model || order.status === "received" || !Number.isSafeInteger(Number(itemForm.quantity)) || Number(itemForm.quantity) <= 0 || createItemMutation.isPending}>
               {createItemMutation.isPending ? "Guardando…" : "Agregar"}
             </Button>
           </DialogFooter>
