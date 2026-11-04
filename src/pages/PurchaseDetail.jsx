@@ -22,6 +22,7 @@ import PageHeader from "@/components/shared/PageHeader";
 import StatusBadge from "@/components/shared/StatusBadge";
 import { formatCurrency, formatDate } from "@/lib/formatters";
 import { useToast } from "@/components/ui/use-toast";
+import { pendingPurchaseItems, purchaseInventoryComplete } from "@/lib/purchaseConversion.mjs";
 
 const EMPTY_ITEM = {
   brand: "", model: "", cpu: "", ram_gb: 8, storage_type: "SSD", storage_gb: 256,
@@ -29,7 +30,6 @@ const EMPTY_ITEM = {
 };
 
 export default function PurchaseDetail() {
-  const urlParams = new URLSearchParams(window.location.search);
   const poId = window.location.pathname.split("/purchases/")[1];
   const [itemDialogOpen, setItemDialogOpen] = useState(false);
   const [itemForm, setItemForm] = useState(EMPTY_ITEM);
@@ -58,30 +58,46 @@ export default function PurchaseDetail() {
 
   const generateUnitsMutation = useMutation({
     mutationFn: async () => {
-      if (!order) return;
-      // Cada item se convierte via función backend (con lock, idempotencia y trazabilidad)
-      const pendingItems = items.filter(item =>
-        (item.inventory_generated_count || 0) < (item.quantity || 1)
-      );
-      if (pendingItems.length === 0) {
-        toast({ title: "Sin pendientes", description: "Todos los items ya tienen sus unidades generadas." });
-        return;
-      }
+      if (!order || !poId) throw new Error("Orden de compra no disponible");
+      const pendingItems = pendingPurchaseItems(items);
+      if (pendingItems.length === 0) return { created: 0, complete: purchaseInventoryComplete(items) };
+
       let totalCreated = 0;
       for (const item of pendingItems) {
         const result = await base44.functions.invoke("createInventoryFromPurchaseItem", {
           purchaseItemId: item.id,
           importBatchId: order.import_batch_id || null,
         });
-        totalCreated += result.data?.created_count || 0;
+        const payload = result?.data;
+        if (!payload || (payload.success !== true && payload.code !== "ALREADY_COMPLETED")) {
+          throw new Error(payload?.error || "No se confirmó la conversión de un ítem");
+        }
+        totalCreated += Number(payload.created_count || 0);
       }
-      await base44.entities.PurchaseOrders.update(poId, { status: "received" });
-      toast({ title: "Inventario generado", description: `${totalCreated} unidades creadas con trazabilidad completa.` });
+
+      // Releer contadores del servidor: no usar el snapshot previo a la conversión.
+      const persistedItems = await base44.entities.PurchaseItems.filter({ purchase_order_id: poId });
+      const complete = purchaseInventoryComplete(persistedItems);
+      if (complete) {
+        await base44.entities.PurchaseOrders.update(poId, { status: "received" });
+      }
+      return { created: totalCreated, complete };
     },
-    onSuccess: () => {
+    onSuccess: ({ created, complete }) => {
       qc.invalidateQueries({ queryKey: ["po", poId] });
       qc.invalidateQueries({ queryKey: ["poItems", poId] });
       qc.invalidateQueries({ queryKey: ["inventory"] });
+      toast({
+        title: complete ? "Inventario verificado" : "Conversión parcial",
+        description: complete
+          ? `${created} unidades generadas; la orden quedó recibida.`
+          : `${created} unidades generadas. La orden no se marcó recibida porque aún hay pendientes.`,
+      });
+    },
+    onError: (error) => {
+      qc.invalidateQueries({ queryKey: ["poItems", poId] });
+      qc.invalidateQueries({ queryKey: ["inventory"] });
+      toast({ title: "Conversión no completada", description: error?.message || "Revisá el inventario antes de reintentar.", variant: "destructive" });
     },
   });
 
@@ -101,7 +117,7 @@ export default function PurchaseDetail() {
 
       <PageHeader title={`Orden ${order.purchase_code || order.order_number}`} subtitle={`Fecha: ${formatDate(order.purchase_date)}`}>
         <StatusBadge status={order.status} />
-        {items.length > 0 && items.some(i => (i.inventory_generated_count || 0) < (i.quantity || 1)) && (
+        {items.length > 0 && pendingPurchaseItems(items).length > 0 && (
           <Button onClick={() => generateUnitsMutation.mutate()} disabled={generateUnitsMutation.isPending}>
             <Package className="w-4 h-4 mr-2" />{generateUnitsMutation.isPending ? "Generando…" : "Generar Inventario"}
           </Button>
