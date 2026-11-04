@@ -27,3 +27,8 @@ Diagnosticar en el candidato exacto la resolución de getActiveOrganizationProfi
 
 ## Integración
 PR #3 y PR #4 continúan en borrador; cambios MB02 adoptados selectivamente en PR #3. CI 41876103436 PASS SHA 06435d7 antes de este checkpoint. No merge, no publish.
+
+## Corrección puntual posterior al primer bloqueo
+- Se inspeccionaron `OrganizationSwitcher.jsx`, `tenantBridge.mjs`, `Suppliers.jsx` y resolución de perfil empresarial. La pantalla de proveedores carecía de handlers `onError` para el guardado: los fallos no se comunicaban al usuario, lo que explica el síntoma de diálogo inmóvil sin notificación, pero NO explica ni resuelve el fallo de servicio de empresas.
+- Commit `573cfa2`: se agregaron notificaciones explícitas de guardado/error en `Suppliers.jsx` sin cambiar gateways, RLS ni permitir CRUD directo. No repetimos E2E tras el cambio. Persistencia proveedor y resolución `tenantData` en runtime permanecen NO VERIFICADAS.
+- Dirección: detener pruebas adicionales. La causa principal del servicio de empresas sigue BLOQUEADA y debe corregirse antes de autorizar publicación/merge.
