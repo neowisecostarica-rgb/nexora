@@ -51,6 +51,52 @@
     "organization_id": {
       "type": "string",
       "description": "ID de OrganizationProfile propietaria. Campo opcional durante transición; registros sin asignación requieren revisión, no inferir dueño."
+    },
+    "sale_number": {
+      "type": "string"
+    },
+    "sale_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "completed",
+        "cancelled",
+        "refunded"
+      ]
+    },
+    "sale_type": {
+      "type": "string"
+    },
+    "quote_id": {
+      "type": "string"
+    },
+    "customer_id": {
+      "type": "string"
+    },
+    "cogs_total": {
+      "type": "number"
+    },
+    "gross_profit_total": {
+      "type": "number"
+    },
+    "gross_margin_percent": {
+      "type": "number"
+    },
+    "sale_notes_snapshot": {
+      "type": "string"
+    },
+    "organization_profile_snapshot": {
+      "type": "object"
+    },
+    "external_invoice_status": {
+      "type": "string"
+    },
+    "external_invoice_reference": {
+      "type": "string"
     }
   },
   "required": [
