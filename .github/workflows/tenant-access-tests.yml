@@ -2,17 +2,26 @@ name: Tenant access tests
 on:
   pull_request:
   push:
-    branches: [main]
+    branches:
+      - main
+      - codex/nexora-mg01-platform-admin
 permissions:
   contents: read
 jobs:
   authorization:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Test policy and scoped profile handler
-        run: node --test tests/*.test.mjs
+          cache: npm
+      - name: Install locked dependencies
+        run: npm ci
+      - name: Test policies and application
+        run: node --test
+      - name: Lint
+        run: npm run lint
+      - name: Build
+        run: npm run build
