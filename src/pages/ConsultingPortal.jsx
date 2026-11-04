@@ -67,7 +67,6 @@ export default function ConsultingPortal() {
             {operation.trackings.map((t, i) => <div key={i} className="text-sm flex flex-wrap justify-between gap-2">
               <span>{t.courier || "Courier"} · {t.tracking_number}</span>
               <span>{STATUS[t.status] || STATUS.unknown} · {date(t.expected_date)}</span>
-              {t.last_event && <p className="w-full text-xs text-muted-foreground">{t.last_event}</p>}
             </div>)}
           </div>}
         </CardContent></Card>)}
