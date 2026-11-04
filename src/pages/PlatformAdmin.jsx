@@ -39,7 +39,7 @@ export default function PlatformAdmin(){
  const [tab,setTab]=useState('organizations'),[message,setMessage]=useState('');
  const [org,setOrg]=useState({commercial_name:'',legal_name:'',email_main:'',organization_type:'importer'});
  const [member,setMember]=useState({organization_id:'',user_id:'',role:'owner',expires_at:''});
- const [grant,setGrant]=useState({partner_organization_id:'',client_organization_id:'',permissions:['tracking.read','tracking.write'],operation_ids:[],expires_at:''});
+ const [grant,setGrant]=useState({partner_organization_id:'',client_organization_id:'',permissions:['operations.read','tracking.read'],operation_ids:[],expires_at:''});
  const [report,setReport]=useState(null);
  const [audit,setAudit]=useState(null);
  const capability=useQuery({queryKey:['platform-capabilities',user?.id],queryFn:()=>invoke('capabilities'),enabled:!!user?.id,staleTime:0});
@@ -99,7 +99,7 @@ export default function PlatformAdmin(){
    {data.users.filter(x=>x.id!==user.id).length===0&&<p>No hay otros usuarios registrados todavía. Este panel no envía invitaciones automáticamente.</p>}
   </>}
   {tab==='partners'&&<>
-   <p>Consulting recibe permisos por empresa y carga. No se otorga acceso financiero mediante estas autorizaciones.</p>
+   <p>Consulting recibe permisos por empresa y carga. No se otorga acceso financiero mediante estas autorizaciones. Para visualizar la beta en /consulting, se requiere <strong>Consultar operaciones</strong> y, para ver guías, <strong>Consultar seguimiento</strong>. Invitá al usuario como propietario de la organización aliada correspondiente, nunca como Super Admin.</p>
    <Card><CardContent className="p-4"><form className="grid sm:grid-cols-2 gap-3" onSubmit={e=>{e.preventDefault();run('set_grant',grant);}}>
     <Field label="Aliado"><Select required value={grant.partner_organization_id} onChange={e=>setGrant({...grant,partner_organization_id:e.target.value})}><option value="">Seleccionar</option>{partners.map(x=><option key={x.id} value={x.id}>{x.commercial_name}</option>)}</Select></Field>
     <Field label="Cliente importador"><Select required value={grant.client_organization_id} onChange={e=>setGrant({...grant,client_organization_id:e.target.value,operation_ids:[]})}><option value="">Seleccionar</option>{customers.map(x=><option key={x.id} value={x.id}>{x.commercial_name}</option>)}</Select></Field>
