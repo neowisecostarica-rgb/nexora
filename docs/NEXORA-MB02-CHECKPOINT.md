@@ -37,3 +37,10 @@ Se abrió PR #4 en borrador. La corrección cubre cierre prematuro de compras y 
 **Riesgo y acción pendiente:** los lotes legacy con per_unit_import_default > 0 requieren clasificación documentada y conciliación humana antes de corregir valores o ejecutar recálculo. No suponer que todo importe fijo es duplicado: puede ser un cargo adicional válido. No activar workflows ni ejecutar migraciones. Validar en QA costo numérico y comparación entre los dos motores sin modificar la fuente de verdad total_real_unit_cost.
 
 **Pruebas:** casos nuevos añadidos; ejecución específica sobre el HEAD, lint/build y QA real quedan sujetos a CI y validación posterior. No confundir PASS general de un workflow previo con la suite nueva.
+
+## MB-02 · Integridad de componentes financieros (2026-11-03)
+- GitHub Actions 41767521954: node --test PASS, lint FAIL por nueve imports sin uso preexistentes y build SKIPPED. Se corrigieron solo esos imports en el PR #4; nuevo HEAD requiere CI.
+- Comparación de ambos motores: ambos aplican base, aduana, flete, transporte, extras, fijo adicional y gastos por unidad/lote. Se encontró un defecto común: si falla la creación de uno o varios componentes pero otros se crean, ambos podían declarar éxito y actualizar total_real_unit_cost con la suma parcial.
+- Corrección: tanto calculateRealUnitCost como runCostEngine del worker devuelven PARTIAL_COST_COMPONENTS si el conteo persistido no coincide con el esperado, antes de actualizar el costo oficial. Se incorporó una comprobación contractual estática en tests/cost-engine-safety-contract.test.mjs.
+- **Límite:** NO hay transacción atómica; ante error los componentes previamente eliminados/creados pueden quedar en estado parcial, mientras el costo oficial anterior queda intacto. Necesita conciliación operativa y pruebas de fallos inducidos en Base44 antes de GO. No se ha demostrado paridad numérica E2E de ambos motores.
+- No se ejecutaron cálculos contra datos reales, ni se habilitaron jobs, cron o migraciones.
