@@ -42,9 +42,10 @@ export default function ImportBatchesPage() {
 
   const saveMutation = useMutation({
     mutationFn: (data) => {
-      const totalImport = (data.customs_total || 0) + (data.freight_total || 0) + (data.local_transport_total || 0) + (data.extra_cost_total || 0);
-      const perUnit = data.total_units > 0 ? totalImport / data.total_units : 0;
-      const payload = { ...data, per_unit_import_default: perUnit };
+      // El motor ya distribuye aduana, flete, transporte y extras proporcionalmente.
+      // per_unit_import_default es un cargo fijo ADICIONAL, no una segunda prorrata.
+      // Conservar valores legacy existentes; nunca recomputarlos silenciosamente.
+      const payload = { ...data };
       return editing ? base44.entities.ImportBatches.update(editing.id, payload) : base44.entities.ImportBatches.create(payload);
     },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["importBatches"] }); setDialogOpen(false); setEditing(null); setForm(EMPTY_BATCH); },
@@ -129,6 +130,14 @@ export default function ImportBatchesPage() {
             <div className="space-y-1.5"><Label>Flete</Label><Input type="number" step="0.01" value={form.freight_total || ""} onChange={(e) => snf("freight_total", e.target.value)} /></div>
             <div className="space-y-1.5"><Label>Transporte Local</Label><Input type="number" step="0.01" value={form.local_transport_total || ""} onChange={(e) => snf("local_transport_total", e.target.value)} /></div>
             <div className="space-y-1.5"><Label>Costos Extra</Label><Input type="number" step="0.01" value={form.extra_cost_total || ""} onChange={(e) => snf("extra_cost_total", e.target.value)} /></div>
+            <div className="col-span-2 space-y-1.5">
+              <Label>Cargo fijo adicional por unidad</Label>
+              <Input type="number" min="0" step="0.01" value={form.per_unit_import_default ?? 0} onChange={(e) => snf("per_unit_import_default", e.target.value)} />
+              <p className="text-xs text-muted-foreground">Solo cargos adicionales: aduana, flete, transporte y extras ya se distribuyen desde sus totales. No duplicarlos aquí.</p>
+              {editing && Number(form.per_unit_import_default || 0) > 0 && (
+                <p className="text-xs text-amber-700">Revisá este valor histórico antes de guardar: versiones anteriores lo calculaban automáticamente y podría duplicar costos. No se modificará sin tu intervención.</p>
+              )}
+            </div>
             <div className="col-span-2 p-3 bg-muted rounded-lg">
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Total Importación:</span>
