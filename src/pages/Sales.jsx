@@ -23,6 +23,8 @@ import EmptyState from "@/components/shared/EmptyState";
 import StatCard from "@/components/shared/StatCard";
 import { formatCurrency, formatDate, formatPercent } from "@/lib/formatters";
 import { TrendingUp, DollarSign } from "lucide-react";
+import { saleBalance } from "@/lib/saleBalances.mjs";
+import { useToast } from "@/components/ui/use-toast";
 
 const SALE_TYPE_LABELS = {
   retail: "Retail",
@@ -42,18 +44,28 @@ export default function SalesPage() {
   const [invoiceDialog, setInvoiceDialog] = useState(null);
   const [invoiceForm, setInvoiceForm] = useState({ external_invoice_reference: "", external_invoice_status: "pending" });
   const qc = useQueryClient();
+  const { toast } = useToast();
 
   const { data: sales = [], isLoading } = useQuery({
     queryKey: ["sales"],
     queryFn: () => base44.entities.Sales.list("-sale_date", 200),
   });
 
+  // Lectura limitada: nunca mostrar un saldo como definitivo si existen más pagos.
+  const paymentsQuery = useQuery({
+    queryKey: ["sales-payments-ledger"],
+    queryFn: () => base44.entities.Payments.list("-payment_date", 500),
+  });
+  const paymentsComplete = paymentsQuery.isSuccess && paymentsQuery.data.length < 500;
+
   const updateInvoiceMutation = useMutation({
     mutationFn: ({ id, data }) => base44.entities.Sales.update(id, data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["sales"] });
       setInvoiceDialog(null);
+      toast({ title: "Referencia de factura actualizada" });
     },
+    onError: (error) => toast({ title: "No se pudo guardar la factura", description: error?.message || "Revisá tu empresa activa.", variant: "destructive" }),
   });
 
   const completed = sales.filter((s) => s.status === "completed");
@@ -109,6 +121,7 @@ export default function SalesPage() {
                 <TableHead>Costo</TableHead>
                 <TableHead>Utilidad</TableHead>
                 <TableHead>Margen</TableHead>
+                <TableHead>Abonos / saldo</TableHead>
                 <TableHead>Factura Ext.</TableHead>
                 <TableHead>Estado</TableHead>
               </TableRow>
@@ -130,6 +143,15 @@ export default function SalesPage() {
                     {formatCurrency(s.gross_profit_total)}
                   </TableCell>
                   <TableCell>{formatPercent(s.gross_margin_percent)}</TableCell>
+                  <TableCell className="text-xs">
+                    {(() => {
+                      const account = saleBalance(s, paymentsQuery.data || [], { complete: paymentsComplete });
+                      if (paymentsQuery.isError) return <span className="text-destructive">Pagos no disponibles</span>;
+                      if (!paymentsComplete) return <span className="text-muted-foreground">Pendiente de conciliar</span>;
+                      if (!account.reconciled) return <span className="text-muted-foreground">Sin moneda conciliada</span>;
+                      return <span>Abonado: {formatCurrency(account.paid, account.currency)}<br/>Saldo: {formatCurrency(account.balance, account.currency)}</span>;
+                    })()}
+                  </TableCell>
                   <TableCell>
                     <button
                       onClick={() => openInvoiceDialog(s)}
