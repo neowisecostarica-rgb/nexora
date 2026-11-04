@@ -233,6 +233,12 @@ async function runCostEngine(db, inventoryUnitId, organizationId) {
     }
   }
 
+  // No publicar un costo parcial si falló la escritura de algún componente.
+  // Los componentes pueden quedar incompletos: una conciliación posterior es obligatoria.
+  if (createdComponents.length !== validComponents.length) {
+    return { success: false, error: 'PARTIAL_COST_COMPONENTS', components_created: createdComponents.length, components_expected: validComponents.length, warnings };
+  }
+
   if (createdComponents.length === 0) {
     return { success: false, error: 'NO_VALID_COMPONENTS', message: 'No valid cost components generated', warnings };
   }
