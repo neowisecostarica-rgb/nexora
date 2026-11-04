@@ -81,3 +81,20 @@ A fecha 2026-11-02: **plan y documentación registrados; no se certifica ejecuci
 **API real:** NO VERIFICADO. Faltan sesiones autorizadas de dos empresas, Consulting y Super Admin para probar listas, lectura por ID, escrituras, archivos, funciones, grants, vencimiento y revocación.
 
 **Resultado:** **NO-GO**. Mantener PR #3 como borrador. Antes de integrar o publicar: reconciliar/validar el head final en un sandbox autorizado, completar el inventario legacy, ejecutar la matriz de regresión (compras, inventario, cotizaciones, ambos caminos de venta y pagos) y obtener evidencia API real. No activar cron ni ejecutar migraciones.
+
+
+## 8. MB-01D — desbloqueo de validación (2026-11-03)
+
+**SHA objetivo de validación:** `249c68755628b8c0a9e58aed71e92530a63c69f8`.
+
+| Verificación | Resultado | Evidencia |
+| --- | --- | --- |
+| Checkout íntegro Windows | BLOQUEADO | Git for Windows rechaza el árbol por el workflow histórico `base44/workflows/ImportBatch: Distribuir costos al actualizar.jsonc`; no se renombró ni alteró. |
+| WSL/Linux local | BLOQUEADO | `wsl.exe --status` informa que el subsistema/distribución no está instalado; instalarlo crearía un entorno, por lo que no se hizo. |
+| GitHub Actions del SHA objetivo | NO VERIFICADO | La consulta de runs del commit devolvió cero ejecuciones; el conector disponible no expone despacho de workflow. |
+| Base44 contra rama GitHub | NO DISPONIBLE | La documentación/capacidades Base44 disponibles separan ramas Base44 de ramas GitHub. `list_branches` del app muestra solo `main`; el sandbox se inicia desde su último commit Base44 y no puede seleccionar una rama GitHub externa. |
+| Lint/build/node --test del SHA objetivo | NO VERIFICADO | Dependen de un checkout íntegro Linux o runner CI. No se usó `main` como sustituto. |
+
+**Alternativa de menor riesgo:** Dirección General debe autorizar un runner Linux efímero, sin secrets productivos ni deploy, que haga checkout exacto del SHA y ejecute solo `node --test`, `npm run lint` y `npm run build`. Para runtime, debe crear o habilitar una rama/sandbox Base44 que contenga explícitamente el SHA del PR, sin publicar, y proporcionar datos controlados: empresas A/B, owner de cada una, Consulting con grant de una sola operación, Super Admin autenticado y un caso de grant revocado/vencido. La matriz API debe cubrir listas, GET por ID, create/update/delete, archivos, funciones, referencias cruzadas y ambos caminos de venta/pagos.
+
+**Estado:** NO-GO sin modificación funcional, merge, publicación, migración ni cron.
