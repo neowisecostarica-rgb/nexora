@@ -331,6 +331,12 @@ Deno.serve(async (req) => {
 
     console.log(`[CREATED] ${createdComponents.length}/${validComponents.length} components created`);
 
+    // No publicar un costo parcial si falló la escritura de algún componente.
+    // Los componentes pueden quedar incompletos: una conciliación posterior es obligatoria.
+    if (createdComponents.length !== validComponents.length) {
+      return Response.json({ success: false, error: 'PARTIAL_COST_COMPONENTS', components_created: createdComponents.length, components_expected: validComponents.length, warnings }, { status: 500 });
+    }
+
     if (createdComponents.length === 0) {
       console.warn(`[ABORT] No valid cost components created for unit ${inventoryUnitId}`);
       return Response.json({
