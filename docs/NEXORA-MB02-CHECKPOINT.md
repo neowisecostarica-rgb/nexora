@@ -27,3 +27,13 @@ Node tests/CI, lint, build y QA runtime sobre el HEAD del PR: NO VERIFICADO al c
 
 ## Entrega parcial ejecutada
 Se abrió PR #4 en borrador. La corrección cubre cierre prematuro de compras y representación coherente de moneda en las pantallas de compras. **No representa la finalización de MB-02.** No se probaron persistencia de Base44, costos reales, concurrencia ni aislamiento multiempresa.
+
+## MB-02 · Importaciones y costos (2026-11-03)
+
+**Hallazgo financiero:** src/pages/ImportBatches.jsx calculaba automáticamente per_unit_import_default = (aduana + flete + transporte + extras)/total_units. Tanto calculateRealUnitCost como processRecalculationQueue ya distribuyen esos mismos totales proporcionalmente y además suman per_unit_import_default como cargo fijo separado. Por tanto existe riesgo de doble imputación de costos en lotes guardados mediante la UI. Es evidencia estática, NO se verificó el efecto sobre datos reales.
+
+**Corrección en este PR:** la pantalla deja de recomputar automáticamente per_unit_import_default, expone cargo fijo adicional por unidad como campo explícito, advierte cuando un lote existente contiene ese valor, preserva los importes históricos sin cambiarlos. Se agregaron src/lib/importBatchCosts.mjs y tests/import-batch-costs.test.mjs (4 casos). No se modifica ninguno de los motores ni se recalculan registros.
+
+**Riesgo y acción pendiente:** los lotes legacy con per_unit_import_default > 0 requieren clasificación documentada y conciliación humana antes de corregir valores o ejecutar recálculo. No suponer que todo importe fijo es duplicado: puede ser un cargo adicional válido. No activar workflows ni ejecutar migraciones. Validar en QA costo numérico y comparación entre los dos motores sin modificar la fuente de verdad total_real_unit_cost.
+
+**Pruebas:** casos nuevos añadidos; ejecución específica sobre el HEAD, lint/build y QA real quedan sujetos a CI y validación posterior. No confundir PASS general de un workflow previo con la suite nueva.
