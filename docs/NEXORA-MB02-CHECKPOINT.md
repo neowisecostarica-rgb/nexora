@@ -12,6 +12,7 @@ PurchaseDetail.jsx marcaba PurchaseOrders.status=received al terminar el ciclo d
 
 ## Corrección aislada
 - src/lib/purchaseConversion.mjs: pendientes y completitud por contadores persistidos.
+- src/pages/Purchases.jsx y src/pages/PurchaseDetail.jsx: muestran importes con la moneda registrada de la orden (USD/MXN), sin hacer conversión FX.
 - src/pages/PurchaseDetail.jsx: valida respuesta por ítem, relee PurchaseItems del backend, marca received únicamente con todas las partidas completas; errores visibles y refresco de consultas.
 - tests/purchase-conversion.test.mjs: casos de orden vacía, parcial, completa y contadores ausentes.
 
@@ -23,3 +24,6 @@ PurchaseDetail.jsx marcaba PurchaseOrders.status=received al terminar el ciclo d
 
 ## Puerta de calidad
 Node tests/CI, lint, build y QA runtime sobre el HEAD del PR: NO VERIFICADO al crear esta nota.
+
+## Entrega parcial ejecutada
+Se abrió PR #4 en borrador. La corrección cubre cierre prematuro de compras y representación coherente de moneda en las pantallas de compras. **No representa la finalización de MB-02.** No se probaron persistencia de Base44, costos reales, concurrencia ni aislamiento multiempresa.
