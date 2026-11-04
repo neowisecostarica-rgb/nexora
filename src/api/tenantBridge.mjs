@@ -3,6 +3,8 @@
  * Efectos: CRUD pasa por servidor; contexto de empresa es solo una selección, no autoridad.
  * SDK auth/integrations se preservan. Nunca existe fallback a CRUD directo si falla el gateway.
  */
+// Módulos satélite con gateway propio (moduleData); el resto sigue en tenantData.
+const MODULE_ENTITIES=new Set(['Warehouses','ShipmentTrackings','CustomerProfiles','CustomerInteractions']);
 export function createTenantBridge(raw,getOrganizationId){
  const invoke=async(name,payload={})=>{
   const organization_id=getOrganizationId();
@@ -10,7 +12,7 @@ export function createTenantBridge(raw,getOrganizationId){
  };
  const entities=new Proxy({}, {get:(_,entity)=>new Proxy({}, {get:(_target,method)=>async(...args)=>{
   if(!['list','filter','get','create','update','delete'].includes(method))throw new Error('Operación no disponible.');
-  const response=await invoke('tenantData',{entity,method,args});
+  const response=await invoke(MODULE_ENTITIES.has(entity)?'moduleData':'tenantData',{entity,method,args});
   if(response.data?.error)throw new Error(response.data.error);
   return response.data?.result;
  }})});

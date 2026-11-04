@@ -30,6 +30,8 @@ import Expenses from '@/pages/Expenses';
 import Settings from '@/pages/Settings.jsx';
 import Catalog from '@/pages/Catalog';
 import PlatformAdmin from '@/pages/PlatformAdmin';
+import Warehouses from '@/pages/Warehouses';
+import Tracking from '@/pages/Tracking';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -59,6 +61,8 @@ const AuthenticatedApp = () => {
         <Route path="/purchases" element={<Purchases />} />
         <Route path="/purchases/:id" element={<PurchaseDetail />} />
         <Route path="/imports" element={<ImportBatches />} />
+        <Route path="/tracking" element={<Tracking />} />
+        <Route path="/warehouses" element={<Warehouses />} />
         <Route path="/inventory" element={<Inventory />} />
         <Route path="/pricing" element={<PricingEngine />} />
         <Route path="/catalog" element={<Catalog />} />

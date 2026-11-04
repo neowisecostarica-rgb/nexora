@@ -15,7 +15,7 @@ import { Link, useLocation } from "react-router-dom";
 import {
   LayoutDashboard, ShoppingCart, Package, Truck, Monitor,
   Calculator, FileText, HandCoins, Users, Settings,
-  ChevronLeft, ChevronRight, Receipt, Layers
+  ChevronLeft, ChevronRight, Receipt, Layers, Navigation, Warehouse
 } from "lucide-react";
 
 const NAV_ITEMS = [
@@ -23,6 +23,8 @@ const NAV_ITEMS = [
   { label: "Proveedores", icon: Users, path: "/suppliers" },
   { label: "Compras", icon: ShoppingCart, path: "/purchases" },
   { label: "Importaciones", icon: Truck, path: "/imports" },
+  { label: "Seguimiento", icon: Navigation, path: "/tracking" },
+  { label: "Bodegas", icon: Warehouse, path: "/warehouses" },
   { label: "Inventario", icon: Monitor, path: "/inventory" },
   { label: "Catálogo", icon: Layers, path: "/catalog" },
   { label: "Pricing", icon: Calculator, path: "/pricing" },

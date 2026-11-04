@@ -82,8 +82,12 @@ export function scopedEntities(raw,context){
    const linked=await exists(candidate.linked_entity_type,candidate.linked_entity_id);
    if(candidate.organization_id&&linked.organization_id!==candidate.organization_id)throw new AccessError('CROSS_COMPANY_REFERENCE');
   }
- };
- return new Proxy({}, {get:(_,name)=>{
+  if(name==='ShipmentTrackings'&&candidate.linked_entity_id){
+   if(!['ImportBatches','PurchaseOrders','InventoryUnits'].includes(candidate.linked_entity_type))throw new AccessError('INVALID_TRACKING_LINK',400);
+   const linked=await exists(candidate.linked_entity_type,candidate.linked_entity_id);
+   if(candidate.organization_id&&linked.organization_id!==candidate.organization_id)throw new AccessError('CROSS_COMPANY_REFERENCE');
+  }
+ }; return new Proxy({}, {get:(_,name)=>{
   if(!allowed.has(name))throw new AccessError('ENTITY_NOT_ALLOWED');
   return {
    filter:(query={},sort,limit,skip)=>raw[name].filter(queryFor(name,query),sort,limit,skip),

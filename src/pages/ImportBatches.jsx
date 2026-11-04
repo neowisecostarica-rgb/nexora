@@ -16,7 +16,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Truck } from "lucide-react";
+import { Plus, Truck, Navigation } from "lucide-react";
+import { Link } from "react-router-dom";
 import PageHeader from "@/components/shared/PageHeader";
 import StatusBadge from "@/components/shared/StatusBadge";
 import EmptyState from "@/components/shared/EmptyState";
@@ -79,6 +80,7 @@ export default function ImportBatchesPage() {
                 <TableHead>Costo Total</TableHead>
                 <TableHead>Costo/Unidad</TableHead>
                 <TableHead>Estado</TableHead>
+                <TableHead className="w-12"></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -94,6 +96,16 @@ export default function ImportBatchesPage() {
                     <TableCell className="font-semibold">{formatCurrency(total)}</TableCell>
                     <TableCell>{b.total_units > 0 ? formatCurrency(total / b.total_units) : "—"}</TableCell>
                     <TableCell><StatusBadge status={b.status} /></TableCell>
+                    <TableCell>
+                      <Link
+                        to={`/tracking?batch=${b.id}`}
+                        title="Seguimiento del lote"
+                        className="inline-flex p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <Navigation className="w-3.5 h-3.5" />
+                      </Link>
+                    </TableCell>
                   </TableRow>
                 );
               })}
