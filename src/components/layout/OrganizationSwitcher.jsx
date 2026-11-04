@@ -6,15 +6,8 @@ import React from 'react';
 import {useQuery} from '@tanstack/react-query';
 import {base44} from '@/api/base44Client';
 import {useAuth} from '@/lib/AuthContext';
+import {organizationContextMessage,assertOrganizationContext} from '@/lib/organizationContext.mjs';
 
-export function organizationContextMessage(error) {
- const status=Number(error?.response?.status || error?.status || 0);
- const raw=String(error?.response?.data?.error || error?.code || error?.message || '');
- if(status===401 || raw.includes('UNAUTHORIZED')) return 'La sesión no está autorizada. Iniciá sesión nuevamente.';
- if(status===403 || raw.includes('OWNER_ACCESS_REQUIRED') || raw.includes('NO_ORGANIZATION_ACCESS')) return 'La cuenta no tiene acceso a una empresa autorizada.';
- if(status===404 || raw.includes('404')) return 'No se encontró el servicio de empresas en esta versión.';
- return 'No fue posible cargar las empresas. Revisá la conexión o el servicio.';
-}
 
 export default function OrganizationSwitcher(){
  const {user}=useAuth();
@@ -23,8 +16,7 @@ export default function OrganizationSwitcher(){
   queryFn:async()=>{
    const r=await base44.functions.invoke('tenantData',{method:'context'});
    if(r.data?.error)throw Object.assign(new Error(r.data.error),{code:r.data.error});
-   if(!r.data?.result || !Array.isArray(r.data.result.organizations))throw new Error('INVALID_ORGANIZATION_CONTEXT');
-   return r.data.result;
+   return assertOrganizationContext(r.data?.result);
   },
   enabled:!!user?.id,staleTime:0,retry:false
  });
