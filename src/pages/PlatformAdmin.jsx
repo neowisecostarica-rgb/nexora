@@ -5,6 +5,7 @@
  * Legacy se consulta sin migrar. Errores requieren recargar antes de reintentar.
  * Onboarding fase 1: guía no transaccional basada en empresas/membresías verificadas por backend;
  * no envía invitaciones ni certifica entrega/activación sin QA real.
+ * Alta asistida: selección y confirmación humana; fail-closed sin is_verified confirmado.
  */
 import React,{useState} from 'react';
 import {useQuery,useMutation,useQueryClient} from '@tanstack/react-query';
@@ -77,7 +78,7 @@ export default function PlatformAdmin(){
  const selectedMemberOrg=data.organizations.find(x=>x.id===member.organization_id);
  const assignMembership=()=>{
   // Confirmar datos provenientes del backend antes de una mutación de acceso; nunca inferir ID por correo.
-  if(!selectedMemberUser||!selectedMemberOrg||!selectedMemberOrg.active)return;
+  if(!selectedMemberUser||selectedMemberUser.is_verified!==true||!selectedMemberOrg||!selectedMemberOrg.active)return;
   const detail=`Empresa: ${selectedMemberOrg.commercial_name}\nCuenta registrada: ${selectedMemberUser.email}\nRol: ${names[member.role]||member.role}`;
   if(!window.confirm(`¿Confirmás la asignación de acceso?\n\n${detail}\n\nEsto cambia permisos reales, no envía invitaciones.`))return;
   run('set_membership',{...member,expires_at:member.expires_at?new Date(member.expires_at).toISOString():null});
@@ -118,7 +119,7 @@ export default function PlatformAdmin(){
    <Card><CardHeader><CardTitle>Alta asistida de un propietario</CardTitle></CardHeader><CardContent className="space-y-3 text-sm">
     <ol className="list-decimal list-inside space-y-2">
      <li>El cliente abre Nexora e ingresa o registra su cuenta mediante el acceso nativo de Base44. No se envía una invitación desde este panel.</li>
-     <li>Actualizá la lista y verificá que el usuario registrado tenga el correo acordado con el cliente.</li>
+     <li>Actualizá la lista y comprobá que el usuario completó el acceso a la app y que su correo está verificado. Si ese estado no llega del servidor, la asignación sigue bloqueada.</li>
      <li>Seleccioná la empresa correcta y el rol <strong>Dueño</strong>, verificá la confirmación y guardá el acceso.</li>
      <li>Pedile al cliente que vuelva a iniciar sesión, elija su empresa y complete la configuración inicial. Validá el acceso con su sesión antes de entregar.</li>
     </ol>
@@ -130,7 +131,7 @@ export default function PlatformAdmin(){
     <Field label="Usuario registrado"><Select required value={member.user_id} onChange={e=>setMember({...member,user_id:e.target.value})}><option value="">Seleccionar</option>{data.users.filter(x=>x.id!==user.id).map(x=><option key={x.id} value={x.id}>{x.email}</option>)}</Select></Field>
     <Field label="Acceso"><Select value={member.role} onChange={e=>setMember({...member,role:e.target.value})}>{Object.entries(names).map(([key,title])=><option key={key} value={key}>{title}</option>)}</Select></Field>
     <Field label="Vencimiento opcional"><Input type="datetime-local" value={member.expires_at} onChange={e=>setMember({...member,expires_at:e.target.value})}/></Field>
-    <div className="space-y-2"><Button type="submit" disabled={mutation.isPending||!selectedMemberUser||!selectedMemberOrg||!selectedMemberOrg.active}>{member.role==='owner'?'Asignar propietario':'Guardar acceso'}</Button><p className="text-xs text-muted-foreground">{selectedMemberUser&&selectedMemberOrg?`${selectedMemberUser.email} → ${selectedMemberOrg.commercial_name} (${names[member.role]})`:'Elegí empresa y usuario registrado para continuar.'}</p></div>
+    <div className="space-y-2"><Button type="submit" disabled={mutation.isPending||!selectedMemberUser||selectedMemberUser.is_verified!==true||!selectedMemberOrg||!selectedMemberOrg.active}>{member.role==='owner'?'Asignar propietario':'Guardar acceso'}</Button><p className="text-xs text-muted-foreground">{selectedMemberUser&&selectedMemberOrg?`${selectedMemberUser.email} → ${selectedMemberOrg.commercial_name} (${names[member.role]})`:'Elegí empresa y usuario registrado para continuar.'}</p>{selectedMemberUser&&selectedMemberUser.is_verified!==true&&<p role="status" className="text-amber-700 text-xs">La verificación de correo no está confirmada por el servidor. Acceso bloqueado.</p>}</div>
    </form></CardContent></Card>
    <ul className="space-y-2">{data.memberships.map(x=><li key={x.id} className="border rounded p-3 flex flex-wrap items-center justify-between gap-2"><span>{userName(x.user_id)} · {orgName(x.organization_id)} · {names[x.role]} · {x.status}</span>{x.status==='active'&&<Button variant="outline" disabled={mutation.isPending} onClick={()=>{if(window.confirm('¿Revocar este acceso?'))run('revoke_membership',{record_id:x.id});}}>Revocar</Button>}</li>)}</ul>
    {data.users.filter(x=>x.id!==user.id).length===0&&<p role="status">No hay otros usuarios registrados todavía. Pedile al cliente que acceda primero mediante el inicio de sesión nativo y luego actualizá la lista. No se enviaron invitaciones.</p>}
