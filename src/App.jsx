@@ -31,6 +31,7 @@ import Expenses from '@/pages/Expenses';
 import Settings from '@/pages/Settings.jsx';
 import Catalog from '@/pages/Catalog';
 import PlatformAdmin from '@/pages/PlatformAdmin';
+import Onboarding from '@/pages/Onboarding';
 import Warehouses from '@/pages/Warehouses';
 import Tracking from '@/pages/Tracking';
 import ConsultingPortal from '@/pages/ConsultingPortal';
@@ -90,6 +91,7 @@ const AuthenticatedApp = () => {
         <Route path="/sales" element={<Sales />} />
         <Route path="/expenses" element={<Expenses />} />
         <Route path="/settings" element={<Settings />} />
+        <Route path="/onboarding" element={<Onboarding />} />
         <Route path="/platform" element={<PlatformAdmin />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
