@@ -12,7 +12,7 @@ const admin={id:'69d69fc4304f277844249dd7',email:'gustavo.aguilar@gmail.com',rol
 const importer={id:'org',commercial_name:'Importadora',legal_name:'Importadora SA',email_main:'client@example.com',active:true,organization_type:'importer'};
 const partner={id:'cc',active:true,organization_type:'partner'};
 function fake(user=admin,seed={}){
- const tables=structuredClone({User:[admin,{id:'client',email:'client@example.com',role:'user',secret:'hidden'}],OrganizationProfile:[importer,partner],
+ const tables=structuredClone({User:[admin,{id:'client',email:'client@example.com',role:'user',is_verified:true,secret:'hidden'}],OrganizationProfile:[importer,partner],
   OrganizationMembership:[],PartnerAccessGrant:[],ImportBatches:[{id:'cargo',organization_id:'org'}],PlatformAuditEvent:[],...seed});
  const writes=[];const queries=[];const entities=new Proxy({}, {get:(_,name)=>({
   filter:async(q={},sort,limit=500,skip=0)=>{
@@ -48,7 +48,7 @@ test('capabilities reveals no data and has no writes',async()=>{
 });
 test('overview projects user fields and audits access',async()=>{
  const f=fake();const r=await handlePlatformAdmin(f.client,{action:'overview'});
- assert.equal(r.status,200);assert.equal(r.body.users[1].secret,undefined);assert.equal(f.tables.PlatformAuditEvent[0].action,'platform.overview.read');
+ assert.equal(r.status,200);assert.equal(r.body.users[1].secret,undefined);assert.equal(r.body.users[1].is_verified,true);assert.equal(f.tables.PlatformAuditEvent[0].action,'platform.overview.read');
 });
 test('overview pagination reports more instead of silently truncating',async()=>{
  const f=fake(admin,{User:Array.from({length:105},(_,i)=>({id:'u'+i,email:'a@b.com'}))});
