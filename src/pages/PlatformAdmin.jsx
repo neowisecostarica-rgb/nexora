@@ -41,6 +41,7 @@ export default function PlatformAdmin(){
  const {user}=useAuth();const qc=useQueryClient();
  const [tab,setTab]=useState('organizations'),[message,setMessage]=useState('');
  const [onboardingOrganizationId,setOnboardingOrganizationId]=useState('');
+ const [onboardingMode,setOnboardingMode]=useState('account_first');
  const [inviteDraft,setInviteDraft]=useState({organization_id:'',email:'',role:'owner'});
  const [org,setOrg]=useState({commercial_name:'',legal_name:'',legal_id:'',email_main:'',organization_type:'importer'});
  const [member,setMember]=useState({organization_id:'',user_id:'',role:'owner',expires_at:''});
@@ -86,7 +87,13 @@ export default function PlatformAdmin(){
  return <div className="space-y-5">
   <PageHeader title="Administración de plataforma" subtitle="Super Admin · empresas, usuarios y aliados"/>
   <Card><CardHeader><CardTitle>Entrega guiada de un cliente</CardTitle></CardHeader><CardContent className="space-y-3 text-sm">
-   <p className="text-muted-foreground">Elegí una empresa para revisar sus condiciones de alta. Los pasos se basan en datos devueltos por el servidor; no constituyen una prueba de acceso ni envían invitaciones.</p>
+   <p className="text-muted-foreground">Podés iniciar con una cuenta ya registrada o recibir primero el correo del cliente. Preparar una invitación en pantalla no crea un registro pendiente ni envía un correo.</p>
+   <div className="flex flex-wrap gap-2" role="group" aria-label="Origen del onboarding"><Button type="button" variant={onboardingMode==='account_first'?'default':'outline'} onClick={()=>setOnboardingMode('account_first')}>El cliente ya ingresó</Button><Button type="button" variant={onboardingMode==='business_first'?'default':'outline'} onClick={()=>setOnboardingMode('business_first')}>Primero recibimos su correo</Button></div>
+   {onboardingMode==='business_first'?<div className="rounded border p-3 space-y-2">
+    <p className="font-medium">Ruta inversa · alta preparada</p>
+    <ol className="list-decimal list-inside space-y-1"><li>Recibir correo y datos legales directamente del cliente.</li><li>Pre-registrar empresa sin asignar propietario; comprobar que la cédula jurídica no esté duplicada.</li><li>Preparar invitación para el correo indicado. <strong>Estado: no enviada; backend bloqueado.</strong></li><li>Cuando el sistema de invitaciones esté certificado, el cliente se registra o ingresa, acepta con su identidad y el servidor asigna el acceso.</li><li>Validar empresa, primer ingreso y configuración antes de activar comercialmente.</li></ol>
+    <div className="flex flex-wrap gap-2"><Button size="sm" variant="outline" onClick={()=>setTab('organizations')}>Pre-registrar empresa</Button><Button size="sm" variant="outline" onClick={()=>{setInviteDraft(d=>({...d,organization_id:onboardingOrganizationId}));setTab('invites');}}>Preparar invitación</Button></div>
+   </div>:<div className="rounded border p-3 space-y-2"><p className="font-medium">Ruta directa · cuenta primero</p><ol className="list-decimal list-inside space-y-1"><li>Cliente inicia sesión con su cuenta mediante Base44.</li><li>Super Admin confirma usuario y correo verificado.</li><li>Selecciona empresa, asigna owner mediante backend seguro y confirma acceso.</li><li>Cliente configura su empresa; Nexora verifica el recorrido antes de entregar.</li></ol><Button type="button" size="sm" variant="outline" onClick={()=>setTab('users')}>Revisar alta asistida</Button></div>
    <label className="grid gap-1 max-w-lg"><span>Empresa a preparar</span><Select value={onboardingOrganizationId} onChange={e=>setOnboardingOrganizationId(e.target.value)}><option value="">Seleccionar empresa</option>{data.organizations.map(x=><option key={x.id} value={x.id}>{x.commercial_name}</option>)}</Select></label>
    {onboardingOrganization&&<ol className="grid md:grid-cols-2 gap-2" aria-label="Pasos de activación">
     <li className="rounded border p-3"><strong>1. Empresa</strong><p>{onboardingOrganization.active&&onboardingOrganization.organization_type?'Registrada y activa':'Revisar activación o clasificación'}</p><Button size="sm" variant="outline" onClick={()=>setTab('organizations')}>Revisar empresa</Button></li>
@@ -94,7 +101,7 @@ export default function PlatformAdmin(){
     <li className="rounded border p-3"><strong>3. Primer ingreso</strong><p>Pendiente de comprobación con sesión real del propietario y selección de empresa.</p></li>
     <li className="rounded border p-3"><strong>4. Configuración y QA</strong><p>Verificar perfil, documentos, permisos y recorrido operativo antes de entregar.</p></li>
    </ol>}
-   <p className="text-xs text-muted-foreground">Asignar un usuario registrado no equivale a enviarle una invitación. La entrega al cliente y la activación comercial requieren validación humana y autorización de Dirección.</p>
+   <p className="text-xs text-muted-foreground">Estado «pendiente» significa tarea pendiente si no existe una invitación confirmada por backend. Empresa activa no implica propietario validado, invitación aceptada ni habilitación comercial.</p>
   </CardContent></Card>
   <div className="flex flex-wrap gap-2" role="group" aria-label="Secciones de administración">
    {[['organizations','Empresas'],['users','Alta asistida y accesos'],['invites','Invitaciones'],['partners','Aliados'],['legacy','Datos por revisar'],['audit','Historial']].map(([key,title])=><Button key={key} variant={tab===key?'default':'outline'} onClick={()=>setTab(key)}>{title}</Button>)}
@@ -137,7 +144,8 @@ export default function PlatformAdmin(){
    {data.users.filter(x=>x.id!==user.id).length===0&&<p role="status">No hay otros usuarios registrados todavía. Pedile al cliente que acceda primero mediante el inicio de sesión nativo y luego actualizá la lista. No se enviaron invitaciones.</p>}
   </>}
   {tab==='invites'&&<Card><CardHeader><CardTitle>Invitar a un propietario</CardTitle></CardHeader><CardContent className="space-y-4 text-sm">
-   <p>La invitación requiere un correo validado, token de un solo uso y aceptación autenticada. La asignación de membresía no equivale a aceptar una invitación.</p>
+   <p>Ruta inversa: primero se registra empresa y correo del cliente; después se prepara una invitación para que se registre o ingrese y acepte. Se requiere token de un solo uso, vencimiento, revocación y aceptación autenticada.</p>
+   <p className="rounded border p-3 text-amber-800" role="status">Estado actual: preparación local, sin invitación persistida ni enviada. No se asignó propietario. Pendiente de seguridad y autorización.</p>
    <form className="grid sm:grid-cols-2 gap-3" onSubmit={e=>e.preventDefault()}>
     <Field label="Empresa"><Select value={inviteDraft.organization_id} onChange={e=>setInviteDraft({...inviteDraft,organization_id:e.target.value})}><option value="">Seleccionar empresa</option>{activeOrgs.filter(x=>x.organization_type==='importer'||x.organization_type==='partner').map(x=><option key={x.id} value={x.id}>{x.commercial_name}</option>)}</Select></Field>
     <Field label="Correo del propietario"><Input type="email" autoComplete="off" value={inviteDraft.email} onChange={e=>setInviteDraft({...inviteDraft,email:e.target.value})} placeholder="propietario@empresa.com"/></Field>
