@@ -19,7 +19,7 @@ export async function handlePlatformAdmin(client,input={},now=Date.now()) {
  const user=await client.auth.me();
  if (!user?.id) return fail(401,'UNAUTHORIZED');
  const superAdmin=isPlatformSuperAdmin(user);
- if (input.action==='capabilities') return ok({is_super_admin:superAdmin});
+ if (input.action==='capabilities') return ok({is_super_admin:superAdmin,invitation_ready:false});
  if (!superAdmin) return fail(403,'PLATFORM_AUTHORITY_REQUIRED');
  const db=client.asServiceRole.entities;
  const audit=async(action,target,detail={})=>db.PlatformAuditEvent.create({
