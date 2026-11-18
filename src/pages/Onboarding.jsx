@@ -12,6 +12,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
 import { validateProfileForOperation } from "@/lib/orgProfileSnapshot";
+import { dismissOnboarding } from "@/lib/onboardingPreference";
 import { ArrowRight, ArrowLeft, Check, CheckCircle2, Building2, FileText, Wallet, ShieldCheck, Sparkles, LockKeyhole, ExternalLink, RotateCcw } from "lucide-react";
 
 const STEPS = [
@@ -68,7 +69,11 @@ export default function Onboarding() {
   const reset = () => { if (profile) setDraft({ ...INITIAL, ...Object.fromEntries(Object.keys(INITIAL).map(key => [key, profile[key] ?? INITIAL[key]])) }); setDirty(false); setNotice(""); };
   const advance = async () => {
     if (step === 0) { setStep(1); return; }
-    if (step === 4) { navigate("/"); return; }
+    if (step === 4) {
+      if (!readiness.valid) { setNotice("Completá primero los datos obligatorios de identidad y documentos."); return; }
+      if (!dismissOnboarding(user?.id)) { setNotice("Para finalizar, seleccioná tu empresa de trabajo en el menú lateral."); return; }
+      navigate("/"); return;
+    }
     if (!dirty && (step === 3 || completed[step])) { setNotice(""); setStep(value => value + 1); return; }
     if (!validStage) { setNotice("Revisá los campos obligatorios antes de continuar."); return; }
     save.mutate(selected.id);
@@ -124,14 +129,14 @@ export default function Onboarding() {
             </div>}
             {step === 4 && <div className="mt-9 grid gap-4 sm:grid-cols-2">
               {[{title:"Identidad empresarial",ready:savedIdentity,desc:profile?.commercial_name || "Pendiente de guardar",to:1},{title:"Documentos comerciales",ready:savedDocs,desc:savedDocs?"Numeración configurada":"Faltan campos requeridos",to:2},{title:"Cobros",ready:savedPayments,desc:savedPayments?"Instrucciones guardadas":"Opcional, podés volver luego",to:3},{title:"Revisión operativa",ready:false,desc:"Acceso, permisos y primera operación pendientes de validar con Nexora",to:null}].map(item=><div key={item.title} className="rounded-3xl border border-white/10 bg-white/[0.07] p-5"><div className="flex items-center justify-between"><span className={`grid h-9 w-9 place-items-center rounded-xl ${item.ready?"bg-emerald-400/15 text-emerald-300":"bg-amber-400/15 text-amber-200"}`}>{item.ready?<CheckCircle2 className="h-5 w-5"/>:<ShieldCheck className="h-5 w-5"/>}</span>{item.to && <button className="text-xs font-semibold text-cyan-300 hover:underline" onClick={()=>goTo(item.to)}>Editar</button>}</div><h2 className="mt-5 font-semibold">{item.title}</h2><p className="mt-1 text-xs leading-5 text-slate-400">{item.desc}</p></div>)}
-              <div className="sm:col-span-2 rounded-2xl border border-cyan-400/20 bg-cyan-400/10 p-4 text-sm text-cyan-100">Estado del perfil: {readiness.valid ? "datos mínimos guardados" : `faltan ${readiness.missing.join(", ")}`}. Esto no habilita automáticamente pagos, accesos ni operación real.</div>
+              <div className="sm:col-span-2 rounded-2xl border border-cyan-400/20 bg-cyan-400/10 p-4 text-sm text-cyan-100">Estado del perfil: {readiness.valid ? "datos mínimos guardados" : `faltan ${readiness.missing.join(", ")}`}. Al finalizar, «Inicio guiado» se ocultará del menú de esta empresa en este navegador. Podés reabrirlo desde Configuración. Esto no habilita automáticamente pagos, accesos ni operación real.</div>
             </div>}
             {notice && <p role="status" className="mt-5 rounded-xl border border-amber-300/20 bg-amber-200/10 px-4 py-3 text-sm text-amber-100">{notice}</p>}
             {save.isError && <p role="alert" className="mt-5 rounded-xl border border-rose-300/30 bg-rose-400/10 px-4 py-3 text-sm text-rose-200">No se pudieron guardar los cambios. Revisá tu acceso y volvé a intentar.</p>}
             <div className="mt-9 flex flex-wrap items-center justify-between gap-4 border-t border-white/10 pt-6">
               <button type="button" disabled={step === 0 || save.isPending} onClick={() => goTo(step - 1)} className="inline-flex items-center gap-2 text-sm text-slate-300 transition hover:text-white disabled:opacity-30"><ArrowLeft className="h-4 w-4"/> Atrás</button>
               <div className="flex flex-wrap items-center gap-3">{dirty && <button type="button" onClick={reset} className="inline-flex items-center gap-2 rounded-xl px-4 py-3 text-xs text-slate-300 hover:bg-white/10"><RotateCcw className="h-4 w-4"/> Descartar cambios</button>}
-                <button type="button" onClick={advance} disabled={save.isPending || (step > 0 && step < 4 && (!profile || query.isError || query.isLoading))} className="inline-flex items-center gap-3 rounded-2xl bg-gradient-to-r from-cyan-300 to-indigo-300 px-6 py-3.5 text-sm font-bold text-slate-950 shadow-lg shadow-indigo-500/20 transition hover:brightness-110 focus:outline-none focus:ring-4 focus:ring-cyan-300/30 disabled:cursor-not-allowed disabled:opacity-50">{save.isPending?"Guardando…":step===0?"Comenzar experiencia":step===4?"Ir al panel":step===3&&!dirty?"Continuar sin datos de cobro":"Guardar y continuar"}<ArrowRight className="h-4 w-4"/></button>
+                <button type="button" onClick={advance} disabled={save.isPending || (step > 0 && step < 4 && (!profile || query.isError || query.isLoading))} className="inline-flex items-center gap-3 rounded-2xl bg-gradient-to-r from-cyan-300 to-indigo-300 px-6 py-3.5 text-sm font-bold text-slate-950 shadow-lg shadow-indigo-500/20 transition hover:brightness-110 focus:outline-none focus:ring-4 focus:ring-cyan-300/30 disabled:cursor-not-allowed disabled:opacity-50">{save.isPending?"Guardando…":step===0?"Comenzar experiencia":step===4?"Finalizar y entrar al panel":step===3&&!dirty?"Continuar sin datos de cobro":"Guardar y continuar"}<ArrowRight className="h-4 w-4"/></button>
               </div>
             </div>
             <p className="mt-6 text-xs text-slate-500">Sesión: {user?.email || "usuario autenticado"} · Configuración privada de Nexora</p>
