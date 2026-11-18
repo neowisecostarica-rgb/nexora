@@ -73,6 +73,15 @@ export default function PlatformAdmin(){
  const onboardingOrganization=data.organizations.find(x=>x.id===onboardingOrganizationId);
  const onboardingOwners=data.memberships.filter(x=>x.organization_id===onboardingOrganizationId&&x.role==='owner'&&x.status==='active'&&(!x.expires_at||new Date(x.expires_at)>new Date()));
  const onboardingOwnerRegistered=onboardingOwners.some(x=>data.users.some(u=>u.id===x.user_id));
+ const selectedMemberUser=data.users.find(x=>x.id===member.user_id);
+ const selectedMemberOrg=data.organizations.find(x=>x.id===member.organization_id);
+ const assignMembership=()=>{
+  // Confirmar datos provenientes del backend antes de una mutación de acceso; nunca inferir ID por correo.
+  if(!selectedMemberUser||!selectedMemberOrg||!selectedMemberOrg.active)return;
+  const detail=`Empresa: ${selectedMemberOrg.commercial_name}\nCuenta registrada: ${selectedMemberUser.email}\nRol: ${names[member.role]||member.role}`;
+  if(!window.confirm(`¿Confirmás la asignación de acceso?\n\n${detail}\n\nEsto cambia permisos reales, no envía invitaciones.`))return;
+  run('set_membership',{...member,expires_at:member.expires_at?new Date(member.expires_at).toISOString():null});
+ };
  return <div className="space-y-5">
   <PageHeader title="Administración de plataforma" subtitle="Super Admin · empresas, usuarios y aliados"/>
   <Card><CardHeader><CardTitle>Entrega guiada de un cliente</CardTitle></CardHeader><CardContent className="space-y-3 text-sm">
@@ -87,7 +96,7 @@ export default function PlatformAdmin(){
    <p className="text-xs text-muted-foreground">Asignar un usuario registrado no equivale a enviarle una invitación. La entrega al cliente y la activación comercial requieren validación humana y autorización de Dirección.</p>
   </CardContent></Card>
   <div className="flex flex-wrap gap-2" role="group" aria-label="Secciones de administración">
-   {[['organizations','Empresas'],['users','Usuarios y accesos'],['invites','Invitaciones'],['partners','Aliados'],['legacy','Datos por revisar'],['audit','Historial']].map(([key,title])=><Button key={key} variant={tab===key?'default':'outline'} onClick={()=>setTab(key)}>{title}</Button>)}
+   {[['organizations','Empresas'],['users','Alta asistida y accesos'],['invites','Invitaciones'],['partners','Aliados'],['legacy','Datos por revisar'],['audit','Historial']].map(([key,title])=><Button key={key} variant={tab===key?'default':'outline'} onClick={()=>setTab(key)}>{title}</Button>)}
    <Button variant="outline" disabled={q.isFetching||mutation.isPending} onClick={()=>q.refetch()}>Actualizar</Button>
   </div>
   {message&&<p role="status" className="border rounded p-3">{message}</p>}
@@ -106,16 +115,25 @@ export default function PlatformAdmin(){
    {!data.organizations.length&&<p>No hay empresas registradas.</p>}
   </>}
   {tab==='users'&&<>
-   <p>Asigná usuarios ya registrados. Tu autoridad de Super Admin se mantiene separada de las membresías de las empresas.</p>
-   <Card><CardContent className="p-4"><form className="grid sm:grid-cols-2 gap-3" onSubmit={e=>{e.preventDefault();run('set_membership',{...member,expires_at:member.expires_at?new Date(member.expires_at).toISOString():null});}}>
+   <Card><CardHeader><CardTitle>Alta asistida de un propietario</CardTitle></CardHeader><CardContent className="space-y-3 text-sm">
+    <ol className="list-decimal list-inside space-y-2">
+     <li>El cliente abre Nexora e ingresa o registra su cuenta mediante el acceso nativo de Base44. No se envía una invitación desde este panel.</li>
+     <li>Actualizá la lista y verificá que el usuario registrado tenga el correo acordado con el cliente.</li>
+     <li>Seleccioná la empresa correcta y el rol <strong>Dueño</strong>, verificá la confirmación y guardá el acceso.</li>
+     <li>Pedile al cliente que vuelva a iniciar sesión, elija su empresa y complete la configuración inicial. Validá el acceso con su sesión antes de entregar.</li>
+    </ol>
+    <Button variant="outline" type="button" disabled={q.isFetching||mutation.isPending} onClick={()=>q.refetch()}>Actualizar usuarios registrados</Button>
+    <p className="text-xs text-muted-foreground">No se crea automáticamente una cuenta ni se prueba la titularidad del correo desde este panel. La verificación de identidad sigue siendo una condición operativa.</p>
+   </CardContent></Card>
+   <Card><CardContent className="p-4"><form className="grid sm:grid-cols-2 gap-3" onSubmit={e=>{e.preventDefault();assignMembership();}}>
     <Field label="Empresa"><Select required value={member.organization_id} onChange={e=>setMember({...member,organization_id:e.target.value})}><option value="">Seleccionar</option>{activeOrgs.map(x=><option key={x.id} value={x.id}>{x.commercial_name}</option>)}</Select></Field>
     <Field label="Usuario registrado"><Select required value={member.user_id} onChange={e=>setMember({...member,user_id:e.target.value})}><option value="">Seleccionar</option>{data.users.filter(x=>x.id!==user.id).map(x=><option key={x.id} value={x.id}>{x.email}</option>)}</Select></Field>
     <Field label="Acceso"><Select value={member.role} onChange={e=>setMember({...member,role:e.target.value})}>{Object.entries(names).map(([key,title])=><option key={key} value={key}>{title}</option>)}</Select></Field>
     <Field label="Vencimiento opcional"><Input type="datetime-local" value={member.expires_at} onChange={e=>setMember({...member,expires_at:e.target.value})}/></Field>
-    <Button type="submit" disabled={mutation.isPending}>Guardar acceso</Button>
+    <div className="space-y-2"><Button type="submit" disabled={mutation.isPending||!selectedMemberUser||!selectedMemberOrg||!selectedMemberOrg.active}>{member.role==='owner'?'Asignar propietario':'Guardar acceso'}</Button><p className="text-xs text-muted-foreground">{selectedMemberUser&&selectedMemberOrg?`${selectedMemberUser.email} → ${selectedMemberOrg.commercial_name} (${names[member.role]})`:'Elegí empresa y usuario registrado para continuar.'}</p></div>
    </form></CardContent></Card>
    <ul className="space-y-2">{data.memberships.map(x=><li key={x.id} className="border rounded p-3 flex flex-wrap items-center justify-between gap-2"><span>{userName(x.user_id)} · {orgName(x.organization_id)} · {names[x.role]} · {x.status}</span>{x.status==='active'&&<Button variant="outline" disabled={mutation.isPending} onClick={()=>{if(window.confirm('¿Revocar este acceso?'))run('revoke_membership',{record_id:x.id});}}>Revocar</Button>}</li>)}</ul>
-   {data.users.filter(x=>x.id!==user.id).length===0&&<p>No hay otros usuarios registrados todavía. Este panel no envía invitaciones automáticamente.</p>}
+   {data.users.filter(x=>x.id!==user.id).length===0&&<p role="status">No hay otros usuarios registrados todavía. Pedile al cliente que acceda primero mediante el inicio de sesión nativo y luego actualizá la lista. No se enviaron invitaciones.</p>}
   </>}
   {tab==='invites'&&<Card><CardHeader><CardTitle>Invitar a un propietario</CardTitle></CardHeader><CardContent className="space-y-4 text-sm">
    <p>La invitación requiere un correo validado, token de un solo uso y aceptación autenticada. La asignación de membresía no equivale a aceptar una invitación.</p>
