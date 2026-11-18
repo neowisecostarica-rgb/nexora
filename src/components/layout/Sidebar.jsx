@@ -6,8 +6,9 @@
  * Límites: Preservar contratos; ver docs/NEXORA-REGRESSION-MATRIX.md. Runtime no certificado.
  * Referencia: docs/NEXORA-INVENTORY.md (base 54e8532).
  */
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import OrganizationSwitcher from './OrganizationSwitcher';
+import { isOnboardingDismissed } from "@/lib/onboardingPreference";
 import {useQuery} from "@tanstack/react-query";
 import {base44} from "@/api/base44Client";
 import {useAuth} from "@/lib/AuthContext";
@@ -40,11 +41,20 @@ export default function Sidebar({ collapsed = false, onCollapsedChange = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
   const {user}=useAuth();
+  const [introDismissed, setIntroDismissed] = useState(() => isOnboardingDismissed(user?.id));
+  useEffect(() => {
+    const sync = () => setIntroDismissed(isOnboardingDismissed(user?.id));
+    sync();
+    window.addEventListener("nexora:onboarding-changed", sync);
+    window.addEventListener("storage", sync);
+    return () => { window.removeEventListener("nexora:onboarding-changed", sync); window.removeEventListener("storage", sync); };
+  }, [user?.id]);
   // Visibility is derived from server capability; the endpoint enforces access again.
   const capability=useQuery({queryKey:['platform-capabilities',user?.id],queryFn:async()=>{
     const r=await base44.functions.invoke('platformAdmin',{action:'capabilities'});return r.data;
   },enabled:!!user?.id,staleTime:0});
-  const navigation=capability.data?.is_super_admin?[...NAV_ITEMS,{label:"Super Admin",icon:Settings,path:"/platform"}]:NAV_ITEMS;
+  const visibleItems = introDismissed ? NAV_ITEMS.filter(item => item.path !== "/onboarding") : NAV_ITEMS;
+  const navigation=capability.data?.is_super_admin?[...visibleItems,{label:"Super Admin",icon:Settings,path:"/platform"}]:visibleItems;
 
   return (
     <>
