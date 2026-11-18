@@ -88,6 +88,16 @@ test('assign and revoke a registered client without changing platform role',asyn
  r=await handlePlatformAdmin(f.client,{action:'revoke_membership',record_id:membership.id});
  assert.equal(r.status,200);assert.equal(f.tables.OrganizationMembership[0].status,'revoked');assert.equal(f.tables.User[1].role,'user');
 });
+test('unverified or unverifiable users cannot become tenant owners',async()=>{
+ for(const is_verified of [false,null,undefined]){
+  const f=fake(admin,{User:[admin,{id:'client',email:'client@example.com',role:'user',...(is_verified===undefined?{}:{is_verified})}]});
+  const result=await handlePlatformAdmin(f.client,{action:'set_membership',organization_id:'org',user_id:'client',role:'owner'});
+  assert.equal(result.status,403);assert.equal(result.body.error,'USER_EMAIL_NOT_VERIFIED');
+  assert.equal(f.tables.OrganizationMembership.length,0);assert.equal(f.writes.length,0);
+  const overview=await handlePlatformAdmin(f.client,{action:'overview'});
+  assert.equal(overview.body.users.find(u=>u.id==='client').is_verified,false);
+ }
+});
 test('unknown user is not invited or assigned',async()=>{
  const f=fake();assert.equal((await handlePlatformAdmin(f.client,{action:'set_membership',organization_id:'org',user_id:'unknown',role:'owner'})).status,404);assert.equal(f.writes.length,0);
 });
