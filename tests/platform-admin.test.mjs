@@ -44,7 +44,7 @@ test('anonymous and unrelated admin cannot read or mutate platform',async()=>{
  }
 });
 test('capabilities reveals no data and has no writes',async()=>{
- const f=fake({id:'client',role:'user'});assert.deepEqual((await handlePlatformAdmin(f.client,{action:'capabilities'})).body,{is_super_admin:false});assert.equal(f.writes.length,0);
+ const f=fake({id:'client',role:'user'});assert.deepEqual((await handlePlatformAdmin(f.client,{action:'capabilities'})).body,{is_super_admin:false,invitation_ready:false});assert.equal(f.writes.length,0);
 });
 test('overview projects user fields and audits access',async()=>{
  const f=fake();const r=await handlePlatformAdmin(f.client,{action:'overview'});
