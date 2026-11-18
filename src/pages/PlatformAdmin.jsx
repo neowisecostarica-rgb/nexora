@@ -40,6 +40,7 @@ export default function PlatformAdmin(){
  const {user}=useAuth();const qc=useQueryClient();
  const [tab,setTab]=useState('organizations'),[message,setMessage]=useState('');
  const [onboardingOrganizationId,setOnboardingOrganizationId]=useState('');
+ const [inviteDraft,setInviteDraft]=useState({organization_id:'',email:'',role:'owner'});
  const [org,setOrg]=useState({commercial_name:'',legal_name:'',legal_id:'',email_main:'',organization_type:'importer'});
  const [member,setMember]=useState({organization_id:'',user_id:'',role:'owner',expires_at:''});
  const [grant,setGrant]=useState({partner_organization_id:'',client_organization_id:'',permissions:['operations.read','tracking.read'],operation_ids:[],expires_at:''});
@@ -86,7 +87,7 @@ export default function PlatformAdmin(){
    <p className="text-xs text-muted-foreground">Asignar un usuario registrado no equivale a enviarle una invitación. La entrega al cliente y la activación comercial requieren validación humana y autorización de Dirección.</p>
   </CardContent></Card>
   <div className="flex flex-wrap gap-2" role="group" aria-label="Secciones de administración">
-   {[['organizations','Empresas'],['users','Usuarios y accesos'],['partners','Aliados'],['legacy','Datos por revisar'],['audit','Historial']].map(([key,title])=><Button key={key} variant={tab===key?'default':'outline'} onClick={()=>setTab(key)}>{title}</Button>)}
+   {[['organizations','Empresas'],['users','Usuarios y accesos'],['invites','Invitaciones'],['partners','Aliados'],['legacy','Datos por revisar'],['audit','Historial']].map(([key,title])=><Button key={key} variant={tab===key?'default':'outline'} onClick={()=>setTab(key)}>{title}</Button>)}
    <Button variant="outline" disabled={q.isFetching||mutation.isPending} onClick={()=>q.refetch()}>Actualizar</Button>
   </div>
   {message&&<p role="status" className="border rounded p-3">{message}</p>}
@@ -116,6 +117,17 @@ export default function PlatformAdmin(){
    <ul className="space-y-2">{data.memberships.map(x=><li key={x.id} className="border rounded p-3 flex flex-wrap items-center justify-between gap-2"><span>{userName(x.user_id)} · {orgName(x.organization_id)} · {names[x.role]} · {x.status}</span>{x.status==='active'&&<Button variant="outline" disabled={mutation.isPending} onClick={()=>{if(window.confirm('¿Revocar este acceso?'))run('revoke_membership',{record_id:x.id});}}>Revocar</Button>}</li>)}</ul>
    {data.users.filter(x=>x.id!==user.id).length===0&&<p>No hay otros usuarios registrados todavía. Este panel no envía invitaciones automáticamente.</p>}
   </>}
+  {tab==='invites'&&<Card><CardHeader><CardTitle>Invitar a un propietario</CardTitle></CardHeader><CardContent className="space-y-4 text-sm">
+   <p>La invitación requiere un correo validado, token de un solo uso y aceptación autenticada. La asignación de membresía no equivale a aceptar una invitación.</p>
+   <form className="grid sm:grid-cols-2 gap-3" onSubmit={e=>e.preventDefault()}>
+    <Field label="Empresa"><Select value={inviteDraft.organization_id} onChange={e=>setInviteDraft({...inviteDraft,organization_id:e.target.value})}><option value="">Seleccionar empresa</option>{activeOrgs.filter(x=>x.organization_type==='importer'||x.organization_type==='partner').map(x=><option key={x.id} value={x.id}>{x.commercial_name}</option>)}</Select></Field>
+    <Field label="Correo del propietario"><Input type="email" autoComplete="off" value={inviteDraft.email} onChange={e=>setInviteDraft({...inviteDraft,email:e.target.value})} placeholder="propietario@empresa.com"/></Field>
+    <Field label="Rol"><Select value={inviteDraft.role} disabled><option value="owner">Propietario</option></Select></Field>
+    <div className="flex items-end"><Button disabled type="button">Crear invitación</Button></div>
+   </form>
+   <p role="status" className="rounded border border-amber-300 bg-amber-50 text-amber-950 p-3">{capability.data?.invitation_ready===true?'El flujo requiere validación operativa antes de enviar invitaciones reales.':'Invitaciones todavía bloqueadas por seguridad: no se creó ni envió ninguna invitación. La activación depende de pruebas backend de identidad, expiración, revocación y concurrencia.'}</p>
+   <p>Para aceptar una futura invitación, el usuario tendrá que iniciar sesión con el correo invitado y confirmar desde el flujo seguro de aceptación. No se puede activar una empresa desde esta pantalla.</p>
+  </CardContent></Card>}
   {tab==='partners'&&<>
    <p>Consulting recibe permisos por empresa y carga. No se otorga acceso financiero mediante estas autorizaciones. Para visualizar la beta en /consulting, se requiere <strong>Consultar operaciones</strong> y, para ver guías, <strong>Consultar seguimiento</strong>. Invitá al usuario como propietario de la organización aliada correspondiente, nunca como Super Admin.</p>
    <Card><CardContent className="p-4"><form className="grid sm:grid-cols-2 gap-3" onSubmit={e=>{e.preventDefault();run('set_grant',grant);}}>
