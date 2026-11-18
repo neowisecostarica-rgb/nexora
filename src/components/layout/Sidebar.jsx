@@ -15,10 +15,11 @@ import { Link, useLocation } from "react-router-dom";
 import {
   LayoutDashboard, ShoppingCart, Package, Truck, Monitor,
   Calculator, FileText, HandCoins, Users, Settings,
-  ChevronLeft, ChevronRight, Receipt, Layers, Navigation, Warehouse, Menu, X
+  ChevronLeft, ChevronRight, Receipt, Layers, Navigation, Warehouse, Menu, X, Sparkles
 } from "lucide-react";
 
 const NAV_ITEMS = [
+  { label: "Inicio guiado", icon: Sparkles, path: "/onboarding" },
   { label: "Dashboard", icon: LayoutDashboard, path: "/" },
   { label: "Proveedores", icon: Users, path: "/suppliers" },
   { label: "Compras", icon: ShoppingCart, path: "/purchases" },
