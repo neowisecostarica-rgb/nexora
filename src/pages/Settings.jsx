@@ -20,6 +20,7 @@ import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Building2, FileText, CreditCard, Calculator, Save, Upload, CheckCircle, AlertTriangle } from "lucide-react";
 import PageHeader from "@/components/shared/PageHeader";
+import { Link } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
 import { validateProfileForOperation } from "@/lib/orgProfileSnapshot";
 
@@ -112,7 +113,7 @@ export default function SettingsPage() {
         </div>
       </PageHeader>
 
-      <Card className="mb-6"><CardHeader><CardTitle>Primeros pasos de tu empresa</CardTitle></CardHeader><CardContent className="space-y-3 text-sm">
+      <Card className="mb-6"><CardHeader><CardTitle>Primeros pasos de tu empresa</CardTitle><p className="text-sm text-muted-foreground">Ahora podés recorrer esta configuración con una experiencia guiada, paso a paso.</p><Link to="/onboarding" className="inline-flex w-fit items-center rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:opacity-90">Abrir onboarding guiado →</Link></CardHeader><CardContent className="space-y-3 text-sm">
         <p>Prepará Nexora antes de operar con compras, cotizaciones o pagos reales. Esta guía muestra únicamente el estado del perfil guardado; el acceso y la habilitación comercial requieren validación aparte.</p>
         <ol className="grid sm:grid-cols-2 gap-2" aria-label="Configuración inicial">
           <li className="border rounded p-3"><strong>1. Identidad de empresa</strong><p>{persistedProfile ? 'Perfil guardado' : 'Pendiente de guardar perfil'}</p></li>
