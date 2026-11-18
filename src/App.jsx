@@ -5,6 +5,7 @@
  * Dependencias: Revisar imports y consumidores; sin invoke literal detectado.
  * Límites: Preservar contratos; ver docs/NEXORA-REGRESSION-MATRIX.md. Runtime no certificado.
  * Referencia: docs/NEXORA-INVENTORY.md (base 54e8532).
+ * /invite/accept solo informa precondiciones y permanece bloqueada hasta aceptación backend certificada.
  */
 import { Toaster } from "@/components/ui/toaster"
 import { QueryClientProvider } from '@tanstack/react-query'
@@ -34,6 +35,19 @@ import Warehouses from '@/pages/Warehouses';
 import Tracking from '@/pages/Tracking';
 import ConsultingPortal from '@/pages/ConsultingPortal';
 
+/** Aceptación pendiente: no almacenar ni transmitir tokens hasta contar con endpoint y QA seguros. */
+function InvitationAcceptance() {
+  const { user } = useAuth();
+  return <main className="min-h-screen bg-background p-5 sm:p-8"><div className="max-w-xl mx-auto border rounded-lg p-6 space-y-4">
+    <h1 className="text-2xl font-semibold">Acceso a Nexora</h1>
+    <p>La invitación debe corresponder al correo de tu cuenta, estar vigente y ser aceptada una sola vez. La autorización se comprueba en el servidor.</p>
+    <p className="text-sm">{user?.email ? `Sesión actual: ${user.email}` : 'Iniciá sesión con el correo al que fue dirigida la invitación.'}</p>
+    <label className="grid gap-1 text-sm"><span>Código de invitación</span><input aria-label="Código de invitación" disabled placeholder="Aceptación no disponible" className="border rounded-md p-2 bg-muted" /></label>
+    <button type="button" disabled className="rounded-md bg-muted text-muted-foreground px-4 py-2 cursor-not-allowed">Verificar y aceptar invitación</button>
+    <p role="status" className="text-sm text-amber-800">La aceptación está bloqueada hasta verificar el backend, los permisos por empresa y la protección contra usos duplicados. No se creó ninguna membresía.</p>
+  </div></main>;
+}
+
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
 
@@ -58,6 +72,7 @@ const AuthenticatedApp = () => {
     <Routes>
       {/* La ruta Consulting NO utiliza el panel administrativo ni los menús operativos. */}
       <Route path="/consulting" element={<ConsultingPortal />} />
+      <Route path="/invite/accept" element={<InvitationAcceptance />} />
       <Route element={<AppLayout />}>
         <Route path="/" element={<Dashboard />} />
         <Route path="/suppliers" element={<Suppliers />} />
