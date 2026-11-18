@@ -5,6 +5,8 @@
  * Dependencias: Revisar imports y consumidores; sin invoke literal detectado.
  * Límites: Preservar contratos; ver docs/NEXORA-REGRESSION-MATRIX.md. Runtime no certificado.
  * Referencia: docs/NEXORA-INVENTORY.md (base 54e8532).
+ * Onboarding fase 1: guía de configuración; lectura y escrituras se mantienen por gateway tenant.
+ * La guía no activa empresa, no verifica invitaciones ni certifica QA comercial.
  */
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
@@ -39,7 +41,7 @@ export default function SettingsPage() {
   const qc = useQueryClient();
   const { toast } = useToast();
 
-  const { data: profiles = [], isLoading } = useQuery({
+  const { data: profiles = [], isLoading, isError, refetch } = useQuery({
     queryKey: ["orgProfile"],
     queryFn: () => base44.entities.OrganizationProfile.filter({ active: true }),
   });
@@ -79,6 +81,9 @@ export default function SettingsPage() {
   };
 
   const { valid, missing } = validateProfileForOperation(form);
+  const persistedProfile = profiles.find(p => p.id === profileId);
+  const savedReadiness = validateProfileForOperation(persistedProfile);
+  const hasPaymentInfo = !!(persistedProfile?.payment_instructions || persistedProfile?.bank_details || persistedProfile?.sinpe_details);
 
   if (isLoading) return (
     <div className="flex items-center justify-center h-64">
@@ -86,13 +91,15 @@ export default function SettingsPage() {
     </div>
   );
 
+  if (isError) return <div role="alert" className="p-6 space-y-3"><p>No se pudo cargar el perfil de la empresa seleccionada. Comprobá tu acceso y volvé a intentar.</p><Button onClick={() => refetch()}>Reintentar</Button></div>;
+
   return (
     <div>
       <PageHeader title="Configuración" subtitle="Perfil de empresa y ajustes del sistema">
         <div className="flex items-center gap-2">
           {valid ? (
             <span className="flex items-center gap-1.5 text-sm text-green-600 font-medium">
-              <CheckCircle className="w-4 h-4" />Perfil completo
+              <CheckCircle className="w-4 h-4" />Campos listos para guardar
             </span>
           ) : (
             <span className="flex items-center gap-1.5 text-sm text-yellow-600 font-medium">
@@ -104,6 +111,18 @@ export default function SettingsPage() {
           </Button>
         </div>
       </PageHeader>
+
+      <Card className="mb-6"><CardHeader><CardTitle>Primeros pasos de tu empresa</CardTitle></CardHeader><CardContent className="space-y-3 text-sm">
+        <p>Prepará Nexora antes de operar con compras, cotizaciones o pagos reales. Esta guía muestra únicamente el estado del perfil guardado; el acceso y la habilitación comercial requieren validación aparte.</p>
+        <ol className="grid sm:grid-cols-2 gap-2" aria-label="Configuración inicial">
+          <li className="border rounded p-3"><strong>1. Identidad de empresa</strong><p>{persistedProfile ? 'Perfil guardado' : 'Pendiente de guardar perfil'}</p></li>
+          <li className="border rounded p-3"><strong>2. Datos para documentos</strong><p>{savedReadiness.valid ? 'Campos obligatorios guardados' : `Pendientes: ${savedReadiness.missing.join(', ')}`}</p></li>
+          <li className="border rounded p-3"><strong>3. Instrucciones de pago</strong><p>{hasPaymentInfo ? 'Hay instrucciones guardadas; revisá su exactitud' : 'Opcional: revisá datos bancarios o SINPE antes de cobrar'}</p></li>
+          <li className="border rounded p-3"><strong>4. Validación y entrega</strong><p>Pendiente: probar acceso, permisos, cotización y operación con datos controlados junto al equipo de Nexora.</p></li>
+        </ol>
+        <p className="text-xs text-muted-foreground">Completar este formulario no habilita automáticamente pagos, invitados, integraciones ni actividad real.</p>
+        {saveMutation.isError && <p role="alert" className="text-destructive">No se pudo guardar el perfil. Revisá la empresa seleccionada y reintentá.</p>}
+      </CardContent></Card>
 
       {!valid && (
         <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg text-sm flex items-start gap-3">
