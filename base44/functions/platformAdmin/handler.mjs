@@ -13,7 +13,7 @@ const fail=(status,error)=>({status,body:{error}});
 const ok=body=>({status:200,body});
 const id=v=>typeof v==='string' && v.trim().length>0 && v.length<=200;
 const clean=(v,max=300)=>typeof v==='string'?v.trim().slice(0,max):'';
-const safeUser=u=>({id:u.id,email:u.email,full_name:u.full_name,role:u.role});
+const safeUser=u=>({id:u.id,email:u.email,full_name:u.full_name,role:u.role,is_verified:u.is_verified===true});
 const pageSize=100;
 export async function handlePlatformAdmin(client,input={},now=Date.now()) {
  const user=await client.auth.me();
@@ -107,6 +107,8 @@ export async function handlePlatformAdmin(client,input={},now=Date.now()) {
   if(!org?.active)return fail(404,'ACTIVE_ORGANIZATION_REQUIRED');
   const users=await db.User.filter({id:input.user_id},undefined,2);
   if(users?.length!==1||users[0].id!==input.user_id)return fail(404,'USER_NOT_FOUND');
+  // Base44 User.is_verified is a platform-owned field: only an explicitly verified account may own a tenant.
+  if(users[0].is_verified!==true)return fail(403,'USER_EMAIL_NOT_VERIFIED');
   const expires_at=expiry();if(expires_at===false)return fail(400,'INVALID_EXPIRY');
   const existing=await db.OrganizationMembership.filter({user_id:input.user_id,organization_id:org.id},undefined,2);
   if(existing.length>1)return fail(409,'DUPLICATE_MEMBERSHIP');
