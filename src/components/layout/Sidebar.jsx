@@ -57,8 +57,8 @@ export default function Sidebar({ collapsed = false, onCollapsedChange = () => {
       className={`fixed top-0 left-0 h-screen bg-sidebar text-sidebar-foreground border-r border-sidebar-border
         flex flex-col z-50 transition-all duration-300 ${collapsed ? "md:w-16" : "md:w-60"} w-72 max-w-[85vw] ${mobileOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}
     >
-      <div className={`flex items-center h-16 px-4 border-b border-sidebar-border ${collapsed ? "justify-center" : "justify-between"}`}>
-        {!collapsed && (
+      <div className={`flex items-center h-16 px-4 border-b border-sidebar-border ${collapsed && !mobileOpen ? "justify-center" : "justify-between"}`}>
+        {(!collapsed || mobileOpen) && (
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
               <Package className="w-4 h-4 text-primary-foreground" />
@@ -76,7 +76,7 @@ export default function Sidebar({ collapsed = false, onCollapsedChange = () => {
         </button>
       </div>
 
-      {!collapsed && <OrganizationSwitcher />}
+      {(!collapsed || mobileOpen) && <OrganizationSwitcher />}
       <nav className="flex-1 py-3 px-2 space-y-0.5 overflow-y-auto">
         {navigation.map((item) => {
           const isActive = location.pathname === item.path ||
@@ -91,17 +91,17 @@ export default function Sidebar({ collapsed = false, onCollapsedChange = () => {
                   ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-md shadow-primary/20"
                   : "text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent"
                 }
-                ${collapsed ? "justify-center" : ""}`}
-              title={collapsed ? item.label : undefined}
+                ${collapsed && !mobileOpen ? "justify-center" : ""}`}
+              title={collapsed && !mobileOpen ? item.label : undefined}
             >
               <item.icon className="w-4.5 h-4.5 shrink-0" />
-              {!collapsed && <span>{item.label}</span>}
+              {(!collapsed || mobileOpen) && <span>{item.label}</span>}
             </Link>
           );
         })}
       </nav>
 
-      {!collapsed && (
+      {(!collapsed || mobileOpen) && (
         <div className="p-4 border-t border-sidebar-border">
           <p className="text-[10px] text-sidebar-foreground/40 text-center tracking-wider uppercase">
             Nexora · Gestión de importaciones
