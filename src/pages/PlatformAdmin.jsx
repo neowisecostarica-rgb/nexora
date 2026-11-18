@@ -3,6 +3,8 @@
  * Lee/escribe únicamente platformAdmin; no realiza CRUD directo de entidades.
  * El servidor decide autoridad. Formularios no asignan propiedad a Gustavo.
  * Legacy se consulta sin migrar. Errores requieren recargar antes de reintentar.
+ * Onboarding fase 1: guía no transaccional basada en empresas/membresías verificadas por backend;
+ * no envía invitaciones ni certifica entrega/activación sin QA real.
  */
 import React,{useState} from 'react';
 import {useQuery,useMutation,useQueryClient} from '@tanstack/react-query';
@@ -37,6 +39,7 @@ async function overview(){
 export default function PlatformAdmin(){
  const {user}=useAuth();const qc=useQueryClient();
  const [tab,setTab]=useState('organizations'),[message,setMessage]=useState('');
+ const [onboardingOrganizationId,setOnboardingOrganizationId]=useState('');
  const [org,setOrg]=useState({commercial_name:'',legal_name:'',legal_id:'',email_main:'',organization_type:'importer'});
  const [member,setMember]=useState({organization_id:'',user_id:'',role:'owner',expires_at:''});
  const [grant,setGrant]=useState({partner_organization_id:'',client_organization_id:'',permissions:['operations.read','tracking.read'],operation_ids:[],expires_at:''});
@@ -66,8 +69,22 @@ export default function PlatformAdmin(){
  const customers=activeOrgs.filter(x=>x.organization_type==='importer');
  const partners=activeOrgs.filter(x=>x.organization_type==='partner');
  const cargo=data.operations.filter(x=>x.organization_id===grant.client_organization_id);
+ const onboardingOrganization=data.organizations.find(x=>x.id===onboardingOrganizationId);
+ const onboardingOwners=data.memberships.filter(x=>x.organization_id===onboardingOrganizationId&&x.role==='owner'&&x.status==='active'&&(!x.expires_at||new Date(x.expires_at)>new Date()));
+ const onboardingOwnerRegistered=onboardingOwners.some(x=>data.users.some(u=>u.id===x.user_id));
  return <div className="space-y-5">
   <PageHeader title="Administración de plataforma" subtitle="Super Admin · empresas, usuarios y aliados"/>
+  <Card><CardHeader><CardTitle>Entrega guiada de un cliente</CardTitle></CardHeader><CardContent className="space-y-3 text-sm">
+   <p className="text-muted-foreground">Elegí una empresa para revisar sus condiciones de alta. Los pasos se basan en datos devueltos por el servidor; no constituyen una prueba de acceso ni envían invitaciones.</p>
+   <label className="grid gap-1 max-w-lg"><span>Empresa a preparar</span><Select value={onboardingOrganizationId} onChange={e=>setOnboardingOrganizationId(e.target.value)}><option value="">Seleccionar empresa</option>{data.organizations.map(x=><option key={x.id} value={x.id}>{x.commercial_name}</option>)}</Select></label>
+   {onboardingOrganization&&<ol className="grid md:grid-cols-2 gap-2" aria-label="Pasos de activación">
+    <li className="rounded border p-3"><strong>1. Empresa</strong><p>{onboardingOrganization.active&&onboardingOrganization.organization_type?'Registrada y activa':'Revisar activación o clasificación'}</p><Button size="sm" variant="outline" onClick={()=>setTab('organizations')}>Revisar empresa</Button></li>
+    <li className="rounded border p-3"><strong>2. Propietario</strong><p>{onboardingOwnerRegistered?'Membresía owner activa con usuario registrado':'Falta comprobar usuario registrado y membresía owner activa'}</p><Button size="sm" variant="outline" onClick={()=>{setMember(m=>({...m,organization_id:onboardingOrganizationId,role:'owner'}));setTab('users');}}>Revisar acceso</Button></li>
+    <li className="rounded border p-3"><strong>3. Primer ingreso</strong><p>Pendiente de comprobación con sesión real del propietario y selección de empresa.</p></li>
+    <li className="rounded border p-3"><strong>4. Configuración y QA</strong><p>Verificar perfil, documentos, permisos y recorrido operativo antes de entregar.</p></li>
+   </ol>}
+   <p className="text-xs text-muted-foreground">Asignar un usuario registrado no equivale a enviarle una invitación. La entrega al cliente y la activación comercial requieren validación humana y autorización de Dirección.</p>
+  </CardContent></Card>
   <div className="flex flex-wrap gap-2" role="group" aria-label="Secciones de administración">
    {[['organizations','Empresas'],['users','Usuarios y accesos'],['partners','Aliados'],['legacy','Datos por revisar'],['audit','Historial']].map(([key,title])=><Button key={key} variant={tab===key?'default':'outline'} onClick={()=>setTab(key)}>{title}</Button>)}
    <Button variant="outline" disabled={q.isFetching||mutation.isPending} onClick={()=>q.refetch()}>Actualizar</Button>
