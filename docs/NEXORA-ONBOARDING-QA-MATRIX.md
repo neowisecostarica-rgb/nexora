@@ -32,6 +32,17 @@ Ruta autenticada `/onboarding`, accesible desde el menú «Inicio guiado» y Con
 
 La ejecución local del 18 de noviembre: `npm run build` exit 0; `node --test tests/*.test.mjs` 124/124 PASS. Son pruebas de compilación/contrato, **no** QA visual ni aislamiento API real. No se publicó ni se enviaron invitaciones.
 
+### Cierre del recorrido y menú temporal
+
+Al finalizar el paso Revisión, solo si el perfil guardado tiene los campos obligatorios y existe empresa seleccionada, se guarda una **preferencia local** por usuario y organización (`localStorage`) y el elemento «Inicio guiado» desaparece del menú lateral. El recorrido sigue accesible desde Configuración y allí el cliente puede restaurar el enlace del menú. No se borra el perfil ni se marca la empresa como habilitada. Limitación explícita: la preferencia es por navegador/dispositivo, no se sincroniza entre dispositivos ni representa estado de onboarding en servidor.
+
+| ID | Escenario | Prueba pendiente |
+|---|---|---|
+| ONB-19 | Finalizar con datos mínimos guardados y empresa seleccionada | El menú se oculta inmediatamente y sigue oculto al recargar |
+| ONB-20 | Finalizar sin datos mínimos o sin empresa elegida | No se oculta, muestra motivo y no modifica preferencias |
+| ONB-21 | Reabrir desde Configuración, restaurar enlace | Puede repetir el recorrido sin alterar permisos |
+| ONB-22 | Cambiar usuario o empresa en el mismo navegador | No hereda la preferencia de otra identidad o empresa |
+
 ## Evidencia e interpretación
 
 Las pruebas de contrato están en `tests/onboarding-contract.test.mjs`. Usan fake de `functions.invoke` y no escriben datos ni evalúan RLS real. Un PASS confirma solamente cableado y denegación local. Los casos ONB-03 y ONB-06 son la primera puerta de desbloqueo: el E2E del 4 de noviembre encontró servicio de empresas ausente y proveedor sin persistencia observable. No repetir el flujo financiero completo hasta superar esa puerta.
